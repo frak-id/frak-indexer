@@ -11,7 +11,8 @@
             "tsconfig.json",
             "tsconfig.*.json",
             "ponder-env.d.ts",
-            "package.json"
+            "package.json",
+            "sst.config.ts"
         ]
     },
     "organizeImports": {

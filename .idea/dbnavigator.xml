@@ -29,16 +29,6 @@
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="a7e68c51-9b02-48b3-a08f-6424ca904b15" />
   </component>
-  <component name="DBNavigator.Project.DatasetFilterManager">
-    <filter-actions connection-id="a7e68c51-9b02-48b3-a08f-6424ca904b15" dataset="public.TransferEvent" active-filter-id="EMPTY_FILTER">
-      <filter id="d9c3a970-25d3-4b9f-9bdc-40e381397476" name="Filter 1" temporary="false" custom-name="false" type="basic" join-type="AND">
-        <condition column="id" operator="=" value="" active="true" />
-      </filter>
-    </filter-actions>
-    <filter-actions connection-id="a7e68c51-9b02-48b3-a08f-6424ca904b15" dataset="public.Account" active-filter-id="1aa035d5-0198-4544-a120-27f231c7f94c">
-      <filter id="1aa035d5-0198-4544-a120-27f231c7f94c" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND" />
-    </filter-actions>
-  </component>
   <component name="DBNavigator.Project.ExecutionManager">
     <retain-sticky-names value="false" />
   </component>

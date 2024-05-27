@@ -1,6 +1,7 @@
 import { createConfig } from "@ponder/core";
 import { http } from "viem";
 import { erc20ABI } from "./abis/erc20ABI";
+import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
 const pollingConfig = {
     pollingInterval: 5_000,
@@ -43,8 +44,33 @@ export default createConfig({
             abi: erc20ABI,
             network: "arbitrumSepolia",
             address: "0x9584A61F70cC4BEF5b8B5f588A1d35740f0C7ae2",
-            startBlock: 46426074,
-            endBlock: 48000000,
+            startBlock: 29562417,
+            filter: {
+                // Only get the transfer event from the contract
+                event: "Transfer",
+            }
+        },
+        // The WebAuthN validator to index
+        WebAuthNValidator: {
+            abi: multiWebAuthNValidatorV2Abi,
+            network: {
+                arbitrumSepolia: {
+                    startBlock: 35765963,
+                },
+                arbitrum: {
+                    startBlock: 203956680,
+                },
+                polygon: {
+                    startBlock: 56157675,
+                },
+                base: {
+                    startBlock: 13537832,
+                },
+                optimism: {
+                    startBlock: 119133117,
+                },
+            },
+            address: "0xD546c4Ba2e8e5e5c961C36e6Db0460Be03425808",
         },
     },
 });
