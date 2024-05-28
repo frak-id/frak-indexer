@@ -2,5 +2,11 @@
 node_modules/
 .ponder/
 
+# Some git or prebuild stuff
+.git
+.gitignore
+*.md
+dist
+
 # sst
 .sst

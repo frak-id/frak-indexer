@@ -36,7 +36,7 @@ export default {
  * @param stack
  * @constructor
  */
-function IndexerStack({ stack }: StackContext) {
+function IndexerStack({ app, stack }: StackContext) {
     // TODO: Should be bound to the VPC of the postgresql table
     // Get the security group for the database
     const databaseSecurityGroup = SecurityGroup.fromLookupById(
@@ -53,6 +53,22 @@ function IndexerStack({ stack }: StackContext) {
         customDomain: {
             domainName: "indexer.frak.id",
             hostedZone: "frak.id",
+        },
+        // Setup some build options
+        build: {
+            cacheTo: {
+                type: "registry",
+                params: {
+                    ref: `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest`,
+                    mode:  "max"
+                }
+            },
+            cacheFrom: [{
+                type: "registry",
+                params: {
+                    ref: `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest`
+                }
+            }]
         },
         // Arm architecture (lower cost)
         architecture: "arm64",
