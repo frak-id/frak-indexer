@@ -1,6 +1,6 @@
 import { Port, SecurityGroup } from "aws-cdk-lib/aws-ec2";
 import type { SSTConfig } from "sst";
-import { Service, type StackContext, Config } from "sst/constructs";
+import { Config, Service, type StackContext } from "sst/constructs";
 
 export default {
     config(_input) {
@@ -48,11 +48,12 @@ function IndexerStack({ stack }: StackContext) {
         new Config.Secret(stack, "PONDER_RPC_URL_POLYGON"),
         // Testnet RPCs
         new Config.Secret(stack, "PONDER_RPC_URL_ARB_SEPOLIA"),
-    ]
+    ];
 
     // The service itself
     const indexerService = new Service(stack, "IndexerService", {
         path: "./",
+        file: "Dockerfile.prebuilt",
         port: 42069,
         // Domain mapping
         customDomain: {
