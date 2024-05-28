@@ -41,8 +41,8 @@ function IndexerStack({ app, stack }: StackContext) {
     // Get the security group for the database
     const databaseSecurityGroup = SecurityGroup.fromLookupById(
         stack,
-        "subgraph-security-group",
-        "sg-037f30a3a8d9fa718"
+        "indexer-db-sg",
+        "sg-0cbbb98322234113f"
     );
 
     // The service itself

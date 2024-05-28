@@ -28,17 +28,21 @@ jobs:
       - name: "🔨 Install dependencies"
         run: bun install --frozen-lockfile
 
-      - name: "🔨 Prebuild docker dependencies"
-        uses: docker/build-push-action@v5
-        with:
-          push: false
-
       - name: "👥 Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::262732185023:role/github-action-deploy-role
           aws-region: eu-west-1
           retry-max-attempts: 5
+
+      - name:  "👥 Login to Amazon ECR"
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: "🔨 Prebuild docker dependencies"
+        uses: docker/build-push-action@v5
+        with:
+          push: false
 
       - name: "🚀 SST Deploy"
         env:
