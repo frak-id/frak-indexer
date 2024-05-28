@@ -9,9 +9,6 @@ on:
       instance-type:
         required: true
         type: string
-      folder:
-        required: true
-        type: string
       pr-sha:
         required: true
         type: string
@@ -55,7 +52,6 @@ jobs:
     uses: ./.github/workflows/deploy-submodule.yml
     with:
       runner-label: ${{ needs.start-runner.outputs.label }}
-      folder: ${{ inputs.folder }}
       pr-sha: ${{ inputs.pr-sha }}
       ref: ${{ inputs.ref }}
 

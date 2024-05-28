@@ -56,7 +56,7 @@ function IndexerStack({ app, stack }: StackContext) {
         },
         // Setup some build options
         build: {
-            cacheTo: {
+            /*cacheTo: {
                 type: "registry",
                 params: {
                     ref: `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest`,
@@ -68,7 +68,7 @@ function IndexerStack({ app, stack }: StackContext) {
                 params: {
                     ref: `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest`
                 }
-            }]
+            }]*/
         },
         // Arm architecture (lower cost)
         architecture: "arm64",
