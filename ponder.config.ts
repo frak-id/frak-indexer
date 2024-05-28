@@ -1,5 +1,4 @@
 import { createConfig } from "@ponder/core";
-import { Config } from "sst/node/config";
 import { http } from "viem";
 import { erc20ABI } from "./abis/erc20ABI";
 import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
@@ -9,12 +8,7 @@ const pollingConfig = {
     maxRequestsPerSecond: 1,
 } as const;
 
-function getConfigOrEnv(key: keyof typeof Config): string | undefined {
-    try {
-        return Config[key] ?? process.env[key] ?? undefined;
-    } catch {
-        console.error(`Failed to get config for key: ${key}`);
-    }
+function getConfigOrEnv(key: string): string | undefined {
     return process.env[key] ?? undefined;
 }
 

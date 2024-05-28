@@ -1,4 +1,6 @@
 import { Port, SecurityGroup } from "aws-cdk-lib/aws-ec2";
+import { Secret } from "aws-cdk-lib/aws-ecs";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import type { SSTConfig } from "sst";
 import { Config, Service, type StackContext } from "sst/constructs";
 
@@ -85,6 +87,11 @@ function IndexerStack({ stack }: StackContext) {
             PONDER_TELEMETRY_DISABLED: "true",
         },
     });
+
+    stack.addOutputs({
+        indexerServiceId: indexerService.id,
+    });
+
     // Set up connections to database via security groups
     const cluster = indexerService.cdk?.cluster;
     if (cluster) {
@@ -97,7 +104,49 @@ function IndexerStack({ stack }: StackContext) {
         databaseSecurityGroup.connections.allowFrom(cluster, Port.tcp(5432));
     }
 
-    stack.addOutputs({
-        indexerServiceId: indexerService.id,
-    });
+    // Find the container
+    const containerName = indexerService.getConstructMetadata().data.container;
+    if (!containerName) {
+        console.error("Failed to find container name");
+        return;
+    }
+
+    const container =
+        // Try to find the container via it's name
+        indexerService.cdk?.taskDefinition?.findContainer(containerName) ??
+        // Otherwise,  get the default one
+        indexerService.cdk?.taskDefinition?.defaultContainer;
+    if (!container) {
+        console.error("Failed to find container");
+        return;
+    }
+
+    console.log(
+        `Found container: ${containerName}: ${container.containerName}`
+    );
+
+    // Add all the secrets directly to the container environment
+    for (const secret of secrets) {
+        // Rebuild the SSM access pass to the secret
+        let ssmPath: string;
+        if (secret.name === "DATABASE_URL") {
+            ssmPath = "/indexer/sst/Secret/DATABASE_URL/value";
+        } else {
+            ssmPath = `/sst/frak-indexer/.fallback/Secret/${secret.name}/value`;
+        }
+
+        container.addSecret(
+            secret.name,
+            Secret.fromSsmParameter(
+                // Forced to used deprecated method here since addSecret doesn't support the new `SecretValue`
+                StringParameter.fromSecureStringParameterAttributes(
+                    stack,
+                    `Secret${secret.name}`,
+                    {
+                        parameterName: ssmPath,
+                    }
+                )
+            )
+        );
+    }
 }
