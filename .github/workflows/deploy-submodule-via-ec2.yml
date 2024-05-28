@@ -1,0 +1,80 @@
+name: "🚀 Deploy submodule"
+
+on:
+  workflow_call:
+    inputs:
+      ami-image-id:
+        required: false
+        type: string
+      instance-type:
+        required: true
+        type: string
+      folder:
+        required: true
+        type: string
+      pr-sha:
+        required: true
+        type: string
+      ref:
+        required: true
+        type: string
+      stage-override:
+        required: false
+        type: string
+
+jobs:
+  start-runner:
+    name: "🔧 Start EC2 runner"
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: "👥 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::262732185023:role/github-action-deploy-role
+          aws-region: eu-west-1
+          retry-max-attempts: 5
+      - name: "🚀 Start EC2 runner"
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        with:
+          mode: start
+          github-token: ${{ env.GH_PERSONAL_ACCESS_TOKEN }}
+          ec2-image-id: ${{ inputs.ami-image-id || 'ami-034dddee671b5c88b' }}
+          ec2-instance-type: ${{ inputs.instance-type }}
+          subnet-id: subnet-008e0d55cc46af9a2
+          security-group-id: sg-07012408d5797f987
+          runner-home-dir: "/home/ubuntu/action-runner-2.311.0"
+
+  deploy-module:
+    needs: start-runner
+    uses: ./.github/workflows/deploy-submodule.yml
+    with:
+      runner-label: ${{ needs.start-runner.outputs.label }}
+      folder: ${{ inputs.folder }}
+      pr-sha: ${{ inputs.pr-sha }}
+      ref: ${{ inputs.ref }}
+
+  stop-runner:
+    name: "🔧 Stop EC2 runner"
+    runs-on: ubuntu-latest
+    needs: [start-runner, deploy-module]
+    if: "success() || failure()"
+    steps:
+      - name: "👥 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::262732185023:role/github-action-deploy-role
+          aws-region: eu-west-1
+          retry-max-attempts: 5
+      - name: "⚰️ Stop EC2 runner"
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}

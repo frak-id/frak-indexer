@@ -1,0 +1,68 @@
+name: "🚀 Deploy submodule"
+
+on:
+  workflow_call:
+    inputs:
+      runner-label:
+        required: false
+        type: string
+      folder:
+        required: true
+        type: string
+      pr-sha:
+        required: true
+        type: string
+      ref:
+        required: true
+        type: string
+      stage-override:
+        required: false
+        type: string
+
+jobs:
+  deploy-aws:
+    runs-on: ${{ inputs.runner-label || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.pr-sha }}
+
+      - name: "🔨 Setup pnpm"
+        uses: pnpm/action-setup@v3
+        with:
+          run_install: false
+
+      - name: "🔨 Setup Node.js"
+        id: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: "🔧 Setup environment"
+        shell: bash
+        run: |
+          if [[ "${{ inputs.ref }}" == "refs/heads/main" ]]; then
+            echo "STAGE=prod" >> $GITHUB_ENV
+          elif [[ "${{ inputs.ref }}" == "refs/heads/staging" ]]; then
+            echo "STAGE=dev" >> $GITHUB_ENV
+          fi
+
+      - name: "🔨 Install dependencies"
+        run: pnpm install --frozen-lockfile
+
+      - name: "👥 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::262732185023:role/github-action-deploy-role
+          aws-region: eu-west-1
+          retry-max-attempts: 5
+
+      - name: "🚀 SST Deploy"
+        working-directory: ${{ inputs.folder }}
+        env:
+          STAGE_OVERRIDE: ${{ inputs.stage-override }}
+        run: |
+          STAGE=${STAGE_OVERRIDE:-$STAGE}
+          echo "Deploying with stage: $STAGE"
+          pnpm sst deploy --stage $STAGE

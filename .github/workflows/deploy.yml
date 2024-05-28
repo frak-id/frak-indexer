@@ -1,0 +1,37 @@
+name: 🚀 Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - staging
+      - ci/setup
+
+concurrency:
+  group: ${{ github.ref }}-deploy
+
+env:
+  CI: true
+
+permissions:
+  id-token: write
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Independent step, deploying all the tools infrastructure
+  deploy-indexer:
+    name: "🚀 Deploy Indexer"
+    uses: ./.github/workflows/deploy-submodule-via-ec2.yml
+    secrets: inherit
+    with:
+      # Need a custom ami image id since it's needing docker for the build process
+      ami-image-id: ami-0e2a787a966f10c15
+      instance-type: t4g.small
+      folder: ./tools
+      pr-sha: ${{ github.event.pull_request.head.sha }}
+      ref: ${{ github.ref }}
