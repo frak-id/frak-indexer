@@ -28,6 +28,11 @@ jobs:
       - name: "🔨 Install dependencies"
         run: bun install --frozen-lockfile
 
+      - name: "🔨 Prebuild docker dependencies"
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+
       - name: "👥 Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
