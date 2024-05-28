@@ -9,7 +9,7 @@ const pollingConfig = {
 } as const;
 
 function getConfigOrEnv(key: string): string | undefined {
-    return process.env[key] ?? undefined;
+    return process.env[key] ?? process.env[`${key}_FALLBACK`] ?? undefined;
 }
 
 export default createConfig({

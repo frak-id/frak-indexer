@@ -125,28 +125,52 @@ function IndexerStack({ stack }: StackContext) {
         `Found container: ${containerName}: ${container.containerName}`
     );
 
-    // Add all the secrets directly to the container environment
-    for (const secret of secrets) {
-        // Rebuild the SSM access pass to the secret
-        let ssmPath: string;
-        if (secret.name === "DATABASE_URL") {
-            ssmPath = "/indexer/sst/Secret/DATABASE_URL/value";
-        } else {
-            ssmPath = `/sst/frak-indexer/.fallback/Secret/${secret.name}/value`;
-        }
-
-        container.addSecret(
-            secret.name,
-            Secret.fromSsmParameter(
-                // Forced to used deprecated method here since addSecret doesn't support the new `SecretValue`
+    // Add a stage secret to the container
+    const addSecret = (secretName: string) => {
+        const ssmPath = `/indexer/sst/Secret/${secretName}/value`;
+        try {
+            const stringParameter =
                 StringParameter.fromSecureStringParameterAttributes(
                     stack,
-                    `Secret${secret.name}`,
+                    `Secret${secretName}`,
                     {
                         parameterName: ssmPath,
                     }
-                )
-            )
-        );
+                );
+            container.addSecret(
+                secretName,
+                Secret.fromSsmParameter(stringParameter)
+            );
+        } catch {
+            console.error(`Failed to regular secret: ${secretName}`);
+        }
+    };
+
+    // Add a fallback secret to the container
+    const addFallbackSecret = (secretName: string) => {
+        const ssmPath = `/sst/frak-indexer/.fallback/Secret/${secretName}/value`;
+        try {
+            const stringParameter =
+                StringParameter.fromSecureStringParameterAttributes(
+                    stack,
+                    `SecretFallback${secretName}`,
+                    {
+                        parameterName: ssmPath,
+                    }
+                );
+            container.addSecret(
+                `${secretName}_FALLBACK`,
+                Secret.fromSsmParameter(stringParameter)
+            );
+        } catch {
+            console.error(`Failed to add fallback secret: ${secretName}`);
+        }
+    };
+
+    // Add all the secrets directly to the container environment
+    for (const secret of secrets) {
+        // Add the secrets
+        addSecret(secret.name);
+        addFallbackSecret(secret.name);
     }
 }
