@@ -53,7 +53,8 @@ function IndexerStack({ stack }: StackContext) {
     // The service itself
     const indexerService = new Service(stack, "IndexerService", {
         path: "./",
-        file: "Dockerfile.prebuilt",
+        // SST not happy, can't connect to ECR to fetch the instance during the build process
+        // file: "Dockerfile.prebuilt",
         port: 42069,
         // Domain mapping
         customDomain: {
