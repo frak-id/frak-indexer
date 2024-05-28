@@ -1,6 +1,6 @@
 import { Port, SecurityGroup } from "aws-cdk-lib/aws-ec2";
 import type { SSTConfig } from "sst";
-import { Service, type StackContext } from "sst/constructs";
+import { Service, type StackContext, Config } from "sst/constructs";
 
 export default {
     config(_input) {
@@ -36,14 +36,19 @@ export default {
  * @param stack
  * @constructor
  */
-function IndexerStack({ app, stack }: StackContext) {
-    // TODO: Should be bound to the VPC of the postgresql table
-    // Get the security group for the database
-    const databaseSecurityGroup = SecurityGroup.fromLookupById(
-        stack,
-        "indexer-db-sg",
-        "sg-0cbbb98322234113f"
-    );
+function IndexerStack({ stack }: StackContext) {
+    // All the secrets env variable we will be using (in local you can just use a .env file)
+    const secrets = [
+        // Db url
+        new Config.Secret(stack, "DATABASE_URL"),
+        // Mainnet RPCs
+        new Config.Secret(stack, "PONDER_RPC_URL_ARB"),
+        new Config.Secret(stack, "PONDER_RPC_URL_OPTIMISM"),
+        new Config.Secret(stack, "PONDER_RPC_URL_BASE"),
+        new Config.Secret(stack, "PONDER_RPC_URL_POLYGON"),
+        // Testnet RPCs
+        new Config.Secret(stack, "PONDER_RPC_URL_ARB_SEPOLIA"),
+    ]
 
     // The service itself
     const indexerService = new Service(stack, "IndexerService", {
@@ -54,22 +59,15 @@ function IndexerStack({ app, stack }: StackContext) {
             domainName: "indexer.frak.id",
             hostedZone: "frak.id",
         },
-        // Setup some build options
-        build: {
-            /*cacheTo: {
-                type: "registry",
-                params: {
-                    ref: `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest`,
-                    mode:  "max"
-                }
-            },
-            cacheFrom: [{
-                type: "registry",
-                params: {
-                    ref: `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest`
-                }
-            }]*/
+        // Setup some capacity options
+        scaling: {
+            minContainers: 1,
+            maxContainers: 4,
+            cpuUtilization: 90,
+            memoryUtilization: 90,
         },
+        // Bind the secret we will be using
+        bind: secrets,
         // Arm architecture (lower cost)
         architecture: "arm64",
         // Hardware config
@@ -78,11 +76,22 @@ function IndexerStack({ app, stack }: StackContext) {
         storage: "30 GB",
         // Log retention
         logRetention: "one_week",
+        // Set the right environment variables
+        environment: {
+            // Ponder related stuff
+            PONDER_LOG_LEVEL: "debug",
+            PONDER_TELEMETRY_DISABLED: "true",
+        },
     });
     // Set up connections to database via security groups
     const cluster = indexerService.cdk?.cluster;
     if (cluster) {
-        console.log("Allowing connections from indexer to database");
+        // Get the security group for the database and link to it
+        const databaseSecurityGroup = SecurityGroup.fromLookupById(
+            stack,
+            "indexer-db-sg",
+            "sg-0cbbb98322234113f"
+        );
         databaseSecurityGroup.connections.allowFrom(cluster, Port.tcp(5432));
     }
 
