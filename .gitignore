@@ -19,3 +19,4 @@ yarn-error.log*
 
 # sst
 .sst
+cdk.context.json

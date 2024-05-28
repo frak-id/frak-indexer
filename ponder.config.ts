@@ -44,11 +44,7 @@ export default createConfig({
             abi: erc20ABI,
             network: "arbitrumSepolia",
             address: "0x9584A61F70cC4BEF5b8B5f588A1d35740f0C7ae2",
-            startBlock: 29562417,
-            filter: {
-                // Only get the transfer event from the contract
-                event: "Transfer",
-            }
+            startBlock: 29562417
         },
         // The WebAuthN validator to index
         WebAuthNValidator: {

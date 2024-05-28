@@ -14,9 +14,7 @@ RUN apt-get install -y \
             python3 \
             make \
             gcc \
-            g++ \
-            sqlite3 \
-            libsqlite3-dev
+            g++
 RUN rm -rf /var/lib/apt/lists/*
 
 # Copy the app
@@ -25,6 +23,9 @@ WORKDIR /app
 
 # Remove some stuff
 RUN rm -rf node_modules/
+RUN rm -rf .ponder/
+
+# Delete package.json, since dependencies could be different in the AWS env
 RUN rm -rf package-lock.yaml
 
 # Run the prod install

@@ -1,4 +1,6 @@
-
+# Don't copy current .ponder stuff and node modules
+node_modules/
+.ponder/
 
 # sst
 .sst
