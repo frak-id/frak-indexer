@@ -25,11 +25,6 @@ jobs:
           ref: ${{ inputs.pr-sha }}
       - uses: oven-sh/setup-bun@v1
 
-      - name: "🔨 Setup bun"
-        uses: pnpm/action-setup@v3
-        with:
-          run_install: false
-
       - name: "🔨 Install dependencies"
         run: bun install --frozen-lockfile
 
@@ -45,4 +40,4 @@ jobs:
           STAGE_OVERRIDE: ${{ inputs.stage-override }}
         run: |
           echo "Deploying with stage: prod"
-          pnpm sst deploy --stage prod
+          bun sst deploy --stage prod
