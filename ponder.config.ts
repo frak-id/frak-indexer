@@ -9,13 +9,9 @@ const pollingConfig = {
 } as const;
 
 export default createConfig({
-    // todo: Disabled for now to just have a successfully deployment
-    // database: {
-    //     kind: "postgres",
-    //     connectionString: process.env.DATABASE_URL,
-    // },
     database: {
-        kind: "sqlite",
+        kind: "postgres",
+        connectionString: process.env.DATABASE_URL,
     },
     networks: {
         // Mainnets
