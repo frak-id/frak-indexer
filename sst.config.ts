@@ -1,6 +1,8 @@
-import { Port, SecurityGroup } from "aws-cdk-lib/aws-ec2";
+import { Repository } from "aws-cdk-lib/aws-ecr";
+import { ContainerImage, Secret } from "aws-cdk-lib/aws-ecs";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import type { SSTConfig } from "sst";
-import { Service, type StackContext } from "sst/constructs";
+import { Config, Service, type Stack, type StackContext } from "sst/constructs";
 
 export default {
     config(_input) {
@@ -37,39 +39,56 @@ export default {
  * @constructor
  */
 function IndexerStack({ app, stack }: StackContext) {
-    // TODO: Should be bound to the VPC of the postgresql table
-    // Get the security group for the database
-    const databaseSecurityGroup = SecurityGroup.fromLookupById(
+    // All the secrets env variable we will be using (in local you can just use a .env file)
+    const secrets = [
+        // Db url
+        new Config.Secret(stack, "DATABASE_URL"),
+        // Mainnet RPCs
+        new Config.Secret(stack, "PONDER_RPC_URL_ARB"),
+        new Config.Secret(stack, "PONDER_RPC_URL_OPTIMISM"),
+        new Config.Secret(stack, "PONDER_RPC_URL_BASE"),
+        new Config.Secret(stack, "PONDER_RPC_URL_POLYGON"),
+        // Testnet RPCs
+        new Config.Secret(stack, "PONDER_RPC_URL_ARB_SEPOLIA"),
+    ];
+
+    // Get our CDK secrets map
+    const cdkSecretsMap = buildSecretsMap(stack, secrets);
+
+    // Get the container props of our prebuilt binaries
+    const containerRegistry = Repository.fromRepositoryAttributes(
         stack,
-        "subgraph-security-group",
-        "sg-037f30a3a8d9fa718"
+        "IndexerEcr",
+        {
+            repositoryArn: `arn:aws:ecr:eu-west-1:${app.account}:repository/indexer`,
+            repositoryName: "indexer",
+        }
+    );
+    const indexerImage = ContainerImage.fromEcrRepository(
+        containerRegistry,
+        "latest"
     );
 
     // The service itself
     const indexerService = new Service(stack, "IndexerService", {
         path: "./",
+        // SST not happy, can't connect to ECR to fetch the instance during the build process
+        // file: "Dockerfile.prebuilt",
         port: 42069,
         // Domain mapping
         customDomain: {
             domainName: "indexer.frak.id",
             hostedZone: "frak.id",
         },
-        // Setup some build options
-        build: {
-            cacheTo: {
-                type: "registry",
-                params: {
-                    ref: `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest`,
-                    mode:  "max"
-                }
-            },
-            cacheFrom: [{
-                type: "registry",
-                params: {
-                    ref: `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest`
-                }
-            }]
+        // Setup some capacity options
+        scaling: {
+            minContainers: 1,
+            maxContainers: 4,
+            cpuUtilization: 90,
+            memoryUtilization: 90,
         },
+        // Bind the secret we will be using
+        bind: secrets,
         // Arm architecture (lower cost)
         architecture: "arm64",
         // Hardware config
@@ -78,15 +97,69 @@ function IndexerStack({ app, stack }: StackContext) {
         storage: "30 GB",
         // Log retention
         logRetention: "one_week",
+        // Set the right environment variables
+        environment: {
+            // Ponder related stuff
+            PONDER_LOG_LEVEL: "info",
+            PONDER_TELEMETRY_DISABLED: "true",
+        },
+        cdk: {
+            // Customise fargate service to enable circuit breaker (if the new deployment is failing)
+            fargateService: {
+                circuitBreaker: {
+                    enable: true,
+                },
+            },
+            // Directly specify the image position in the reigstry here
+            container: {
+                image: indexerImage,
+                secrets: cdkSecretsMap,
+            },
+        },
     });
-    // Set up connections to database via security groups
-    const cluster = indexerService.cdk?.cluster;
-    if (cluster) {
-        console.log("Allowing connections from indexer to database");
-        databaseSecurityGroup.connections.allowFrom(cluster, Port.tcp(5432));
-    }
 
     stack.addOutputs({
         indexerServiceId: indexerService.id,
     });
+
+    // Set up connections to database via the security group
+    /*const cluster = indexerService.cdk?.cluster;
+    if (cluster) {
+        // Get the security group for the database and link to it
+        const databaseSecurityGroup = SecurityGroup.fromLookupById(
+            stack,
+            "indexer-db-sg",
+            "sg-0cbbb98322234113f"
+        );
+        databaseSecurityGroup.connections.allowFrom(cluster, Port.tcp(5432));
+    }*/
+}
+
+/**
+ * Build a list of secret name to CDK secret, for direct binding
+ * @param stack
+ * @param secrets
+ */
+function buildSecretsMap(stack: Stack, secrets: Config.Secret[]) {
+    return secrets.reduce(
+        (acc, secret) => {
+            const isSpecificSecret = secret.name === "DATABASE_URL";
+            const ssmPath = isSpecificSecret
+                ? `/indexer/sst/Secret/${secret.name}/value`
+                : `/sst/frak-indexer/.fallback/Secret/${secret.name}/value`;
+
+            // Add the secret
+            const stringParameter =
+                StringParameter.fromSecureStringParameterAttributes(
+                    stack,
+                    `Secret${secret.name}`,
+                    {
+                        parameterName: ssmPath,
+                    }
+                );
+            acc[secret.name] = Secret.fromSsmParameter(stringParameter);
+            return acc;
+        },
+        {} as Record<string, Secret>
+    );
 }

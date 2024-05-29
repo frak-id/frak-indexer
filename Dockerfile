@@ -1,8 +1,14 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1-debian as base
+# Base image is node-22
+FROM node:22-slim as base
+
+# Setup pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+RUN corepack install --global pnpm@9.1.3
+
+# Create app directory
 WORKDIR /usr/src/app
-COPY . .
 
 # install dependencies into temp directory
 # this will cache them and speed up future builds
@@ -12,21 +18,25 @@ RUN apt-get update
 RUN apt-get install -y \
             python3 \
             build-essential
-# Install dependencies
-RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile --ignore-scripts
 
-# install with --production (exclude devDependencies)
+# Install dependencies
 RUN mkdir -p /temp/prod
-COPY package.json bun.lockb /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production --ignore-scripts
+COPY package.json /temp/prod/
+RUN cd /temp/prod && pnpm --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
+
+FROM base AS release
+
+# Set env to production
+ENV NODE_ENV production
 
 # copy production dependencies and source code into final image
-FROM base AS release
+COPY . .
 COPY --from=install /temp/prod/node_modules node_modules
 
+# Allow node user to everything in the working directory, and switch to it
+#RUN chown node:node ./
+#USER node
+
 # run the app
-USER bun
 EXPOSE 42069/tcp
-ENTRYPOINT [ "bun", "run", "start" ]
+ENTRYPOINT [ "pnpm", "run", "start" ]
