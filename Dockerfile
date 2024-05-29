@@ -1,10 +1,13 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM node:22 as base
+# Base image is node-22
+FROM node:22-slim as base
 
-# Set env to production
-ARG NODE_ENV=production
-ENV NODE_ENV $NODE_ENV
+# Setup pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+# Create app directory
+WORKDIR /usr/src/app
 
 # install dependencies into temp directory
 # this will cache them and speed up future builds
@@ -18,20 +21,25 @@ RUN apt-get install -y \
 # Install dependencies
 RUN mkdir -p /temp/prod
 COPY package.json /temp/prod/
-RUN cd /temp/prod && npm i
+RUN cd /temp/prod && pnpm --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
 
 FROM base AS release
 
-# Copy files as a non-root user. The `node` user is built in the Node image.
-WORKDIR /usr/src/app
-RUN chown node:node ./
-USER node
+# Set env to production
+ENV NODE_ENV production
 
 # copy production dependencies and source code into final image
 COPY . .
 COPY --from=install /temp/prod/node_modules node_modules
 
-# run the app
+# Run a final codegen to have fresh generated schema and stuff
+RUN pnpm run build
+
+# Allow node user to everything in the working directory, and switch to it
+RUN chown node:node ./
 USER node
+
+# run the app
 EXPOSE 42069/tcp
-ENTRYPOINT [ "npm", "run", "start" ]
+# ENTRYPOINT [ "pnpm", "run", "start" ]
+ENTRYPOINT [ "bash" ]
