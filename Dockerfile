@@ -33,9 +33,6 @@ ENV NODE_ENV production
 COPY . .
 COPY --from=install /temp/prod/node_modules node_modules
 
-# Run a final codegen to have fresh generated schema and stuff
-RUN pnpm run codegen
-
 # Allow node user to everything in the working directory, and switch to it
 #RUN chown node:node ./
 #USER node
