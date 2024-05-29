@@ -37,8 +37,8 @@ COPY --from=install /temp/prod/node_modules node_modules
 RUN pnpm run codegen
 
 # Allow node user to everything in the working directory, and switch to it
-RUN chown node:node ./
-USER node
+#RUN chown node:node ./
+#USER node
 
 # run the app
 EXPOSE 42069/tcp
