@@ -57,10 +57,13 @@ function IndexerStack({ app, stack }: StackContext) {
     const cdkSecretsMap = buildSecretsMap(stack, secrets);
 
     // Get the container props of our prebuilt binaries
-    const containerRegistry = Repository.fromRepositoryName(
+    const containerRegistry = Repository.fromRepositoryAttributes(
         stack,
         "IndexerEcr",
-        `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache`
+        {
+            repositoryArn: `arn:aws:ecr:eu-west-1:${app.account}:repository/indexer-cache`,
+            repositoryName: "indexer-cache",
+        }
     );
     const indexerImage = ContainerImage.fromEcrRepository(
         containerRegistry,
@@ -102,6 +105,12 @@ function IndexerStack({ app, stack }: StackContext) {
             PONDER_TELEMETRY_DISABLED: "true",
         },
         cdk: {
+            // Customise fargate service to enable circuit breaker (if the new deployment is failing)
+            fargateService: {
+                circuitBreaker: {
+                    enable: true,
+                },
+            },
             // Directly specify the image position in the reigstry here
             container: {
                 image: indexerImage,
@@ -127,7 +136,7 @@ function IndexerStack({ app, stack }: StackContext) {
     }
 
     // Find the container
-    const containerName = indexerService.getConstructMetadata().data.container;
+    /*const containerName = indexerService.getConstructMetadata().data.container;
     if (!containerName) {
         console.error("Failed to find container name");
         return;
@@ -148,7 +157,7 @@ function IndexerStack({ app, stack }: StackContext) {
     );
 
     // Add all the secrets directly to the container environment
-    /*for (const secretName of Object.keys(cdkSecretsMap)) {
+    for (const secretName of Object.keys(cdkSecretsMap)) {
         const secret = cdkSecretsMap[secretName];
         if (!secret) continue;
         container.addSecret(secretName, secret);
@@ -163,9 +172,13 @@ function IndexerStack({ app, stack }: StackContext) {
 function buildSecretsMap(stack: Stack, secrets: Config.Secret[]) {
     return secrets.reduce(
         (acc, secret) => {
-            // Add the default secret
-            const ssmPath = `/indexer/sst/Secret/${secret.name}/value`;
-            let stringParameter =
+            const isSpecificSecret = secret.name === "DATABASE_URL";
+            const ssmPath = isSpecificSecret
+                ? `/indexer/sst/Secret/${secret.name}/value`
+                : `/sst/frak-indexer/.fallback/Secret/${secret.name}/value`;
+
+            // Add the secret
+            const stringParameter =
                 StringParameter.fromSecureStringParameterAttributes(
                     stack,
                     `Secret${secret.name}`,
@@ -174,18 +187,6 @@ function buildSecretsMap(stack: Stack, secrets: Config.Secret[]) {
                     }
                 );
             acc[secret.name] = Secret.fromSsmParameter(stringParameter);
-
-            // Add the fallback secrets
-            stringParameter =
-                StringParameter.fromSecureStringParameterAttributes(
-                    stack,
-                    `SecretFallback${secret.name}`,
-                    {
-                        parameterName: `/sst/frak-indexer/.fallback/Secret/${secret.name}/value`,
-                    }
-                );
-            acc[`${secret.name}_FALLBACK`] =
-                Secret.fromSsmParameter(stringParameter);
             return acc;
         },
         {} as Record<string, Secret>
