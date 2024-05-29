@@ -5,6 +5,7 @@ FROM node:22-slim as base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
+RUN corepack install --global pnpm@9.1.3
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -33,7 +34,7 @@ COPY . .
 COPY --from=install /temp/prod/node_modules node_modules
 
 # Run a final codegen to have fresh generated schema and stuff
-RUN pnpm run build
+RUN pnpm run codegen
 
 # Allow node user to everything in the working directory, and switch to it
 RUN chown node:node ./
@@ -41,5 +42,4 @@ USER node
 
 # run the app
 EXPOSE 42069/tcp
-# ENTRYPOINT [ "pnpm", "run", "start" ]
-ENTRYPOINT [ "bash" ]
+ENTRYPOINT [ "pnpm", "run", "start" ]
