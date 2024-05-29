@@ -1,4 +1,3 @@
-import { Port, SecurityGroup } from "aws-cdk-lib/aws-ec2";
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { ContainerImage, Secret } from "aws-cdk-lib/aws-ecs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
@@ -61,8 +60,8 @@ function IndexerStack({ app, stack }: StackContext) {
         stack,
         "IndexerEcr",
         {
-            repositoryArn: `arn:aws:ecr:eu-west-1:${app.account}:repository/indexer-cache`,
-            repositoryName: "indexer-cache",
+            repositoryArn: `arn:aws:ecr:eu-west-1:${app.account}:repository/indexer`,
+            repositoryName: "indexer",
         }
     );
     const indexerImage = ContainerImage.fromEcrRepository(
@@ -124,7 +123,7 @@ function IndexerStack({ app, stack }: StackContext) {
     });
 
     // Set up connections to database via the security group
-    const cluster = indexerService.cdk?.cluster;
+    /*const cluster = indexerService.cdk?.cluster;
     if (cluster) {
         // Get the security group for the database and link to it
         const databaseSecurityGroup = SecurityGroup.fromLookupById(
@@ -133,34 +132,6 @@ function IndexerStack({ app, stack }: StackContext) {
             "sg-0cbbb98322234113f"
         );
         databaseSecurityGroup.connections.allowFrom(cluster, Port.tcp(5432));
-    }
-
-    // Find the container
-    /*const containerName = indexerService.getConstructMetadata().data.container;
-    if (!containerName) {
-        console.error("Failed to find container name");
-        return;
-    }
-
-    const container =
-        // Try to find the container via it's name
-        indexerService.cdk?.taskDefinition?.findContainer(containerName) ??
-        // Otherwise,  get the default one
-        indexerService.cdk?.taskDefinition?.defaultContainer;
-    if (!container) {
-        console.error("Failed to find container");
-        return;
-    }
-
-    console.log(
-        `Found container: ${containerName}: ${container.containerName}`
-    );
-
-    // Add all the secrets directly to the container environment
-    for (const secretName of Object.keys(cdkSecretsMap)) {
-        const secret = cdkSecretsMap[secretName];
-        if (!secret) continue;
-        container.addSecret(secretName, secret);
     }*/
 }
 

@@ -8,41 +8,41 @@ const pollingConfig = {
     maxRequestsPerSecond: 1,
 } as const;
 
-function getConfigOrEnv(key: string): string | undefined {
-    return process.env[key] ?? process.env[`${key}_FALLBACK`] ?? undefined;
-}
-
 export default createConfig({
+    // todo: Disabled for now to just have a successfully deployment
+    // database: {
+    //     kind: "postgres",
+    //     connectionString: process.env.DATABASE_URL,
+    // },
     database: {
-        kind: "postgres",
-        connectionString: getConfigOrEnv("DATABASE_URL"),
+        kind: "sqlite",
     },
     networks: {
         // Mainnets
         arbitrum: {
             chainId: 42161,
-            transport: http(getConfigOrEnv("PONDER_RPC_URL_ARB")),
+            transport: http(process.env.PONDER_RPC_URL_ARB),
             ...pollingConfig,
         },
         base: {
             chainId: 8453,
-            transport: http(getConfigOrEnv("PONDER_RPC_URL_BASE")),
+            transport: http(process.env.PONDER_RPC_URL_BASE),
             ...pollingConfig,
         },
         optimism: {
             chainId: 10,
-            transport: http(getConfigOrEnv("PONDER_RPC_URL_OPTIMISM")),
+            transport: http(process.env.PONDER_RPC_URL_OPTIMISM),
             ...pollingConfig,
         },
         polygon: {
             chainId: 137,
-            transport: http(getConfigOrEnv("PONDER_RPC_URL_POLYGON")),
+            transport: http(process.env.PONDER_RPC_URL_POLYGON),
             ...pollingConfig,
         },
         // Testnets
         arbitrumSepolia: {
             chainId: 421614,
-            transport: http(getConfigOrEnv("PONDER_RPC_URL_ARB_SEPOLIA")),
+            transport: http(process.env.PONDER_RPC_URL_ARB_SEPOLIA),
             ...pollingConfig,
         },
     },

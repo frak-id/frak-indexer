@@ -55,7 +55,7 @@ jobs:
           context: .
           platforms: linux/arm64
           push: true
-          tags: 262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache:latest
+          tags: 262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:latest
 
       - name: "🚀 SST Deploy"
         run: |
