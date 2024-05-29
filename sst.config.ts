@@ -1,8 +1,9 @@
 import { Port, SecurityGroup } from "aws-cdk-lib/aws-ec2";
-import { Secret } from "aws-cdk-lib/aws-ecs";
+import { Repository } from "aws-cdk-lib/aws-ecr";
+import { ContainerImage, Secret } from "aws-cdk-lib/aws-ecs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import type { SSTConfig } from "sst";
-import { Config, Service, type StackContext } from "sst/constructs";
+import { Config, Service, type Stack, type StackContext } from "sst/constructs";
 
 export default {
     config(_input) {
@@ -38,7 +39,7 @@ export default {
  * @param stack
  * @constructor
  */
-function IndexerStack({ stack }: StackContext) {
+function IndexerStack({ app, stack }: StackContext) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
     const secrets = [
         // Db url
@@ -51,6 +52,20 @@ function IndexerStack({ stack }: StackContext) {
         // Testnet RPCs
         new Config.Secret(stack, "PONDER_RPC_URL_ARB_SEPOLIA"),
     ];
+
+    // Get our CDK secrets map
+    const cdkSecretsMap = buildSecretsMap(stack, secrets);
+
+    // Get the container props of our prebuilt binaries
+    const containerRegistry = Repository.fromRepositoryName(
+        stack,
+        "IndexerEcr",
+        `${app.account}.dkr.ecr.eu-west-1.amazonaws.com/indexer-cache`
+    );
+    const indexerImage = ContainerImage.fromEcrRepository(
+        containerRegistry,
+        "latest"
+    );
 
     // The service itself
     const indexerService = new Service(stack, "IndexerService", {
@@ -86,13 +101,20 @@ function IndexerStack({ stack }: StackContext) {
             PONDER_LOG_LEVEL: "debug",
             PONDER_TELEMETRY_DISABLED: "true",
         },
+        cdk: {
+            // Directly specify the image position in the reigstry here
+            container: {
+                image: indexerImage,
+                secrets: cdkSecretsMap,
+            },
+        },
     });
 
     stack.addOutputs({
         indexerServiceId: indexerService.id,
     });
 
-    // Set up connections to database via security groups
+    // Set up connections to database via the security group
     const cluster = indexerService.cdk?.cluster;
     if (cluster) {
         // Get the security group for the database and link to it
@@ -125,52 +147,47 @@ function IndexerStack({ stack }: StackContext) {
         `Found container: ${containerName}: ${container.containerName}`
     );
 
-    // Add a stage secret to the container
-    const addSecret = (secretName: string) => {
-        const ssmPath = `/indexer/sst/Secret/${secretName}/value`;
-        try {
-            const stringParameter =
-                StringParameter.fromSecureStringParameterAttributes(
-                    stack,
-                    `Secret${secretName}`,
-                    {
-                        parameterName: ssmPath,
-                    }
-                );
-            container.addSecret(
-                secretName,
-                Secret.fromSsmParameter(stringParameter)
-            );
-        } catch {
-            console.error(`Failed to regular secret: ${secretName}`);
-        }
-    };
-
-    // Add a fallback secret to the container
-    const addFallbackSecret = (secretName: string) => {
-        const ssmPath = `/sst/frak-indexer/.fallback/Secret/${secretName}/value`;
-        try {
-            const stringParameter =
-                StringParameter.fromSecureStringParameterAttributes(
-                    stack,
-                    `SecretFallback${secretName}`,
-                    {
-                        parameterName: ssmPath,
-                    }
-                );
-            container.addSecret(
-                `${secretName}_FALLBACK`,
-                Secret.fromSsmParameter(stringParameter)
-            );
-        } catch {
-            console.error(`Failed to add fallback secret: ${secretName}`);
-        }
-    };
-
     // Add all the secrets directly to the container environment
-    for (const secret of secrets) {
-        // Add the secrets
-        addSecret(secret.name);
-        addFallbackSecret(secret.name);
-    }
+    /*for (const secretName of Object.keys(cdkSecretsMap)) {
+        const secret = cdkSecretsMap[secretName];
+        if (!secret) continue;
+        container.addSecret(secretName, secret);
+    }*/
+}
+
+/**
+ * Build a list of secret name to CDK secret, for direct binding
+ * @param stack
+ * @param secrets
+ */
+function buildSecretsMap(stack: Stack, secrets: Config.Secret[]) {
+    return secrets.reduce(
+        (acc, secret) => {
+            // Add the default secret
+            const ssmPath = `/indexer/sst/Secret/${secret.name}/value`;
+            let stringParameter =
+                StringParameter.fromSecureStringParameterAttributes(
+                    stack,
+                    `Secret${secret.name}`,
+                    {
+                        parameterName: ssmPath,
+                    }
+                );
+            acc[secret.name] = Secret.fromSsmParameter(stringParameter);
+
+            // Add the fallback secrets
+            stringParameter =
+                StringParameter.fromSecureStringParameterAttributes(
+                    stack,
+                    `SecretFallback${secret.name}`,
+                    {
+                        parameterName: `/sst/frak-indexer/.fallback/Secret/${secret.name}/value`,
+                    }
+                );
+            acc[`${secret.name}_FALLBACK`] =
+                Secret.fromSsmParameter(stringParameter);
+            return acc;
+        },
+        {} as Record<string, Secret>
+    );
 }
