@@ -100,7 +100,7 @@ function IndexerStack({ app, stack }: StackContext) {
         // Set the right environment variables
         environment: {
             // Ponder related stuff
-            PONDER_LOG_LEVEL: "debug",
+            PONDER_LOG_LEVEL: "info",
             PONDER_TELEMETRY_DISABLED: "true",
         },
         cdk: {

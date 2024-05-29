@@ -27,7 +27,26 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: "🔨 Install dependencies"
         run: pnpm install --frozen-lockfile
@@ -56,6 +75,9 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: 262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:latest
+          # Github actions cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: "🚀 SST Deploy"
         run: |
