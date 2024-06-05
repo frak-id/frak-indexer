@@ -112,10 +112,11 @@ function IndexerStack({ app, stack }: StackContext) {
             },
             // Directly specify the image position in the registry here
             container: {
+                containerName: "indexer",
                 image: indexerImage,
                 secrets: cdkSecretsMap,
                 // Mark the container as non-essential, to don't fail the whole CI in case of deployment bug
-                // essential: false,
+                essential: false,
             },
         },
     });
