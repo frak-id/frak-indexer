@@ -20,7 +20,7 @@ export default createConfig({
             transport: http(process.env.PONDER_RPC_URL_ARB),
             ...pollingConfig,
         },
-        base: {
+        /*base: {
             chainId: 8453,
             transport: http(process.env.PONDER_RPC_URL_BASE),
             ...pollingConfig,
@@ -34,7 +34,7 @@ export default createConfig({
             chainId: 137,
             transport: http(process.env.PONDER_RPC_URL_POLYGON),
             ...pollingConfig,
-        },
+        },*/
         // Testnets
         arbitrumSepolia: {
             chainId: 421614,
@@ -60,15 +60,15 @@ export default createConfig({
                 arbitrum: {
                     startBlock: 203956680,
                 },
-                polygon: {
-                    startBlock: 56157675,
-                },
-                base: {
+                /*base: {
                     startBlock: 13537832,
                 },
                 optimism: {
                     startBlock: 119133117,
                 },
+                polygon: {
+                    startBlock: 56157675,
+                },*/
             },
             address: "0xD546c4Ba2e8e5e5c961C36e6Db0460Be03425808",
         },

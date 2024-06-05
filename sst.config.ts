@@ -83,7 +83,7 @@ function IndexerStack({ app, stack }: StackContext) {
         // Setup some capacity options
         scaling: {
             minContainers: 1,
-            maxContainers: 4,
+            maxContainers: 1,
             cpuUtilization: 90,
             memoryUtilization: 90,
         },
@@ -110,10 +110,12 @@ function IndexerStack({ app, stack }: StackContext) {
                     enable: true,
                 },
             },
-            // Directly specify the image position in the reigstry here
+            // Directly specify the image position in the registry here
             container: {
                 image: indexerImage,
                 secrets: cdkSecretsMap,
+                // Mark the container as non-essential, to don't fail the whole CI in case of deployment bug
+                essential: false,
             },
         },
     });
