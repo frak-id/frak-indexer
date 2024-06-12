@@ -6,52 +6,9 @@ export default createSchema((p) => ({
         // Id the wallet address
         id: p.hex(),
 
-        // The linked token Balance
-        balances: p.many("TokenBalance.accountId"),
-
-        // The linked transfer events
-        transferFromEvents: p.many("TransferEvent.fromId"),
-        transferToEvents: p.many("TransferEvent.toId"),
-
         // The linked webauthn validators
         validators: p.many("MultiWebAuthNValidator.accountId"),
     }),
-    // Token we are tracking
-    Token: p.createTable(
-        {
-            // Id the token address + chain id
-            id: p.hex(),
-            address: p.hex(),
-            chain: p.int(),
-        },
-        {
-            // Indexes
-            chainIndex: p.index("chain"),
-            // Address index
-            addressIndex: p.index("address"),
-        }
-    ),
-    // Token balance for each users
-    TokenBalance: p.createTable(
-        {
-            // Id the token address + user address + chain id
-            id: p.hex(),
-
-            balance: p.bigint(),
-
-            // The account this balance is linked to
-            accountId: p.hex().references("Account.id"),
-            account: p.one("accountId"),
-
-            // The token this balance is linked to
-            tokenId: p.hex().references("Token.id"),
-            token: p.one("tokenId"),
-        },
-        {
-            accountIndex: p.index("accountId"),
-            tokenIndex: p.index("tokenId"),
-        }
-    ),
     // Validator we are tracking
     MultiWebAuthNValidator: p.createTable({
         // Id is a concatenation of chain + account address
@@ -79,31 +36,6 @@ export default createSchema((p) => ({
         changeLogEvents: p.many("PasskeyChangeLogEvent.passkeyId"),
     }),
 
-    // Erc20 Transfer events
-    TransferEvent: p.createTable(
-        {
-            id: p.string(),
-            amount: p.bigint(),
-
-            tokenId: p.hex().references("Token.id"),
-            token: p.one("tokenId"),
-
-            timestamp: p.int(),
-
-            fromId: p.hex().references("Account.id"),
-            toId: p.hex().references("Account.id"),
-
-            from: p.one("fromId"),
-            to: p.one("toId"),
-        },
-        {
-            // From and to indexes
-            fromIndex: p.index("fromId"),
-            toIndex: p.index("toId"),
-            // Search indexes
-            tokenIndex: p.index("tokenId"),
-        }
-    ),
     // WebAuthN Validator related events
     PrimaryPasskeyChangedEvent: p.createTable({
         id: p.string(),
@@ -124,4 +56,81 @@ export default createSchema((p) => ({
         timestamp: p.int(),
         chain: p.int(),
     }),
+
+    // Content related stuff
+    Content: p.createTable({
+        id: p.bigint(),
+
+        domain: p.string(),
+        contentTypes: p.bigint(),
+        name: p.string(),
+
+        updatedEvents: p.many("ContentUpdatedEvent.contentId"),
+        interactionContracts: p.many("ContentInteractionContract.contentId"),
+
+        campaignsLink: p.many("CampaignToContent.contentId"),
+    }),
+    ContentUpdatedEvent: p.createTable({
+        id: p.string(),
+
+        name: p.string(),
+        contentTypes: p.bigint(),
+
+        contentId: p.bigint().references("Content.id"),
+        content: p.one("contentId"),
+
+        timestamp: p.int(),
+    }),
+
+    // Interaction related
+    ContentInteractionContract: p.createTable({
+        id: p.hex(), // address
+
+        contentId: p.bigint().references("Content.id"),
+        content: p.one("contentId"),
+
+        created: p.int(),
+        lastUpdate: p.int().optional(),
+        removedTimestamp: p.int().optional(),
+    }),
+
+    // Campaign related
+    Campaign: p.createTable({
+        id: p.hex(),
+
+        name: p.string(),
+        version: p.string(),
+
+        attachments: p.many("CampaignToContent.campaignId"),
+    }),
+    CampaignToContent: p.createTable({
+        id: p.string(), // address
+
+        campaignId: p.hex().references("Campaign.id"),
+        campaign: p.one("campaignId"),
+
+        contentId: p.bigint().references("Content.id"),
+        content: p.one("contentId"),
+
+        attached: p.boolean(),
+
+        attachTimestamp: p.int(),
+        detachTimestamp: p.int().optional(),
+    }),
+
+    // Press events
+    PressEvent: p.createTable({
+        id: p.string(),
+
+        interactionId: p.hex().references("ContentInteractionContract.id"),
+        interaction: p.one("interactionId"),
+
+        user: p.hex(),
+        type: p.enum("PressEventType"),
+        data: p.json(),
+
+        timestamp: p.int(),
+    }),
+
+    PressEventType: p.createEnum(["OPEN_ARTICLE", "READ_ARTICLE", "REFERRED"]),
 }));
