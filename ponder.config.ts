@@ -1,6 +1,12 @@
-import { createConfig } from "@ponder/core";
-import { http } from "viem";
-import { erc20ABI } from "./abis/erc20ABI";
+import { createConfig, mergeAbis } from "@ponder/core";
+import { http, parseAbiItem } from "viem";
+import {
+    contentInteractionDiamondAbi,
+    contentInteractionManagerAbi,
+    dappStorageFacetAbi,
+    pressInteractionFacetAbi,
+} from "./abis/frak-interaction-abis";
+import { contentRegistryAbi } from "./abis/frak-registry-abis";
 import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
 const pollingConfig = {
@@ -43,16 +49,10 @@ export default createConfig({
         },
     },
     contracts: {
-        // The erc20 tokens to index
-        ERC20: {
-            abi: erc20ABI,
-            network: "arbitrumSepolia",
-            address: "0x9584A61F70cC4BEF5b8B5f588A1d35740f0C7ae2",
-            startBlock: 29562417,
-        },
         // The WebAuthN validator to index
         WebAuthNValidator: {
             abi: multiWebAuthNValidatorV2Abi,
+            address: "0xD546c4Ba2e8e5e5c961C36e6Db0460Be03425808",
             network: {
                 arbitrumSepolia: {
                     startBlock: 35765963,
@@ -70,7 +70,46 @@ export default createConfig({
                     startBlock: 56157675,
                 },*/
             },
-            address: "0xD546c4Ba2e8e5e5c961C36e6Db0460Be03425808",
+        },
+        // The content registry
+        ContentRegistry: {
+            abi: contentRegistryAbi,
+            address: "0xC110ecb55EbAa4Ea9eFC361C4bBB224A6664Ea45",
+            network: {
+                arbitrumSepolia: {
+                    startBlock: 54321880,
+                },
+            },
+        },
+        // The interaction manager
+        ContentInteractionManager: {
+            abi: contentInteractionManagerAbi,
+            address: "0x603674006fE11c38449C22bA56c40444C8e4CC5C",
+            network: {
+                arbitrumSepolia: {
+                    startBlock: 54321880,
+                },
+            },
+        },
+        // Every content interactions
+        ContentInteraction: {
+            abi: mergeAbis([
+                contentInteractionDiamondAbi,
+                pressInteractionFacetAbi,
+                dappStorageFacetAbi,
+            ]),
+            factory: {
+                address: "0x603674006fE11c38449C22bA56c40444C8e4CC5C",
+                event: parseAbiItem(
+                    "event InteractionContractDeployed(uint256 indexed contentId, address interactionContract)"
+                ),
+                parameter: "interactionContract",
+            },
+            network: {
+                arbitrumSepolia: {
+                    startBlock: 54321880,
+                },
+            },
         },
     },
 });
