@@ -65,21 +65,26 @@ export default createSchema((p) => ({
         contentTypes: p.bigint(),
         name: p.string(),
 
-        updatedEvents: p.many("ContentUpdatedEvent.contentId"),
+        createTimestamp: p.bigint(),
+        lastUpdateTimestamp: p.bigint().optional(),
+
         interactionContracts: p.many("ContentInteractionContract.contentId"),
 
         campaignsLink: p.many("CampaignToContent.contentId"),
+        administrators: p.many("ContentAdministrator.contentId"),
     }),
-    ContentUpdatedEvent: p.createTable({
-        id: p.string(),
 
-        name: p.string(),
-        contentTypes: p.bigint(),
+    // Content related stuff
+    ContentAdministrator: p.createTable({
+        id: p.hex(),
 
         contentId: p.bigint().references("Content.id"),
         content: p.one("contentId"),
 
-        timestamp: p.int(),
+        isOwner: p.boolean(),
+        user: p.hex(),
+
+        createdTimestamp: p.bigint(),
     }),
 
     // Interaction related
@@ -89,9 +94,9 @@ export default createSchema((p) => ({
         contentId: p.bigint().references("Content.id"),
         content: p.one("contentId"),
 
-        created: p.int(),
-        lastUpdate: p.int().optional(),
-        removedTimestamp: p.int().optional(),
+        createdTimestamp: p.bigint(),
+        lastUpdateTimestamp: p.bigint().optional(),
+        removedTimestamp: p.bigint().optional(),
     }),
 
     // Campaign related
@@ -114,8 +119,8 @@ export default createSchema((p) => ({
 
         attached: p.boolean(),
 
-        attachTimestamp: p.int(),
-        detachTimestamp: p.int().optional(),
+        attachTimestamp: p.bigint(),
+        detachTimestamp: p.bigint().optional(),
     }),
 
     // Press events
@@ -129,7 +134,7 @@ export default createSchema((p) => ({
         type: p.enum("PressEventType"),
         data: p.json(),
 
-        timestamp: p.int(),
+        timestamp: p.bigint(),
     }),
 
     PressEventType: p.createEnum(["OPEN_ARTICLE", "READ_ARTICLE", "REFERRED"]),

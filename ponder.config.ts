@@ -1,6 +1,11 @@
-import { createConfig } from "@ponder/core";
-import {http, parseAbiItem} from "viem";
-import {contentInteractionDiamondAbi, contentInteractionManagerAbi} from "./abis/frak-interaction-abis";
+import { createConfig, mergeAbis } from "@ponder/core";
+import { http, parseAbiItem } from "viem";
+import {
+    contentInteractionDiamondAbi,
+    contentInteractionManagerAbi,
+    dappStorageFacetAbi,
+    pressInteractionFacetAbi,
+} from "./abis/frak-interaction-abis";
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
@@ -69,36 +74,42 @@ export default createConfig({
         // The content registry
         ContentRegistry: {
             abi: contentRegistryAbi,
-            address: "0xc02209e937dB50C80AA1A280f9172163D8aC6a38",
+            address: "0xC110ecb55EbAa4Ea9eFC361C4bBB224A6664Ea45",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 52222107,
+                    startBlock: 54321880,
                 },
             },
         },
         // The interaction manager
         ContentInteractionManager: {
             abi: contentInteractionManagerAbi,
-            address: "0x71a54b7Edb803b0FB6c7A930794BcA13587Af21b",
+            address: "0x603674006fE11c38449C22bA56c40444C8e4CC5C",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 52222107,
+                    startBlock: 54321880,
                 },
             },
         },
         // Every content interactions
         ContentInteraction: {
-            abi: contentInteractionDiamondAbi,
+            abi: mergeAbis([
+                contentInteractionDiamondAbi,
+                pressInteractionFacetAbi,
+                dappStorageFacetAbi,
+            ]),
             factory: {
-                address: "0x71a54b7Edb803b0FB6c7A930794BcA13587Af21b",
-                event: parseAbiItem("event InteractionContractDeployed(uint256 indexed contentId, address interactionContract)"),
+                address: "0x603674006fE11c38449C22bA56c40444C8e4CC5C",
+                event: parseAbiItem(
+                    "event InteractionContractDeployed(uint256 indexed contentId, address interactionContract)"
+                ),
                 parameter: "interactionContract",
             },
             network: {
                 arbitrumSepolia: {
-                    startBlock: 52222107,
+                    startBlock: 54321880,
                 },
             },
-        }
+        },
     },
 });
