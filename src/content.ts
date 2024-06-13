@@ -1,5 +1,12 @@
 import { ponder } from "@/generated";
-import {isAddressEqual, toHex, zeroAddress} from "viem";
+import {
+    type Address,
+    type Hex,
+    isAddressEqual,
+    keccak256,
+    toHex,
+    zeroAddress,
+} from "viem";
 
 ponder.on("ContentRegistry:ContentMinted", async ({ event, context }) => {
     const { Content } = context.db;
@@ -36,13 +43,13 @@ ponder.on("ContentRegistry:Transfer", async ({ event, context }) => {
     // Delete the previous administrator
     if (!isAddressEqual(event.args.from, zeroAddress)) {
         await ContentAdministrator.delete({
-            id: `${toHex(event.args.id)}-${event.args.from}`,
+            id: contentAdministratorId(event.args.id, event.args.from),
         });
     }
 
     // Create the new administrator
     await ContentAdministrator.create({
-        id: `${toHex(event.args.id)}-${event.args.to}`,
+        id: contentAdministratorId(event.args.id, event.args.to),
         data: {
             isOwner: true,
             contentId: event.args.id,
@@ -53,3 +60,6 @@ ponder.on("ContentRegistry:Transfer", async ({ event, context }) => {
 });
 
 // todo: manage approval
+function contentAdministratorId(contentId: bigint, user: Address): Hex {
+    return keccak256(`${toHex(contentId)}-${user}`);
+}
