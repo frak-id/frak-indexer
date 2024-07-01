@@ -89,10 +89,10 @@ export default createConfig({
         // The interaction manager
         ContentInteractionManager: {
             abi: contentInteractionManagerAbi,
-            address: "0x76091A17B9f0C53Ea826E04bD5E586C143AFC30e",
+            address: "0xC97D72A8a9d1D2Ed326EB04f2d706A21cEe2B94E",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 59205615,
+                    startBlock: 60118981,
                 },
             },
         },
@@ -104,7 +104,7 @@ export default createConfig({
                 dappInteractionFacetAbi,
             ]),
             factory: {
-                address: "0x76091A17B9f0C53Ea826E04bD5E586C143AFC30e",
+                address: "0xC97D72A8a9d1D2Ed326EB04f2d706A21cEe2B94E",
                 event: parseAbiItem(
                     "event InteractionContractDeployed(uint256 indexed contentId, address interactionContract)"
                 ),
@@ -112,7 +112,7 @@ export default createConfig({
             },
             network: {
                 arbitrumSepolia: {
-                    startBlock: 59205615,
+                    startBlock: 60118981,
                 },
             },
         },
@@ -120,13 +120,13 @@ export default createConfig({
         Campaigns: {
             abi: mergeAbis([interactionCampaignAbi, referralCampaignAbi]),
             factory: {
-                address: "0x719C9C48dB1622CF7F196012a269cDB96cBC044f",
+                address: "0x1f65A60340E4D017DdfeE45aA2905b6D79a55672",
                 event: parseAbiItem("event CampaignCreated(address campaign)"),
                 parameter: "campaign",
             },
             network: {
                 arbitrumSepolia: {
-                    startBlock: 59205615,
+                    startBlock: 60118981,
                 },
             },
         },

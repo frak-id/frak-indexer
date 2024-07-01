@@ -70,7 +70,7 @@ export default createSchema((p) => ({
 
         interactionContracts: p.many("ContentInteractionContract.contentId"),
 
-        campaignsLink: p.many("CampaignToContent.contentId"),
+        campaigns: p.many("Campaign.contentId"),
         administrators: p.many("ContentAdministrator.contentId"),
     }),
 
@@ -106,15 +106,6 @@ export default createSchema((p) => ({
         name: p.string(),
         version: p.string(),
 
-        attachments: p.many("CampaignToContent.campaignId"),
-        capResets: p.many("CampaignCapReset.campaignId"),
-    }),
-    CampaignToContent: p.createTable({
-        id: p.string(), // address
-
-        campaignId: p.hex().references("Campaign.id"),
-        campaign: p.one("campaignId"),
-
         contentId: p.bigint().references("Content.id"),
         content: p.one("contentId"),
 
@@ -122,6 +113,8 @@ export default createSchema((p) => ({
 
         attachTimestamp: p.bigint(),
         detachTimestamp: p.bigint().optional(),
+
+        capResets: p.many("CampaignCapReset.campaignId"),
     }),
     CampaignCapReset: p.createTable({
         id: p.string(), // campaign address + timestamp
