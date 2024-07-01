@@ -15,7 +15,7 @@ import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
 const pollingConfig = {
     pollingInterval: 5_000,
-    maxRequestsPerSecond: 1,
+    maxRequestsPerSecond: 12,
 } as const;
 
 export default createConfig({
@@ -26,11 +26,11 @@ export default createConfig({
     },
     networks: {
         // Mainnets
-        arbitrum: {
+        /*arbitrum: {
             chainId: 42161,
             transport: http(process.env.PONDER_RPC_URL_ARB),
             ...pollingConfig,
-        },
+        },*/
         /*base: {
             chainId: 8453,
             transport: http(process.env.PONDER_RPC_URL_BASE),
@@ -62,9 +62,9 @@ export default createConfig({
                 arbitrumSepolia: {
                     startBlock: 35765963,
                 },
-                arbitrum: {
+                /*arbitrum: {
                     startBlock: 203956680,
-                },
+                },*/
                 /*base: {
                     startBlock: 13537832,
                 },
