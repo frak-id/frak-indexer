@@ -1,4 +1,63 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CampaignFactory
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const campaignFactoryAbi = [
+    {
+        type: "constructor",
+        inputs: [
+            {
+                name: "_referralRegistry",
+                internalType: "contract ReferralRegistry",
+                type: "address",
+            },
+            {
+                name: "_frakCampaignWallet",
+                internalType: "address",
+                type: "address",
+            },
+        ],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_identifier", internalType: "bytes4", type: "bytes4" },
+            { name: "_owner", internalType: "address", type: "address" },
+            {
+                name: "_contentInteractionManager",
+                internalType: "address",
+                type: "address",
+            },
+            { name: "_initData", internalType: "bytes", type: "bytes" },
+        ],
+        name: "createCampaign",
+        outputs: [{ name: "", internalType: "address", type: "address" }],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "campaign",
+                internalType: "address",
+                type: "address",
+                indexed: false,
+            },
+        ],
+        name: "CampaignCreated",
+    },
+    {
+        type: "error",
+        inputs: [
+            { name: "identifier", internalType: "bytes4", type: "bytes4" },
+        ],
+        name: "UnknownCampaignType",
+    },
+] as const;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // InteractionCampaign
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -247,34 +306,56 @@ export const referralCampaignAbi = [
     {
         type: "constructor",
         inputs: [
-            { name: "_token", internalType: "address", type: "address" },
             {
-                name: "_explorationLevel",
-                internalType: "uint256",
-                type: "uint256",
+                name: "_config",
+                internalType: "struct ReferralCampaign.CampaignConfig",
+                type: "tuple",
+                components: [
+                    { name: "token", internalType: "address", type: "address" },
+                    {
+                        name: "referralTree",
+                        internalType: "bytes32",
+                        type: "bytes32",
+                    },
+                    {
+                        name: "initialReward",
+                        internalType: "uint256",
+                        type: "uint256",
+                    },
+                    {
+                        name: "userRewardPercent",
+                        internalType: "uint256",
+                        type: "uint256",
+                    },
+                    {
+                        name: "distributionCapPeriod",
+                        internalType: "uint256",
+                        type: "uint256",
+                    },
+                    {
+                        name: "distributionCap",
+                        internalType: "uint256",
+                        type: "uint256",
+                    },
+                    {
+                        name: "startDate",
+                        internalType: "uint48",
+                        type: "uint48",
+                    },
+                    { name: "endDate", internalType: "uint48", type: "uint48" },
+                ],
             },
-            {
-                name: "_perLevelPercentage",
-                internalType: "uint256",
-                type: "uint256",
-            },
-            {
-                name: "_initialReferrerReward",
-                internalType: "uint256",
-                type: "uint256",
-            },
-            {
-                name: "_dailyDistributionCap",
-                internalType: "uint256",
-                type: "uint256",
-            },
-            { name: "_referralTree", internalType: "bytes32", type: "bytes32" },
             {
                 name: "_referralRegistry",
                 internalType: "contract ReferralRegistry",
                 type: "address",
             },
             { name: "_owner", internalType: "address", type: "address" },
+            {
+                name: "_frakCampaignWallet",
+                internalType: "address",
+                type: "address",
+            },
             {
                 name: "_contentInterationManager",
                 internalType: "address",
@@ -345,17 +426,14 @@ export const referralCampaignAbi = [
     },
     {
         type: "function",
-        inputs: [
-            { name: "_user", internalType: "address", type: "address" },
-            { name: "_token", internalType: "address", type: "address" },
-        ],
+        inputs: [{ name: "_user", internalType: "address", type: "address" }],
         name: "getPendingAmount",
         outputs: [{ name: "", internalType: "uint256", type: "uint256" }],
         stateMutability: "view",
     },
     {
         type: "function",
-        inputs: [{ name: "_token", internalType: "address", type: "address" }],
+        inputs: [],
         name: "getTotalPending",
         outputs: [{ name: "", internalType: "uint256", type: "uint256" }],
         stateMutability: "view",
@@ -422,21 +500,8 @@ export const referralCampaignAbi = [
     },
     {
         type: "function",
-        inputs: [
-            { name: "_user", internalType: "address", type: "address" },
-            { name: "_token", internalType: "address", type: "address" },
-        ],
+        inputs: [{ name: "_user", internalType: "address", type: "address" }],
         name: "pullReward",
-        outputs: [],
-        stateMutability: "nonpayable",
-    },
-    {
-        type: "function",
-        inputs: [
-            { name: "_user", internalType: "address", type: "address" },
-            { name: "_tokens", internalType: "address[]", type: "address[]" },
-        ],
-        name: "pullRewards",
         outputs: [],
         stateMutability: "nonpayable",
     },
@@ -477,6 +542,16 @@ export const referralCampaignAbi = [
         name: "rolesOf",
         outputs: [{ name: "roles", internalType: "uint256", type: "uint256" }],
         stateMutability: "view",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "startDate", internalType: "uint48", type: "uint48" },
+            { name: "endDate", internalType: "uint48", type: "uint48" },
+        ],
+        name: "setActivationDate",
+        outputs: [],
+        stateMutability: "nonpayable",
     },
     {
         type: "function",
@@ -524,7 +599,7 @@ export const referralCampaignAbi = [
                 indexed: false,
             },
         ],
-        name: "DailyDistrubutionCapReset",
+        name: "DistributionCapReset",
     },
     {
         type: "event",
@@ -582,12 +657,6 @@ export const referralCampaignAbi = [
                 indexed: true,
             },
             {
-                name: "token",
-                internalType: "address",
-                type: "address",
-                indexed: true,
-            },
-            {
                 name: "amount",
                 internalType: "uint256",
                 type: "uint256",
@@ -602,12 +671,6 @@ export const referralCampaignAbi = [
         inputs: [
             {
                 name: "user",
-                internalType: "address",
-                type: "address",
-                indexed: true,
-            },
-            {
-                name: "token",
                 internalType: "address",
                 type: "address",
                 indexed: true,
@@ -641,7 +704,8 @@ export const referralCampaignAbi = [
         name: "RolesUpdated",
     },
     { type: "error", inputs: [], name: "AlreadyInitialized" },
-    { type: "error", inputs: [], name: "DailyDistributionCapReached" },
+    { type: "error", inputs: [], name: "DistributionCapReached" },
+    { type: "error", inputs: [], name: "InactiveCampaign" },
     { type: "error", inputs: [], name: "InvalidConfig" },
     { type: "error", inputs: [], name: "NewOwnerIsZeroAddress" },
     { type: "error", inputs: [], name: "NoHandoverRequest" },

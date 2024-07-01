@@ -437,6 +437,16 @@ export const contentInteractionManagerAbi = [
         type: "function",
         inputs: [
             { name: "_contentId", internalType: "uint256", type: "uint256" },
+            { name: "_operator", internalType: "address", type: "address" },
+        ],
+        name: "addOperator",
+        outputs: [],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_contentId", internalType: "uint256", type: "uint256" },
             {
                 name: "_campaign",
                 internalType: "contract InteractionCampaign",
@@ -470,6 +480,33 @@ export const contentInteractionManagerAbi = [
         ],
         name: "deleteInteractionContract",
         outputs: [],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_contentId", internalType: "uint256", type: "uint256" },
+            { name: "_operator", internalType: "address", type: "address" },
+        ],
+        name: "deleteOperator",
+        outputs: [],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_contentId", internalType: "uint256", type: "uint256" },
+            {
+                name: "_campaignIdentifier",
+                internalType: "bytes4",
+                type: "bytes4",
+            },
+            { name: "_initData", internalType: "bytes", type: "bytes" },
+        ],
+        name: "deployCampaign",
+        outputs: [
+            { name: "campaign", internalType: "address", type: "address" },
+        ],
         stateMutability: "nonpayable",
     },
     {
@@ -546,13 +583,28 @@ export const contentInteractionManagerAbi = [
             { name: "_owner", internalType: "address", type: "address" },
             {
                 name: "_facetsFactory",
-                internalType: "contract InteractionFacetsFactory",
+                internalType: "contract IFacetsFactory",
+                type: "address",
+            },
+            {
+                name: "_campaignFactory",
+                internalType: "contract ICampaignFactory",
                 type: "address",
             },
         ],
         name: "init",
         outputs: [],
         stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_contentId", internalType: "uint256", type: "uint256" },
+            { name: "_user", internalType: "address", type: "address" },
+        ],
+        name: "isAllowedOnContent",
+        outputs: [{ name: "isAllowed", internalType: "bool", type: "bool" }],
+        stateMutability: "view",
     },
     {
         type: "function",
@@ -628,8 +680,21 @@ export const contentInteractionManagerAbi = [
         type: "function",
         inputs: [
             {
+                name: "_campaignFactory",
+                internalType: "contract ICampaignFactory",
+                type: "address",
+            },
+        ],
+        name: "updateCampaignFactory",
+        outputs: [],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            {
                 name: "_facetsFactory",
-                internalType: "contract InteractionFacetsFactory",
+                internalType: "contract IFacetsFactory",
                 type: "address",
             },
         ],
@@ -668,6 +733,44 @@ export const contentInteractionManagerAbi = [
         name: "walletLinked",
         outputs: [],
         stateMutability: "nonpayable",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "contentId",
+                internalType: "uint256",
+                type: "uint256",
+                indexed: true,
+            },
+            {
+                name: "operator",
+                internalType: "address",
+                type: "address",
+                indexed: false,
+            },
+        ],
+        name: "ContentOperatorAdded",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "contentId",
+                internalType: "uint256",
+                type: "uint256",
+                indexed: true,
+            },
+            {
+                name: "operator",
+                internalType: "address",
+                type: "address",
+                indexed: false,
+            },
+        ],
+        name: "ContentOperatorRemoved",
     },
     {
         type: "event",
@@ -849,10 +952,10 @@ export const contentInteractionManagerAbi = [
 ] as const;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// DappStorageFacet
+// DappInteractionFacet
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export const dappStorageFacetAbi = [
+export const dappInteractionFacetAbi = [
     { type: "constructor", inputs: [], stateMutability: "nonpayable" },
     { type: "fallback", stateMutability: "nonpayable" },
     {
@@ -877,6 +980,13 @@ export const dappStorageFacetAbi = [
         name: "contentTypeDenominator",
         outputs: [{ name: "", internalType: "uint8", type: "uint8" }],
         stateMutability: "pure",
+    },
+    {
+        type: "function",
+        inputs: [{ name: "id", internalType: "bytes4", type: "bytes4" }],
+        name: "deleteContentContract",
+        outputs: [],
+        stateMutability: "nonpayable",
     },
     {
         type: "function",
@@ -965,11 +1075,15 @@ export const dappStorageFacetAbi = [
     {
         type: "function",
         inputs: [
-            { name: "_contractId", internalType: "uint256", type: "uint256" },
             {
                 name: "_contractAddress",
                 internalType: "address",
                 type: "address",
+            },
+            {
+                name: "_storageCheckSelector",
+                internalType: "bytes4",
+                type: "bytes4",
             },
         ],
         name: "setContentContract",
@@ -984,6 +1098,63 @@ export const dappStorageFacetAbi = [
         name: "transferOwnership",
         outputs: [],
         stateMutability: "payable",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "smartContract",
+                internalType: "address",
+                type: "address",
+                indexed: true,
+            },
+            {
+                name: "value",
+                internalType: "uint256",
+                type: "uint256",
+                indexed: false,
+            },
+        ],
+        name: "CallableStorageUpdated",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "id",
+                internalType: "bytes4",
+                type: "bytes4",
+                indexed: true,
+            },
+            {
+                name: "contractAddress",
+                internalType: "address",
+                type: "address",
+                indexed: false,
+            },
+            {
+                name: "fnSelector",
+                internalType: "bytes4",
+                type: "bytes4",
+                indexed: false,
+            },
+        ],
+        name: "ContractRegistered",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "id",
+                internalType: "bytes4",
+                type: "bytes4",
+                indexed: true,
+            },
+        ],
+        name: "ContractUnRegistered",
     },
     {
         type: "event",
@@ -1035,6 +1206,31 @@ export const dappStorageFacetAbi = [
         anonymous: false,
         inputs: [
             {
+                name: "smartContract",
+                internalType: "address",
+                type: "address",
+                indexed: true,
+            },
+            {
+                name: "slot",
+                internalType: "uint256",
+                type: "uint256",
+                indexed: false,
+            },
+            {
+                name: "value",
+                internalType: "uint256",
+                type: "uint256",
+                indexed: false,
+            },
+        ],
+        name: "ProofStorageUpdated",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
                 name: "user",
                 internalType: "address",
                 type: "address",
@@ -1049,32 +1245,9 @@ export const dappStorageFacetAbi = [
         ],
         name: "RolesUpdated",
     },
-    {
-        type: "event",
-        anonymous: false,
-        inputs: [
-            {
-                name: "smartContract",
-                internalType: "address",
-                type: "address",
-                indexed: true,
-            },
-            {
-                name: "slot",
-                internalType: "uint256",
-                type: "uint256",
-                indexed: true,
-            },
-            {
-                name: "value",
-                internalType: "uint256",
-                type: "uint256",
-                indexed: false,
-            },
-        ],
-        name: "StorageUpdated",
-    },
     { type: "error", inputs: [], name: "AlreadyInitialized" },
+    { type: "error", inputs: [], name: "CallFailed" },
+    { type: "error", inputs: [], name: "CallVerificationFailed" },
     {
         type: "error",
         inputs: [{ name: "index", internalType: "uint256", type: "uint256" }],

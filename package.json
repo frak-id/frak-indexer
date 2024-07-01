@@ -13,11 +13,11 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@ponder/core": "^0.4.35",
+    "@ponder/core": "^0.4.36",
     "viem": "^1.19.9"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.0",
+    "@biomejs/biome": "1.8.1",
     "@types/aws-lambda": "8.10.138",
     "@types/node": "^20.14.2",
     "aws-cdk-lib": "2.142.1",

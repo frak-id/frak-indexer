@@ -1,9 +1,13 @@
 import { createConfig, mergeAbis } from "@ponder/core";
 import { http, parseAbiItem } from "viem";
 import {
+    interactionCampaignAbi,
+    referralCampaignAbi,
+} from "./abis/frak-campaign-abis";
+import {
     contentInteractionDiamondAbi,
     contentInteractionManagerAbi,
-    dappStorageFacetAbi,
+    dappInteractionFacetAbi,
     pressInteractionFacetAbi,
 } from "./abis/frak-interaction-abis";
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
@@ -18,6 +22,7 @@ export default createConfig({
     database: {
         kind: "postgres",
         connectionString: process.env.DATABASE_URL,
+        publishSchema: "publish",
     },
     networks: {
         // Mainnets
@@ -84,10 +89,10 @@ export default createConfig({
         // The interaction manager
         ContentInteractionManager: {
             abi: contentInteractionManagerAbi,
-            address: "0x603674006fE11c38449C22bA56c40444C8e4CC5C",
+            address: "0x76091A17B9f0C53Ea826E04bD5E586C143AFC30e",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 54321880,
+                    startBlock: 59205615,
                 },
             },
         },
@@ -96,10 +101,10 @@ export default createConfig({
             abi: mergeAbis([
                 contentInteractionDiamondAbi,
                 pressInteractionFacetAbi,
-                dappStorageFacetAbi,
+                dappInteractionFacetAbi,
             ]),
             factory: {
-                address: "0x603674006fE11c38449C22bA56c40444C8e4CC5C",
+                address: "0x76091A17B9f0C53Ea826E04bD5E586C143AFC30e",
                 event: parseAbiItem(
                     "event InteractionContractDeployed(uint256 indexed contentId, address interactionContract)"
                 ),
@@ -107,7 +112,21 @@ export default createConfig({
             },
             network: {
                 arbitrumSepolia: {
-                    startBlock: 54321880,
+                    startBlock: 59205615,
+                },
+            },
+        },
+        // Every campaigns
+        Campaigns: {
+            abi: mergeAbis([interactionCampaignAbi, referralCampaignAbi]),
+            factory: {
+                address: "0x719C9C48dB1622CF7F196012a269cDB96cBC044f",
+                event: parseAbiItem("event CampaignCreated(address campaign)"),
+                parameter: "campaign",
+            },
+            network: {
+                arbitrumSepolia: {
+                    startBlock: 59205615,
                 },
             },
         },

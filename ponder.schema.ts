@@ -107,6 +107,7 @@ export default createSchema((p) => ({
         version: p.string(),
 
         attachments: p.many("CampaignToContent.campaignId"),
+        capResets: p.many("CampaignCapReset.campaignId"),
     }),
     CampaignToContent: p.createTable({
         id: p.string(), // address
@@ -121,6 +122,16 @@ export default createSchema((p) => ({
 
         attachTimestamp: p.bigint(),
         detachTimestamp: p.bigint().optional(),
+    }),
+    CampaignCapReset: p.createTable({
+        id: p.string(), // campaign address + timestamp
+
+        campaignId: p.hex().references("Campaign.id"),
+        campaign: p.one("campaignId"),
+
+        timestamp: p.bigint(),
+        previousTimestamp: p.bigint(),
+        distributedAmount: p.bigint(),
     }),
 
     // Press events
