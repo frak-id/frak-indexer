@@ -14,8 +14,8 @@ import { contentRegistryAbi } from "./abis/frak-registry-abis";
 import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
 const pollingConfig = {
-    pollingInterval: 5_000,
-    maxRequestsPerSecond: 12,
+    pollingInterval: 30_000,
+    maxRequestsPerSecond: 4,
 } as const;
 
 export default createConfig({
