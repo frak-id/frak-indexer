@@ -120,7 +120,7 @@ export default createConfig({
         Campaigns: {
             abi: mergeAbis([interactionCampaignAbi, referralCampaignAbi]),
             factory: {
-                address: "0x1f65A60340E4D017DdfeE45aA2905b6D79a55672",
+                address: "0x440B19d7694f4B8949b02e674870880c5e40250C",
                 event: parseAbiItem("event CampaignCreated(address campaign)"),
                 parameter: "campaign",
             },

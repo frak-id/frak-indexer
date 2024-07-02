@@ -90,7 +90,7 @@ export const interactionCampaignAbi = [
         inputs: [],
         name: "getMetadata",
         outputs: [
-            { name: "name", internalType: "string", type: "string" },
+            { name: "_type", internalType: "string", type: "string" },
             { name: "version", internalType: "string", type: "string" },
         ],
         stateMutability: "pure",
@@ -386,9 +386,51 @@ export const referralCampaignAbi = [
     {
         type: "function",
         inputs: [],
+        name: "getConfig",
+        outputs: [
+            {
+                name: "",
+                internalType: "struct ReferralCampaign.CampaignConfig",
+                type: "tuple",
+                components: [
+                    { name: "token", internalType: "address", type: "address" },
+                    {
+                        name: "initialReward",
+                        internalType: "uint256",
+                        type: "uint256",
+                    },
+                    {
+                        name: "userRewardPercent",
+                        internalType: "uint256",
+                        type: "uint256",
+                    },
+                    {
+                        name: "distributionCapPeriod",
+                        internalType: "uint256",
+                        type: "uint256",
+                    },
+                    {
+                        name: "distributionCap",
+                        internalType: "uint256",
+                        type: "uint256",
+                    },
+                    {
+                        name: "startDate",
+                        internalType: "uint48",
+                        type: "uint48",
+                    },
+                    { name: "endDate", internalType: "uint48", type: "uint48" },
+                ],
+            },
+        ],
+        stateMutability: "view",
+    },
+    {
+        type: "function",
+        inputs: [],
         name: "getMetadata",
         outputs: [
-            { name: "name", internalType: "string", type: "string" },
+            { name: "_type", internalType: "string", type: "string" },
             { name: "version", internalType: "string", type: "string" },
         ],
         stateMutability: "pure",

@@ -13,12 +13,12 @@ export const contentInteractionDiamondAbi = [
                 type: "address",
             },
             {
-                name: "_interactionMananger",
+                name: "_interactionManager",
                 internalType: "address",
                 type: "address",
             },
             {
-                name: "_interactionManangerOwner",
+                name: "_interactionManagerOwner",
                 internalType: "address",
                 type: "address",
             },
