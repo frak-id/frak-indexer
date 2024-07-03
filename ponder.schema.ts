@@ -9,6 +9,7 @@ export default createSchema((p) => ({
         // The linked webauthn validators
         validators: p.many("MultiWebAuthNValidator.accountId"),
     }),
+
     // Validator we are tracking
     MultiWebAuthNValidator: p.createTable({
         // Id is a concatenation of chain + account address
@@ -142,4 +143,52 @@ export default createSchema((p) => ({
     }),
 
     PressEventType: p.createEnum(["OPEN_ARTICLE", "READ_ARTICLE", "REFERRED"]),
+
+    // Rewards related stuff
+    RewardingContract: p.createTable({
+        // Address of the rewarding contract
+        id: p.hex(),
+
+        // Address of the token that will be distributed
+        token: p.hex(),
+
+        // All the rewards
+        rewards: p.many("Reward.contractId"),
+    }),
+    Reward: p.createTable({
+        id: p.string(), // reward contract + user
+
+        contractId: p.hex().references("RewardingContract.id"),
+        contract: p.one("contractId"),
+
+        user: p.hex(),
+
+        pendingAmount: p.bigint(),
+        totalAmount: p.bigint(),
+
+        rewardAddedEvents: p.many("RewardAddedEvent.rewardId"),
+        rewardClaimedEvents: p.many("RewardClaimedEvent.rewardId"),
+    }),
+    RewardAddedEvent: p.createTable({
+        id: p.string(),
+
+        rewardId: p.string().references("Reward.id"),
+        reward: p.one("rewardId"),
+
+        amount: p.bigint(),
+
+        txHash: p.hex(),
+        timestamp: p.bigint(),
+    }),
+    RewardClaimedEvent: p.createTable({
+        id: p.string(),
+
+        rewardId: p.string().references("Reward.id"),
+        reward: p.one("rewardId"),
+
+        amount: p.bigint(),
+
+        txHash: p.hex(),
+        timestamp: p.bigint(),
+    }),
 }));
