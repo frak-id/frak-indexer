@@ -43,11 +43,10 @@ function IndexerStack({ app, stack }: StackContext) {
     const secrets = [
         // Db url
         new Config.Secret(stack, "DATABASE_URL"),
-        // Mainnet RPCs
-        new Config.Secret(stack, "PONDER_RPC_URL_ARB"),
-        new Config.Secret(stack, "PONDER_RPC_URL_OPTIMISM"),
-        new Config.Secret(stack, "PONDER_RPC_URL_BASE"),
-        new Config.Secret(stack, "PONDER_RPC_URL_POLYGON"),
+        // BlockPi rpcs
+        new Config.Secret(stack, "BLOCKPI_API_KEY_ARB_SEPOLIA"),
+        // Alchemy RPC
+        new Config.Secret(stack, "ALCHEMY_API_KEY"),
         // Testnet RPCs
         new Config.Secret(stack, "PONDER_RPC_URL_ARB_SEPOLIA"),
     ];

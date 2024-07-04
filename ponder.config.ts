@@ -1,5 +1,5 @@
 import { createConfig, mergeAbis } from "@ponder/core";
-import { http, parseAbiItem } from "viem";
+import { http, fallback, parseAbiItem } from "viem";
 import {
     interactionCampaignAbi,
     referralCampaignAbi,
@@ -25,31 +25,21 @@ export default createConfig({
         publishSchema: "publish",
     },
     networks: {
-        // Mainnets
-        /*arbitrum: {
-            chainId: 42161,
-            transport: http(process.env.PONDER_RPC_URL_ARB),
-            ...pollingConfig,
-        },*/
-        /*base: {
-            chainId: 8453,
-            transport: http(process.env.PONDER_RPC_URL_BASE),
-            ...pollingConfig,
-        },
-        optimism: {
-            chainId: 10,
-            transport: http(process.env.PONDER_RPC_URL_OPTIMISM),
-            ...pollingConfig,
-        },
-        polygon: {
-            chainId: 137,
-            transport: http(process.env.PONDER_RPC_URL_POLYGON),
-            ...pollingConfig,
-        },*/
         // Testnets
         arbitrumSepolia: {
             chainId: 421614,
-            transport: http(process.env.PONDER_RPC_URL_ARB_SEPOLIA),
+            transport: fallback([
+                http(
+                    `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
+                ),
+                http(
+                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+                ),
+                http(),
+            ], {
+                // Huge retry delay to avoid spamming
+                retryDelay: 600
+            }),
             ...pollingConfig,
         },
     },
