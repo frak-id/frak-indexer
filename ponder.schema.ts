@@ -117,78 +117,119 @@ export default createSchema((p) => ({
 
         capResets: p.many("CampaignCapReset.campaignId"),
     }),
-    CampaignCapReset: p.createTable({
-        id: p.string(), // campaign address + timestamp
+    CampaignCapReset: p.createTable(
+        {
+            id: p.string(), // campaign address + timestamp
 
-        campaignId: p.hex().references("Campaign.id"),
-        campaign: p.one("campaignId"),
+            campaignId: p.hex().references("Campaign.id"),
+            campaign: p.one("campaignId"),
 
-        timestamp: p.bigint(),
-        previousTimestamp: p.bigint(),
-        distributedAmount: p.bigint(),
-    }),
+            timestamp: p.bigint(),
+            previousTimestamp: p.bigint(),
+            distributedAmount: p.bigint(),
+        },
+        {
+            campaignIndex: p.index("campaignId"),
+        }
+    ),
 
     // Press events
-    PressEvent: p.createTable({
-        id: p.string(),
+    PressEvent: p.createTable(
+        {
+            id: p.string(),
 
-        interactionId: p.hex().references("ContentInteractionContract.id"),
-        interaction: p.one("interactionId"),
+            interactionId: p.hex().references("ContentInteractionContract.id"),
+            interaction: p.one("interactionId"),
 
-        user: p.hex(),
-        type: p.enum("PressEventType"),
-        data: p.json(),
+            user: p.hex(),
+            type: p.enum("PressEventType"),
+            data: p.json(),
 
-        timestamp: p.bigint(),
-    }),
+            timestamp: p.bigint(),
+        },
+        {
+            interactionIndex: p.index("interactionId"),
+            userIndex: p.index("user"),
+
+            userInteractionIndex: p.index(["user", "interactionId"]),
+        }
+    ),
 
     PressEventType: p.createEnum(["OPEN_ARTICLE", "READ_ARTICLE", "REFERRED"]),
 
     // Rewards related stuff
-    RewardingContract: p.createTable({
-        // Address of the rewarding contract
-        id: p.hex(),
+    RewardingContract: p.createTable(
+        {
+            // Address of the rewarding contract
+            id: p.hex(),
 
-        // Address of the token that will be distributed
-        token: p.hex(),
+            // Address of the token that will be distributed
+            token: p.hex(),
 
-        // All the rewards
-        rewards: p.many("Reward.contractId"),
-    }),
-    Reward: p.createTable({
-        id: p.string(), // reward contract + user
+            // The total amount distributed and claimed
+            totalDistributed: p.bigint(),
+            totalClaimed: p.bigint(),
 
-        contractId: p.hex().references("RewardingContract.id"),
-        contract: p.one("contractId"),
+            // All the rewards
+            rewards: p.many("Reward.contractId"),
+        },
+        {
+            tokenIndex: p.index("token"),
+        }
+    ),
+    Reward: p.createTable(
+        {
+            id: p.string(), // reward contract + user
 
-        user: p.hex(),
+            contractId: p.hex().references("RewardingContract.id"),
+            contract: p.one("contractId"),
 
-        pendingAmount: p.bigint(),
-        totalAmount: p.bigint(),
+            user: p.hex(),
 
-        rewardAddedEvents: p.many("RewardAddedEvent.rewardId"),
-        rewardClaimedEvents: p.many("RewardClaimedEvent.rewardId"),
-    }),
-    RewardAddedEvent: p.createTable({
-        id: p.string(),
+            pendingAmount: p.bigint(),
+            totalReceived: p.bigint(),
+            totalClaimed: p.bigint(),
 
-        rewardId: p.string().references("Reward.id"),
-        reward: p.one("rewardId"),
+            rewardAddedEvents: p.many("RewardAddedEvent.rewardId"),
+            rewardClaimedEvents: p.many("RewardClaimedEvent.rewardId"),
+        },
+        {
+            userIndex: p.index("user"),
+            contractIndex: p.index("contractId"),
 
-        amount: p.bigint(),
+            userContractIndex: p.index(["user", "contractId"]),
+        }
+    ),
+    RewardAddedEvent: p.createTable(
+        {
+            id: p.string(),
 
-        txHash: p.hex(),
-        timestamp: p.bigint(),
-    }),
-    RewardClaimedEvent: p.createTable({
-        id: p.string(),
+            rewardId: p.string().references("Reward.id"),
+            reward: p.one("rewardId"),
 
-        rewardId: p.string().references("Reward.id"),
-        reward: p.one("rewardId"),
+            amount: p.bigint(),
 
-        amount: p.bigint(),
+            txHash: p.hex(),
+            timestamp: p.bigint(),
+        },
+        {
+            rewardIndex: p.index("rewardId"),
+        }
+    ),
+    RewardClaimedEvent: p.createTable(
+        {
+            id: p.string(),
 
-        txHash: p.hex(),
-        timestamp: p.bigint(),
-    }),
+            rewardId: p.string().references("Reward.id"),
+            reward: p.one("rewardId"),
+
+            amount: p.bigint(),
+
+            txHash: p.hex(),
+            timestamp: p.bigint(),
+        },
+        {
+            rewardIndex: p.index("rewardId"),
+        }
+    ),
 }));

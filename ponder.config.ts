@@ -1,5 +1,5 @@
-import { createConfig, mergeAbis } from "@ponder/core";
-import { http, fallback, parseAbiItem } from "viem";
+import { createConfig, loadBalance, mergeAbis, rateLimit } from "@ponder/core";
+import { http, parseAbiItem } from "viem";
 import {
     interactionCampaignAbi,
     referralCampaignAbi,
@@ -28,18 +28,21 @@ export default createConfig({
         // Testnets
         arbitrumSepolia: {
             chainId: 421614,
-            transport: fallback([
-                http(
-                    `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
+            transport: loadBalance([
+                rateLimit(
+                    http(
+                        `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
+                    ),
+                    { requestsPerSecond: 20, browser: false }
                 ),
-                http(
-                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+                rateLimit(
+                    http(
+                        `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+                    ),
+                    { requestsPerSecond: 20, browser: false }
                 ),
-                http(),
-            ], {
-                // Huge retry delay to avoid spamming
-                retryDelay: 600
-            }),
+                rateLimit(http(), { requestsPerSecond: 5, browser: false }),
+            ]),
             ...pollingConfig,
         },
     },
@@ -51,6 +54,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 35765963,
+                    maxBlockRange: 5000,
                 },
                 /*arbitrum: {
                     startBlock: 203956680,
@@ -73,6 +77,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 54321880,
+                    maxBlockRange: 5000,
                 },
             },
         },
@@ -83,6 +88,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 60118981,
+                    maxBlockRange: 5000,
                 },
             },
         },
@@ -103,6 +109,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 60118981,
+                    maxBlockRange: 5000,
                 },
             },
         },
@@ -117,6 +124,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 60118981,
+                    maxBlockRange: 5000,
                 },
             },
         },

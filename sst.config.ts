@@ -46,7 +46,7 @@ function IndexerStack({ app, stack }: StackContext) {
         // BlockPi rpcs
         new Config.Secret(stack, "BLOCKPI_API_KEY_ARB_SEPOLIA"),
         // Alchemy RPC
-        new Config.Secret(stack, "ALCHEMY_API_KEY")
+        new Config.Secret(stack, "ALCHEMY_API_KEY"),
     ];
 
     // Get our CDK secrets map

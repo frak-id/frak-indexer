@@ -3,12 +3,21 @@ import type { Address } from "viem";
 import { referralCampaignAbi } from "../abis/frak-campaign-abis";
 
 ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
-    const { Reward, RewardAddedEvent } = context.db;
+    const { RewardingContract, Reward, RewardAddedEvent } = context.db;
 
     // Try to find a rewarding contract for the given event emitter
     const rewardingContract = await getRewardingContract({
         contract: event.log.address,
         context,
+    });
+
+    // Update rewarding contract
+    await RewardingContract.update({
+        id: rewardingContract.id,
+        data: {
+            totalDistributed:
+                rewardingContract.totalDistributed + event.args.amount,
+        },
     });
 
     // Update the current user reward (insert it if not found)
@@ -19,11 +28,12 @@ ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
             contractId: rewardingContract.id,
             user: event.args.user,
             pendingAmount: event.args.amount,
-            totalAmount: event.args.amount,
+            totalReceived: event.args.amount,
+            totalClaimed: 0n,
         },
         update: ({ current }) => ({
             pendingAmount: current.pendingAmount + event.args.amount,
-            totalAmount: current.totalAmount + event.args.amount,
+            totalReceived: current.totalReceived + event.args.amount,
         }),
     });
 
@@ -40,12 +50,20 @@ ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
 });
 
 ponder.on("Campaigns:RewardClaimed", async ({ event, context }) => {
-    const { Reward, RewardClaimedEvent } = context.db;
+    const { RewardingContract, Reward, RewardClaimedEvent } = context.db;
 
     // Try to find a rewarding contract for the given event emitter
     const rewardingContract = await getRewardingContract({
         contract: event.log.address,
         context,
+    });
+
+    // Update rewarding contract
+    await RewardingContract.update({
+        id: rewardingContract.id,
+        data: {
+            totalClaimed: rewardingContract.totalClaimed + event.args.amount,
+        },
     });
 
     // Update the current user reward (insert it if not found)
@@ -55,11 +73,13 @@ ponder.on("Campaigns:RewardClaimed", async ({ event, context }) => {
         create: {
             contractId: rewardingContract.id,
             user: event.args.user,
-            pendingAmount: -event.args.amount,
-            totalAmount: 0n,
+            totalClaimed: event.args.amount,
+            totalReceived: 0n,
+            pendingAmount: 0n,
         },
         update: ({ current }) => ({
             pendingAmount: current.pendingAmount - event.args.amount,
+            totalClaimed: current.totalClaimed + event.args.amount,
         }),
     });
 
@@ -104,6 +124,8 @@ async function getRewardingContract({
             id: contract,
             data: {
                 token,
+                totalDistributed: 0n,
+                totalClaimed: 0n,
             },
         });
     }
