@@ -1,4 +1,4 @@
-import { createConfig, loadBalance, mergeAbis, rateLimit } from "@ponder/core";
+import { createConfig, loadBalance, mergeAbis } from "@ponder/core";
 import { http, parseAbiItem } from "viem";
 import {
     interactionCampaignAbi,
@@ -29,19 +29,12 @@ export default createConfig({
         arbitrumSepolia: {
             chainId: 421614,
             transport: loadBalance([
-                rateLimit(
-                    http(
-                        `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
-                    ),
-                    { requestsPerSecond: 20, browser: false }
+                http(
+                    `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
                 ),
-                rateLimit(
-                    http(
-                        `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-                    ),
-                    { requestsPerSecond: 20, browser: false }
+                http(
+                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
                 ),
-                rateLimit(http(), { requestsPerSecond: 5, browser: false }),
             ]),
             ...pollingConfig,
         },
