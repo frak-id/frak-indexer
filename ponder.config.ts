@@ -4,7 +4,6 @@ import {
     type Transport,
     type TransportConfig,
     createTransport,
-    fallback,
     parseAbiItem,
 } from "viem";
 import {
@@ -20,54 +19,45 @@ import {
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
+
 /**
  * @description Creates a load balanced transport that spreads requests between child transports using a round robin algorithm.
  */
-export const loadBalance = (_transports: Transport[]): Transport => {
-    const fallbackTransport = fallback(_transports);
-
-    return ({ chain, retryCount, timeout }) => {
-        const fallback = fallbackTransport({ chain, retryCount, timeout });
-
+export function timestampLoadBalance(_transports: Transport[]): Transport {
+    return ({chain, retryCount, timeout}) => {
         const transports = _transports.map((t) =>
             chain === undefined
-                ? t({ retryCount: 0, timeout })
-                : t({ chain, retryCount: 0, timeout })
+                ? t({retryCount: 0, timeout})
+                : t({chain, retryCount: 0, timeout})
         );
 
         return createTransport({
-            key: "loadBalance",
-            name: "Load Balance",
+            key: "timestampLoadBalance",
+            name: "Timestamp Load Balance",
             request: async (body) => {
-                // Random between 0 and transports.length
-                const index = Math.round(Math.random() * transports.length);
+                // Get the transport to use depending on the current timestamp (every 100ms we should use a different transport)
+                const indexToUse =
+                    Math.floor(Date.now() / 100) % transports.length;
 
-                // Perform the request
-                try {
-                    const response = await transports[index]?.request(body);
-                    // If we got a response return it directly
-                    if (response) {
-                        return response;
-                    }
-                } catch (e) {
-                    console.error(
-                        "Error when using load balanced transport",
-                        e
+                // Get the transport to use
+                const transport = transports[indexToUse];
+                if (!transport) {
+                    throw new Error(
+                        `No transport available for index ${indexToUse}`
                     );
                 }
-                // If we arrived here, return a stuff via the fallback transport
-                return fallback.request(body);
+                return transport.request(body);
             },
             retryCount,
             timeout,
             type: "loadBalance",
         } as TransportConfig);
     };
-};
+}
 
 const pollingConfig = {
-    pollingInterval: 30_000,
-    maxRequestsPerSecond: 4,
+    pollingInterval: 20_000,
+    maxRequestsPerSecond: 16,
 } as const;
 
 export default createConfig({
@@ -80,12 +70,12 @@ export default createConfig({
         // Testnets
         arbitrumSepolia: {
             chainId: 421614,
-            transport: loadBalance([
-                http(
-                    `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
-                ),
+            transport: timestampLoadBalance([
                 http(
                     `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+                ),
+                http(
+                    `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
                 ),
             ]),
             ...pollingConfig,
