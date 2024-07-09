@@ -1,5 +1,12 @@
-import { createConfig, loadBalance, mergeAbis } from "@ponder/core";
-import { http, parseAbiItem } from "viem";
+import { createConfig, mergeAbis } from "@ponder/core";
+import {
+    http,
+    type Transport,
+    type TransportConfig,
+    createTransport,
+    fallback,
+    parseAbiItem,
+} from "viem";
 import {
     interactionCampaignAbi,
     referralCampaignAbi,
@@ -12,6 +19,51 @@ import {
 } from "./abis/frak-interaction-abis";
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
+
+/**
+ * @description Creates a load balanced transport that spreads requests between child transports using a round robin algorithm.
+ */
+export const loadBalance = (_transports: Transport[]): Transport => {
+    const fallbackTransport = fallback(_transports);
+
+    return ({ chain, retryCount, timeout }) => {
+        const fallback = fallbackTransport({ chain, retryCount, timeout });
+
+        const transports = _transports.map((t) =>
+            chain === undefined
+                ? t({ retryCount: 0, timeout })
+                : t({ chain, retryCount: 0, timeout })
+        );
+
+        return createTransport({
+            key: "loadBalance",
+            name: "Load Balance",
+            request: async (body) => {
+                // Random between 0 and transports.length
+                const index = Math.round(Math.random() * transports.length);
+
+                // Perform the request
+                try {
+                    const response = await transports[index]?.request(body);
+                    // If we got a response return it directly
+                    if (response) {
+                        return response;
+                    }
+                } catch (e) {
+                    console.error(
+                        "Error when using load balanced transport",
+                        e
+                    );
+                }
+                // If we arrived here, return a stuff via the fallback transport
+                return fallback.request(body);
+            },
+            retryCount,
+            timeout,
+            type: "loadBalance",
+        } as TransportConfig);
+    };
+};
 
 const pollingConfig = {
     pollingInterval: 30_000,
