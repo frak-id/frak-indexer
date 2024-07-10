@@ -73,7 +73,9 @@ jobs:
           context: .
           platforms: linux/arm64
           push: true
-          tags: 262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:latest
+          tags: |
+            262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:latest
+            262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:${{ github.sha }}
           # Github actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -82,3 +84,5 @@ jobs:
         run: |
           echo "Deploying with stage: prod"
           pnpm sst deploy --stage prod
+        env:
+          COMMIT_SHA: ${{ github.sha }}

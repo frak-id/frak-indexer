@@ -61,9 +61,12 @@ function IndexerStack({ app, stack }: StackContext) {
             repositoryName: "indexer",
         }
     );
+
+    const imageTag = process.env.COMMIT_SHA ?? "latest";
+    console.log(`Will use the image ${imageTag}`);
     const indexerImage = ContainerImage.fromEcrRepository(
         containerRegistry,
-        "latest"
+        imageTag
     );
 
     // The service itself
