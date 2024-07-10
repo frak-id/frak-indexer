@@ -19,16 +19,15 @@ import {
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
-
 /**
  * @description Creates a load balanced transport that spreads requests between child transports using a round robin algorithm.
  */
 export function timestampLoadBalance(_transports: Transport[]): Transport {
-    return ({chain, retryCount, timeout}) => {
+    return ({ chain, retryCount, timeout }) => {
         const transports = _transports.map((t) =>
             chain === undefined
-                ? t({retryCount: 0, timeout})
-                : t({chain, retryCount: 0, timeout})
+                ? t({ retryCount: 0, timeout })
+                : t({ chain, retryCount: 0, timeout })
         );
 
         return createTransport({
@@ -36,8 +35,7 @@ export function timestampLoadBalance(_transports: Transport[]): Transport {
             name: "Timestamp Load Balance",
             request: async (body) => {
                 // Get the transport to use depending on the current timestamp (every 100ms we should use a different transport)
-                const indexToUse =
-                    Math.floor(Date.now() / 100) % transports.length;
+                const indexToUse = Date.now() % transports.length;
 
                 // Get the transport to use
                 const transport = transports[indexToUse];
@@ -54,11 +52,6 @@ export function timestampLoadBalance(_transports: Transport[]): Transport {
         } as TransportConfig);
     };
 }
-
-const pollingConfig = {
-    pollingInterval: 20_000,
-    maxRequestsPerSecond: 16,
-} as const;
 
 export default createConfig({
     database: {
@@ -77,8 +70,15 @@ export default createConfig({
                 http(
                     `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
                 ),
+                http(
+                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+                ),
+                http(
+                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+                ),
             ]),
-            ...pollingConfig,
+            pollingInterval: 15_000,
+            maxRequestsPerSecond: 32,
         },
     },
     contracts: {
