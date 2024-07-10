@@ -1,11 +1,5 @@
 import { createConfig, mergeAbis } from "@ponder/core";
-import {
-    http,
-    type Transport,
-    type TransportConfig,
-    createTransport,
-    parseAbiItem,
-} from "viem";
+import { http, fallback, parseAbiItem } from "viem";
 import {
     interactionCampaignAbi,
     referralCampaignAbi,
@@ -19,40 +13,6 @@ import {
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
-/**
- * @description Creates a load balanced transport that spreads requests between child transports using a round robin algorithm.
- */
-export function timestampLoadBalance(_transports: Transport[]): Transport {
-    return ({ chain, retryCount, timeout }) => {
-        const transports = _transports.map((t) =>
-            chain === undefined
-                ? t({ retryCount: 0, timeout })
-                : t({ chain, retryCount: 0, timeout })
-        );
-
-        return createTransport({
-            key: "timestampLoadBalance",
-            name: "Timestamp Load Balance",
-            request: async (body) => {
-                // Get the transport to use depending on the current timestamp (every 100ms we should use a different transport)
-                const indexToUse = Date.now() % transports.length;
-
-                // Get the transport to use
-                const transport = transports[indexToUse];
-                if (!transport) {
-                    throw new Error(
-                        `No transport available for index ${indexToUse}`
-                    );
-                }
-                return transport.request(body);
-            },
-            retryCount,
-            timeout,
-            type: "loadBalance",
-        } as TransportConfig);
-    };
-}
-
 export default createConfig({
     database: {
         kind: "postgres",
@@ -63,22 +23,22 @@ export default createConfig({
         // Testnets
         arbitrumSepolia: {
             chainId: 421614,
-            transport: timestampLoadBalance([
-                http(
-                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-                ),
-                http(
-                    `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
-                ),
-                http(
-                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-                ),
-                http(
-                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-                ),
-            ]),
-            pollingInterval: 15_000,
-            maxRequestsPerSecond: 32,
+            transport: fallback(
+                [
+                    http(
+                        `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+                    ),
+                    http(
+                        `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
+                    ),
+                ],
+                {
+                    retryCount: 5,
+                    retryDelay: 300,
+                }
+            ),
+            pollingInterval: 10_000,
+            maxRequestsPerSecond: 64,
         },
     },
     contracts: {
