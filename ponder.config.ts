@@ -24,14 +24,12 @@ export default createConfig({
         arbitrumSepolia: {
             chainId: 421614,
             transport: loadBalance([
+                http("https://sepolia-rollup.arbitrum.io/rpc"),
                 http(
                     `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
                 ),
                 http(
                     `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
-                ),
-                http(
-                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
                 ),
             ]),
             pollingInterval: 10_000,
