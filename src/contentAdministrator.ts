@@ -44,14 +44,11 @@ ponder.on(
             event.args.contentId,
             event.args.operator
         );
-        const existing = await ContentAdministrator.findUnique({id});
+        const existing = await ContentAdministrator.findUnique({ id });
         if (existing) return;
 
         await ContentAdministrator.create({
-            id: contentAdministratorId(
-                event.args.contentId,
-                event.args.operator
-            ),
+            id,
             data: {
                 isOwner: false,
                 contentId: event.args.contentId,

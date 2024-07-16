@@ -12,6 +12,9 @@ import {
 } from "./abis/frak-interaction-abis";
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 
+// 10k with alchemy only, 5k if blockpi also enabled
+const maxBlockRange = 10000;
+
 export default createConfig({
     database: {
         kind: "postgres",
@@ -43,7 +46,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121913,
-                    maxBlockRange: 5000,
+                    maxBlockRange,
                 },
             },
         },
@@ -54,7 +57,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121923,
-                    maxBlockRange: 5000,
+                    maxBlockRange,
                 },
             },
         },
@@ -75,7 +78,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121923,
-                    maxBlockRange: 5000,
+                    maxBlockRange,
                 },
             },
         },
@@ -90,7 +93,7 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121923,
-                    maxBlockRange: 5000,
+                    maxBlockRange,
                 },
             },
         },
