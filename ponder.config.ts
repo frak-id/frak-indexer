@@ -11,14 +11,13 @@ import {
     pressInteractionFacetAbi,
 } from "./abis/frak-interaction-abis";
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
-import { multiWebAuthNValidatorV2Abi } from "./abis/multiWebAuthNValidatorABI";
 
 export default createConfig({
-    database: {
+    /*database: {
         kind: "postgres",
         connectionString: process.env.DATABASE_URL,
         publishSchema: "publish",
-    },
+    },*/
     networks: {
         // Testnets
         arbitrumSepolia: {
@@ -37,36 +36,13 @@ export default createConfig({
         },
     },
     contracts: {
-        // The WebAuthN validator to index
-        WebAuthNValidator: {
-            abi: multiWebAuthNValidatorV2Abi,
-            address: "0xD546c4Ba2e8e5e5c961C36e6Db0460Be03425808",
-            network: {
-                arbitrumSepolia: {
-                    startBlock: 35765963,
-                    maxBlockRange: 5000,
-                },
-                /*arbitrum: {
-                    startBlock: 203956680,
-                },*/
-                /*base: {
-                    startBlock: 13537832,
-                },
-                optimism: {
-                    startBlock: 119133117,
-                },
-                polygon: {
-                    startBlock: 56157675,
-                },*/
-            },
-        },
         // The content registry
         ContentRegistry: {
             abi: contentRegistryAbi,
-            address: "0xC110ecb55EbAa4Ea9eFC361C4bBB224A6664Ea45",
+            address: "0x758F01B484212b38EAe264F75c0DD7842d510D9c",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 54321880,
+                    startBlock: 64121913,
                     maxBlockRange: 5000,
                 },
             },
@@ -74,10 +50,10 @@ export default createConfig({
         // The interaction manager
         ContentInteractionManager: {
             abi: contentInteractionManagerAbi,
-            address: "0xC97D72A8a9d1D2Ed326EB04f2d706A21cEe2B94E",
+            address: "0xFE0717cACd6Fff3001EdD3f360Eb2854F54861DD",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 60118981,
+                    startBlock: 64121923,
                     maxBlockRange: 5000,
                 },
             },
@@ -90,7 +66,7 @@ export default createConfig({
                 dappInteractionFacetAbi,
             ]),
             factory: {
-                address: "0xC97D72A8a9d1D2Ed326EB04f2d706A21cEe2B94E",
+                address: "0xFE0717cACd6Fff3001EdD3f360Eb2854F54861DD",
                 event: parseAbiItem(
                     "event InteractionContractDeployed(uint256 indexed contentId, address interactionContract)"
                 ),
@@ -98,7 +74,7 @@ export default createConfig({
             },
             network: {
                 arbitrumSepolia: {
-                    startBlock: 60118981,
+                    startBlock: 64121923,
                     maxBlockRange: 5000,
                 },
             },
@@ -113,7 +89,7 @@ export default createConfig({
             },
             network: {
                 arbitrumSepolia: {
-                    startBlock: 60118981,
+                    startBlock: 64121923,
                     maxBlockRange: 5000,
                 },
             },
