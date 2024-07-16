@@ -13,11 +13,11 @@ import {
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 
 export default createConfig({
-    /*database: {
+    database: {
         kind: "postgres",
         connectionString: process.env.DATABASE_URL,
         publishSchema: "publish",
-    },*/
+    },
     networks: {
         // Testnets
         arbitrumSepolia: {
@@ -27,9 +27,9 @@ export default createConfig({
                 http(
                     `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
                 ),
-                http(
+                /*http(
                     `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
-                ),
+                ),*/
             ]),
             pollingInterval: 10_000,
             maxRequestsPerSecond: 64,
