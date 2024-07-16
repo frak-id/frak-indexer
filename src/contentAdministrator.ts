@@ -40,6 +40,13 @@ ponder.on(
     async ({ event, context }) => {
         const { ContentAdministrator } = context.db;
 
+        const id = contentAdministratorId(
+            event.args.contentId,
+            event.args.operator
+        );
+        const existing = await ContentAdministrator.findUnique({id});
+        if (existing) return;
+
         await ContentAdministrator.create({
             id: contentAdministratorId(
                 event.args.contentId,
