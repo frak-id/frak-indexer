@@ -70,7 +70,7 @@ jobs:
       - name: "🔨 Prebuild docker dependencies"
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./packages/ponder
           platforms: linux/arm64
           push: true
           tags: |
