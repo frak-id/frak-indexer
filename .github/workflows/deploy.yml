@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - staging
+      - feat/erpc-preparation
 
 concurrency:
   group: ${{ github.ref }}-deploy
