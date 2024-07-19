@@ -9,14 +9,13 @@
     "lint": "biome lint .",
     "typecheck": "tsc"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
     "@types/aws-lambda": "8.10.138",
     "@types/node": "^20.14.9",
     "aws-cdk-lib": "2.142.1",
-    "sst": "^2.42.0",
+    "sst": "2.43.4",
     "typescript": "^5.3.2"
   },
   "engines": {

@@ -41,7 +41,7 @@ export function IndexerStack({ app, stack }: StackContext) {
 
     // The service itself
     const indexerService = new Service(stack, "IndexerService", {
-        path: "packages/indexer",
+        path: "packages/ponder",
         // SST not happy, can't connect to ECR to fetch the instance during the build process
         // file: "Dockerfile.prebuilt",
         port: 42069,
