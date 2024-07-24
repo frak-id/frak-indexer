@@ -81,7 +81,7 @@ export function ErpcStack({ app, stack }: StackContext) {
                 containerName: "erpc",
                 image: erpcImage,
                 secrets: cdkSecretsMap,
-                healthCheck: {
+                /*healthCheck: {
                     command: [
                         "CMD-SHELL",
                         "curl -f http://localhost:4001 || exit 1",
@@ -90,7 +90,7 @@ export function ErpcStack({ app, stack }: StackContext) {
                     timeout: Duration.seconds(15),
                     retries: 3,
                     startPeriod: Duration.seconds(30),
-                },
+                },*/
             },
         },
     });
