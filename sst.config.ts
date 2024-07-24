@@ -29,7 +29,7 @@ export default {
         });
 
         app.stack(ConfigStack);
-        app.stack(ErpcStack);
+        // app.stack(ErpcStack);
         app.stack(IndexerStack);
     },
 } satisfies SSTConfig;
