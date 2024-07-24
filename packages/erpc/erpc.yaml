@@ -1,4 +1,4 @@
-logLevel: warn
+logLevel: ${ERPC_LOG_LEVEL}
 database:
   # todo: Should use the same postgres as the indexer but on a different schema
   evmJsonRpcCache:
@@ -51,7 +51,7 @@ projects:
     upstreams:
       - id: alchemy-multi-chain
         endpoint: alchemy://${ALCHEMY_API_KEY}
-        rateLimitBudget: global
+        rateLimitBudget: alchemy
         healthCheckGroup: default-hcg
         allowMethods:
           - "alchemy_*"
@@ -68,15 +68,15 @@ projects:
             jitter: 500ms
 rateLimiters:
   budgets:
-    - id: default-budget
+    - id: alchemy
       rules:
         - method: "*"
           maxCount: 200
           period: 1s
 healthChecks:
   groups:
-    - id: default-hcg
-      checkInterval: 300s
+    - id: slow-hcg
+      checkInterval: 600s
       maxErrorRatePercent: 10
       maxP90LatencyMs: 5s
       maxBlocksBehind: 5

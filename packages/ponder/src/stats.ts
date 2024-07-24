@@ -51,6 +51,10 @@ export async function increaseCampaignsInteractions({
     // Perform the increments
     // todo: Should use an `updateMany` if we are sure that campaign stats are created
     for (const campaign of campaigns.items) {
+        if (!campaign.id) {
+            console.error("Campaign id not found", campaign);
+            continue;
+        }
         // Create the stats if not found
         await PressCampaignStats.upsert({
             id: campaign.id,
