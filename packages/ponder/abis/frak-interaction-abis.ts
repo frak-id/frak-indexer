@@ -1251,17 +1251,6 @@ export const dappInteractionFacetAbi = [
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const pressInteractionFacetAbi = [
-    {
-        type: "constructor",
-        inputs: [
-            {
-                name: "_referralRegistry",
-                internalType: "contract ReferralRegistry",
-                type: "address",
-            },
-        ],
-        stateMutability: "nonpayable",
-    },
     { type: "fallback", stateMutability: "nonpayable" },
     {
         type: "function",
@@ -1307,6 +1296,65 @@ export const pressInteractionFacetAbi = [
             },
         ],
         name: "ArticleRead",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "user",
+                internalType: "address",
+                type: "address",
+                indexed: true,
+            },
+            {
+                name: "referrer",
+                internalType: "address",
+                type: "address",
+                indexed: true,
+            },
+        ],
+        name: "UserReferred",
+    },
+    { type: "error", inputs: [], name: "UnknownInteraction" },
+] as const;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ReferralFeatureFacet
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const referralFeatureFacetAbi = [
+    {
+        type: "constructor",
+        inputs: [
+            {
+                name: "_referralRegistry",
+                internalType: "contract ReferralRegistry",
+                type: "address",
+            },
+        ],
+        stateMutability: "nonpayable",
+    },
+    { type: "fallback", stateMutability: "nonpayable" },
+    {
+        type: "function",
+        inputs: [],
+        name: "contentTypeDenominator",
+        outputs: [{ name: "", internalType: "uint8", type: "uint8" }],
+        stateMutability: "pure",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "user",
+                internalType: "address",
+                type: "address",
+                indexed: true,
+            },
+        ],
+        name: "ReferralLinkCreation",
     },
     {
         type: "event",

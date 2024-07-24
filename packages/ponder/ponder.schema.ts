@@ -44,21 +44,40 @@ export default createSchema((p) => ({
     }),
 
     // Campaign related
-    Campaign: p.createTable({
+    Campaign: p.createTable(
+        {
+            id: p.hex(),
+
+            name: p.string(),
+            version: p.string(),
+
+            contentId: p.bigint().references("Content.id"),
+            content: p.one("contentId"),
+
+            attached: p.boolean(),
+
+            attachTimestamp: p.bigint(),
+            detachTimestamp: p.bigint().optional(),
+
+            capResets: p.many("CampaignCapReset.campaignId"),
+        },
+        {
+            contentIndex: p.index("contentId"),
+        }
+    ),
+    PressCampaignStats: p.createTable({
         id: p.hex(),
 
-        name: p.string(),
-        version: p.string(),
+        campaignId: p.hex().references("Campaign.id"),
+        campaign: p.one("campaignId"),
 
-        contentId: p.bigint().references("Content.id"),
-        content: p.one("contentId"),
+        totalInteractions: p.bigint(),
+        openInteractions: p.bigint(),
+        readInteractions: p.bigint(),
+        referredInteractions: p.bigint(),
+        createReferredLinkInteractions: p.bigint(),
 
-        attached: p.boolean(),
-
-        attachTimestamp: p.bigint(),
-        detachTimestamp: p.bigint().optional(),
-
-        capResets: p.many("CampaignCapReset.campaignId"),
+        totalRewards: p.bigint(),
     }),
     CampaignCapReset: p.createTable(
         {
@@ -76,8 +95,8 @@ export default createSchema((p) => ({
         }
     ),
 
-    // Press events
-    PressEvent: p.createTable(
+    // Interaction events
+    InteractionEvent: p.createTable(
         {
             id: p.string(),
 
@@ -85,7 +104,7 @@ export default createSchema((p) => ({
             interaction: p.one("interactionId"),
 
             user: p.hex(),
-            type: p.enum("PressEventType"),
+            type: p.enum("InteractionEventType"),
             data: p.json(),
 
             timestamp: p.bigint(),
@@ -98,7 +117,14 @@ export default createSchema((p) => ({
         }
     ),
 
-    PressEventType: p.createEnum(["OPEN_ARTICLE", "READ_ARTICLE", "REFERRED"]),
+    InteractionEventType: p.createEnum([
+        // Referral type
+        "REFERRED",
+        "CREATE_REFERRAL_LINK",
+        // Press type
+        "OPEN_ARTICLE",
+        "READ_ARTICLE",
+    ]),
 
     // Rewards related stuff
     RewardingContract: p.createTable(
