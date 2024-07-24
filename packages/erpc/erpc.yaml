@@ -49,14 +49,40 @@ projects:
             delay: 1000ms
             maxCount: 2
     upstreams:
-      - id: alchemy-multi-chain
-        endpoint: alchemy://${ALCHEMY_API_KEY}
+# todo: Disabled for now since api endpoints seems to be fcked up
+#      - id: alchemy-multi-chain
+#        endpoint: alchemy://${ALCHEMY_API_KEY}
+#        type: evm-alchemy
+#        rateLimitBudget: alchemy
+#        healthCheckGroup: default-hcg
+#        failsafe:
+#          timeout:
+#            duration: 15s
+#          retry:
+#            maxCount: 2
+#            delay: 1000ms
+#            backoffMaxDelay: 10s
+#            backoffFactor: 0.3
+#            jitter: 500ms
+      - id: alchemy-arb-sepolia
+        endpoint: https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}
+        type: evm-alchemy
         rateLimitBudget: alchemy
         healthCheckGroup: default-hcg
-        allowMethods:
-          - "alchemy_*"
-        ignoreMethods:
-          - "trace_transaction"
+        failsafe:
+          timeout:
+            duration: 15s
+          retry:
+            maxCount: 2
+            delay: 1000ms
+            backoffMaxDelay: 10s
+            backoffFactor: 0.3
+            jitter: 500ms
+      - id: alchemy-arb
+        endpoint: https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}
+        type: evm-alchemy
+        rateLimitBudget: alchemy
+        healthCheckGroup: default-hcg
         failsafe:
           timeout:
             duration: 15s

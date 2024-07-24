@@ -1,3 +1,4 @@
+import { Duration } from "aws-cdk-lib";
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { ContainerImage } from "aws-cdk-lib/aws-ecs";
 import { Service, type StackContext, use } from "sst/constructs";
@@ -80,6 +81,16 @@ export function ErpcStack({ app, stack }: StackContext) {
                 containerName: "erpc",
                 image: erpcImage,
                 secrets: cdkSecretsMap,
+                healthCheck: {
+                    command: [
+                        "CMD-SHELL",
+                        "curl -f http://localhost:4001 || exit 1",
+                    ],
+                    interval: Duration.seconds(30),
+                    timeout: Duration.seconds(15),
+                    retries: 3,
+                    startPeriod: Duration.seconds(30),
+                },
             },
         },
     });

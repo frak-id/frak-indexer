@@ -84,6 +84,16 @@ export function IndexerStack({ app, stack }: StackContext) {
                 containerName: "indexer",
                 image: indexerImage,
                 secrets: cdkSecretsMap,
+                /*healthCheck: {
+                    command: [
+                        "CMD-SHELL",
+                        "curl -f http://localhost:42069/status || exit 1",
+                    ],
+                    interval: Duration.seconds(30),
+                    timeout: Duration.seconds(5),
+                    retries: 3,
+                    startPeriod: Duration.seconds(30),
+                },*/
             },
         },
     });
