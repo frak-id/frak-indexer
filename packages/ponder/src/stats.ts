@@ -53,9 +53,9 @@ export async function increaseCampaignsInteractions({
     for (const campaign of campaigns.items) {
         // Create the stats if not found
         await PressCampaignStats.upsert({
-            id: campaign,
+            id: campaign.id,
             create: {
-                campaignId: campaign,
+                campaignId: campaign.id,
                 totalInteractions: 0n,
                 openInteractions: 0n,
                 readInteractions: 0n,

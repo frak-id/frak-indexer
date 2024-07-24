@@ -2,12 +2,10 @@ logLevel: warn
 database:
   # todo: Should use the same postgres as the indexer but on a different schema
   evmJsonRpcCache:
-    driver: memory
-    # driver: postgresql
-    # postgresql:
-    #   connectionUri: >-
-    #     postgres://YOUR_USERNAME_HERE:YOUR_PASSWORD_HERE@your.postgres.hostname.here.com:5432/your_database_name
-    #   table: rpc_cache
+    driver: postgresql
+    postgresql:
+      connectionUri: ${DATABASE_URL}
+      table: rpc_cache
 server:
   httpHost: 0.0.0.0
   httpPort: 4000
@@ -24,15 +22,15 @@ projects:
           chainId: 421614
         failsafe:
           timeout:
-            duration: 30s
+            duration: 120s
           retry:
             maxCount: 5
             delay: 500ms
-            backoffMaxDelay: 10s
-            backoffFactor: 0.3
-            jitter: 200ms
+            backoffMaxDelay: 20s
+            backoffFactor: 2
+            jitter: 500ms
           hedge:
-            delay: 1000ms
+            delay: 2000ms
             maxCount: 2
       # Arb
       - architecture: evm
@@ -45,14 +43,14 @@ projects:
             maxCount: 5
             delay: 500ms
             backoffMaxDelay: 10s
-            backoffFactor: 0.3
+            backoffFactor: 0.5
             jitter: 200ms
           hedge:
             delay: 1000ms
             maxCount: 2
     upstreams:
       - id: alchemy-multi-chain
-        endpoint: alchemy://XXXX_YOUR_ALCHEMY_API_KEY_HERE_XXXX
+        endpoint: alchemy://${ALCHEMY_API_KEY}
         rateLimitBudget: global
         healthCheckGroup: default-hcg
         allowMethods:
@@ -73,12 +71,12 @@ rateLimiters:
     - id: default-budget
       rules:
         - method: "*"
-          maxCount: 10000
+          maxCount: 200
           period: 1s
 healthChecks:
   groups:
     - id: default-hcg
-      checkInterval: 30s
+      checkInterval: 300s
       maxErrorRatePercent: 10
       maxP90LatencyMs: 5s
       maxBlocksBehind: 5
