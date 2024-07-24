@@ -1,0 +1,84 @@
+logLevel: warn
+database:
+  # todo: Should use the same postgres as the indexer but on a different schema
+  evmJsonRpcCache:
+    driver: memory
+    # driver: postgresql
+    # postgresql:
+    #   connectionUri: >-
+    #     postgres://YOUR_USERNAME_HERE:YOUR_PASSWORD_HERE@your.postgres.hostname.here.com:5432/your_database_name
+    #   table: rpc_cache
+server:
+  httpHost: 0.0.0.0
+  httpPort: 4000
+metrics:
+  enabled: true
+  host: 0.0.0.0
+  port: 4001
+projects:
+  - id: main
+    networks:
+      # Arb sepolia
+      - architecture: evm
+        evm:
+          chainId: 421614
+        failsafe:
+          timeout:
+            duration: 30s
+          retry:
+            maxCount: 5
+            delay: 500ms
+            backoffMaxDelay: 10s
+            backoffFactor: 0.3
+            jitter: 200ms
+          hedge:
+            delay: 1000ms
+            maxCount: 2
+      # Arb
+      - architecture: evm
+        evm:
+          chainId: 42161
+        failsafe:
+          timeout:
+            duration: 30s
+          retry:
+            maxCount: 5
+            delay: 500ms
+            backoffMaxDelay: 10s
+            backoffFactor: 0.3
+            jitter: 200ms
+          hedge:
+            delay: 1000ms
+            maxCount: 2
+    upstreams:
+      - id: alchemy-multi-chain
+        endpoint: alchemy://XXXX_YOUR_ALCHEMY_API_KEY_HERE_XXXX
+        rateLimitBudget: global
+        healthCheckGroup: default-hcg
+        allowMethods:
+          - "alchemy_*"
+        ignoreMethods:
+          - "trace_transaction"
+        failsafe:
+          timeout:
+            duration: 15s
+          retry:
+            maxCount: 2
+            delay: 1000ms
+            backoffMaxDelay: 10s
+            backoffFactor: 0.3
+            jitter: 500ms
+rateLimiters:
+  budgets:
+    - id: default-budget
+      rules:
+        - method: "*"
+          maxCount: 10000
+          period: 1s
+healthChecks:
+  groups:
+    - id: default-hcg
+      checkInterval: 30s
+      maxErrorRatePercent: 10
+      maxP90LatencyMs: 5s
+      maxBlocksBehind: 5
