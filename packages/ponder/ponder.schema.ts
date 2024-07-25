@@ -111,7 +111,7 @@ export default createSchema((p) => ({
 
             user: p.hex(),
             type: p.enum("InteractionEventType"),
-            data: p.json(),
+            data: p.json().optional(),
 
             timestamp: p.bigint(),
         },
