@@ -1,9 +1,10 @@
 import { type Context, ponder } from "@/generated";
 import type { Address } from "viem";
-import { referralCampaignAbi } from "../abis/frak-campaign-abis";
+import { referralCampaignAbi } from "../../abis/frak-campaign-abis";
 
 ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
-    const { RewardingContract, Reward, RewardAddedEvent } = context.db;
+    const { RewardingContract, Reward, RewardAddedEvent, PressCampaignStats } =
+        context.db;
 
     // Try to find a rewarding contract for the given event emitter
     const rewardingContract = await getRewardingContract({
@@ -45,6 +46,27 @@ ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
             amount: event.args.amount,
             txHash: event.log.transactionHash,
             timestamp: event.block.timestamp,
+        },
+    });
+
+    // Update the current campaigns stats for the distributed amount
+    await PressCampaignStats.upsert({
+        id: event.log.address,
+        create: {
+            campaignId: event.log.address,
+            totalInteractions: 0n,
+            openInteractions: 0n,
+            readInteractions: 0n,
+            referredInteractions: 0n,
+            createReferredLinkInteractions: 0n,
+            totalRewards: 0n,
+        },
+        // Update the given field by incrementing them
+        update: ({ current }) => {
+            return {
+                ...current,
+                totalRewards: current.totalRewards + (event.args.amount ?? 0n),
+            };
         },
     });
 });

@@ -1,4 +1,5 @@
 import type { SSTConfig } from "sst";
+import { ConfigStack } from "./iac/Config";
 import { IndexerStack } from "./iac/Indexer";
 
 export default {
@@ -26,6 +27,8 @@ export default {
             tracing: "disabled",
         });
 
+        app.stack(ConfigStack);
+        // app.stack(ErpcStack);
         app.stack(IndexerStack);
     },
 } satisfies SSTConfig;

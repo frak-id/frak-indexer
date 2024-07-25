@@ -1,13 +1,11 @@
-logLevel: warn
+logLevel: ${ERPC_LOG_LEVEL}
 database:
   # todo: Should use the same postgres as the indexer but on a different schema
   evmJsonRpcCache:
-    driver: memory
-    # driver: postgresql
-    # postgresql:
-    #   connectionUri: >-
-    #     postgres://YOUR_USERNAME_HERE:YOUR_PASSWORD_HERE@your.postgres.hostname.here.com:5432/your_database_name
-    #   table: rpc_cache
+    driver: postgresql
+    postgresql:
+      connectionUri: ${DATABASE_URL}
+      table: rpc_cache
 server:
   httpHost: 0.0.0.0
   httpPort: 4000
@@ -24,15 +22,15 @@ projects:
           chainId: 421614
         failsafe:
           timeout:
-            duration: 30s
+            duration: 120s
           retry:
             maxCount: 5
             delay: 500ms
-            backoffMaxDelay: 10s
-            backoffFactor: 0.3
-            jitter: 200ms
+            backoffMaxDelay: 20s
+            backoffFactor: 2
+            jitter: 500ms
           hedge:
-            delay: 1000ms
+            delay: 2000ms
             maxCount: 2
       # Arb
       - architecture: evm
@@ -45,20 +43,46 @@ projects:
             maxCount: 5
             delay: 500ms
             backoffMaxDelay: 10s
-            backoffFactor: 0.3
+            backoffFactor: 0.5
             jitter: 200ms
           hedge:
             delay: 1000ms
             maxCount: 2
     upstreams:
-      - id: alchemy-multi-chain
-        endpoint: alchemy://XXXX_YOUR_ALCHEMY_API_KEY_HERE_XXXX
-        rateLimitBudget: global
+# todo: Disabled for now since api endpoints seems to be fcked up
+#      - id: alchemy-multi-chain
+#        endpoint: alchemy://${ALCHEMY_API_KEY}
+#        type: evm-alchemy
+#        rateLimitBudget: alchemy
+#        healthCheckGroup: default-hcg
+#        failsafe:
+#          timeout:
+#            duration: 15s
+#          retry:
+#            maxCount: 2
+#            delay: 1000ms
+#            backoffMaxDelay: 10s
+#            backoffFactor: 0.3
+#            jitter: 500ms
+      - id: alchemy-arb-sepolia
+        endpoint: https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}
+        type: evm-alchemy
+        rateLimitBudget: alchemy
         healthCheckGroup: default-hcg
-        allowMethods:
-          - "alchemy_*"
-        ignoreMethods:
-          - "trace_transaction"
+        failsafe:
+          timeout:
+            duration: 15s
+          retry:
+            maxCount: 2
+            delay: 1000ms
+            backoffMaxDelay: 10s
+            backoffFactor: 0.3
+            jitter: 500ms
+      - id: alchemy-arb
+        endpoint: https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}
+        type: evm-alchemy
+        rateLimitBudget: alchemy
+        healthCheckGroup: default-hcg
         failsafe:
           timeout:
             duration: 15s
@@ -70,15 +94,15 @@ projects:
             jitter: 500ms
 rateLimiters:
   budgets:
-    - id: default-budget
+    - id: alchemy
       rules:
         - method: "*"
-          maxCount: 10000
+          maxCount: 200
           period: 1s
 healthChecks:
   groups:
-    - id: default-hcg
-      checkInterval: 30s
+    - id: slow-hcg
+      checkInterval: 600s
       maxErrorRatePercent: 10
       maxP90LatencyMs: 5s
       maxBlocksBehind: 5

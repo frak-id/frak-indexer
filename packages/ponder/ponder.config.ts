@@ -9,6 +9,7 @@ import {
     contentInteractionManagerAbi,
     dappInteractionFacetAbi,
     pressInteractionFacetAbi,
+    referralFeatureFacetAbi,
 } from "./abis/frak-interaction-abis";
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 
@@ -67,6 +68,7 @@ export default createConfig({
                 contentInteractionDiamondAbi,
                 pressInteractionFacetAbi,
                 dappInteractionFacetAbi,
+                referralFeatureFacetAbi,
             ]),
             factory: {
                 address: "0xFE0717cACd6Fff3001EdD3f360Eb2854F54861DD",

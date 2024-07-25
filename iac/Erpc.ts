@@ -5,14 +5,14 @@ import { ConfigStack } from "./Config";
 import { buildSecretsMap } from "./utils";
 
 /**
- * The CDK stack that will deploy the indexer service
+ * The CDK stack that will deploy the erpc service
  * @param stack
  * @constructor
  */
-export function IndexerStack({ app, stack }: StackContext) {
+export function ErpcStack({ app, stack }: StackContext) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
-    const { rpcSecrets, ponderDb } = use(ConfigStack);
-    const secrets = [...rpcSecrets, ponderDb];
+    const { rpcSecrets, erpcDb } = use(ConfigStack);
+    const secrets = [...rpcSecrets, erpcDb];
 
     // Get our CDK secrets map
     const cdkSecretsMap = buildSecretsMap(stack, secrets);
@@ -20,29 +20,27 @@ export function IndexerStack({ app, stack }: StackContext) {
     // Get the container props of our prebuilt binaries
     const containerRegistry = Repository.fromRepositoryAttributes(
         stack,
-        "IndexerEcr",
+        "ErpcEcr",
         {
-            repositoryArn: `arn:aws:ecr:eu-west-1:${app.account}:repository/indexer`,
-            repositoryName: "indexer",
+            repositoryArn: `arn:aws:ecr:eu-west-1:${app.account}:repository/erpc`,
+            repositoryName: "erpc",
         }
     );
 
     const imageTag = process.env.COMMIT_SHA ?? "latest";
     console.log(`Will use the image ${imageTag}`);
-    const indexerImage = ContainerImage.fromEcrRepository(
+    const erpcImage = ContainerImage.fromEcrRepository(
         containerRegistry,
         imageTag
     );
 
     // The service itself
-    const indexerService = new Service(stack, "IndexerService", {
-        path: "packages/ponder",
-        // SST not happy, can't connect to ECR to fetch the instance during the build process
-        // file: "Dockerfile.prebuilt",
-        port: 42069,
+    const erpcService = new Service(stack, "ErpcService", {
+        path: "packages/erpc",
+        port: 4000,
         // Domain mapping
         customDomain: {
-            domainName: "indexer.frak.id",
+            domainName: "erpc.frak.id",
             hostedZone: "frak.id",
         },
         // Setup some capacity options
@@ -64,9 +62,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         logRetention: "one_week",
         // Set the right environment variables
         environment: {
-            // Ponder related stuff
-            PONDER_LOG_LEVEL: "info",
-            PONDER_TELEMETRY_DISABLED: "true",
+            ERPC_LOG_LEVEL: "warn",
         },
         cdk: {
             // Customise fargate service to enable circuit breaker (if the new deployment is failing)
@@ -81,16 +77,16 @@ export function IndexerStack({ app, stack }: StackContext) {
             },
             // Directly specify the image position in the registry here
             container: {
-                containerName: "indexer",
-                image: indexerImage,
+                containerName: "erpc",
+                image: erpcImage,
                 secrets: cdkSecretsMap,
                 /*healthCheck: {
                     command: [
                         "CMD-SHELL",
-                        "curl -f http://localhost:42069/status || exit 1",
+                        "curl -f http://localhost:4001 || exit 1",
                     ],
                     interval: Duration.seconds(30),
-                    timeout: Duration.seconds(5),
+                    timeout: Duration.seconds(15),
                     retries: 3,
                     startPeriod: Duration.seconds(30),
                 },*/
@@ -99,6 +95,6 @@ export function IndexerStack({ app, stack }: StackContext) {
     });
 
     stack.addOutputs({
-        indexerServiceId: indexerService.id,
+        erpcServiceId: erpcService.id,
     });
 }
