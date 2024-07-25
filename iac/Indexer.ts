@@ -1,5 +1,6 @@
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { ContainerImage } from "aws-cdk-lib/aws-ecs";
+import { Duration } from "aws-cdk-lib/core";
 import { Service, type StackContext, use } from "sst/constructs";
 import { ConfigStack } from "./Config";
 import { buildSecretsMap } from "./utils";
@@ -69,6 +70,16 @@ export function IndexerStack({ app, stack }: StackContext) {
             PONDER_TELEMETRY_DISABLED: "true",
         },
         cdk: {
+            applicationLoadBalancerTargetGroup: {
+                deregistrationDelay: Duration.seconds(60),
+                healthCheck: {
+                    path: "/health",
+                    interval: Duration.seconds(20),
+                    healthyThresholdCount: 2,
+                    unhealthyThresholdCount: 5,
+                    healthyHttpCodes: "200-299",
+                },
+            },
             // Customise fargate service to enable circuit breaker (if the new deployment is failing)
             fargateService: {
                 circuitBreaker: {
@@ -78,22 +89,14 @@ export function IndexerStack({ app, stack }: StackContext) {
                 desiredCount: 1,
                 minHealthyPercent: 0,
                 maxHealthyPercent: 100,
+                // Increase health check grace period
+                healthCheckGracePeriod: Duration.seconds(120),
             },
             // Directly specify the image position in the registry here
             container: {
                 containerName: "indexer",
                 image: indexerImage,
                 secrets: cdkSecretsMap,
-                /*healthCheck: {
-                    command: [
-                        "CMD-SHELL",
-                        "curl -f http://localhost:42069/status || exit 1",
-                    ],
-                    interval: Duration.seconds(30),
-                    timeout: Duration.seconds(5),
-                    retries: 3,
-                    startPeriod: Duration.seconds(30),
-                },*/
             },
         },
     });
