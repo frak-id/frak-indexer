@@ -1,4 +1,3 @@
-import { Duration } from "aws-cdk-lib";
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { ContainerImage } from "aws-cdk-lib/aws-ecs";
 import { Service, type StackContext, use } from "sst/constructs";

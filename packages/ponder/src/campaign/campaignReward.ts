@@ -1,6 +1,6 @@
 import { type Context, ponder } from "@/generated";
 import type { Address } from "viem";
-import { referralCampaignAbi } from "../abis/frak-campaign-abis";
+import { referralCampaignAbi } from "../../abis/frak-campaign-abis";
 
 ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
     const { RewardingContract, Reward, RewardAddedEvent, PressCampaignStats } =

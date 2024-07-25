@@ -1,6 +1,5 @@
 import type { SSTConfig } from "sst";
 import { ConfigStack } from "./iac/Config";
-import { ErpcStack } from "./iac/Erpc";
 import { IndexerStack } from "./iac/Indexer";
 
 export default {

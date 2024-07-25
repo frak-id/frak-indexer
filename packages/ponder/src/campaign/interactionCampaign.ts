@@ -1,6 +1,6 @@
 import * as console from "node:console";
 import { ponder } from "@/generated";
-import { interactionCampaignAbi } from "../abis/frak-campaign-abis";
+import { interactionCampaignAbi } from "../../abis/frak-campaign-abis";
 
 ponder.on("ContentInteraction:CampaignAttached", async ({ event, context }) => {
     const { Campaign, ContentInteractionContract } = context.db;
