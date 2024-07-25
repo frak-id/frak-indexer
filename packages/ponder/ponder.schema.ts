@@ -60,25 +60,31 @@ export default createSchema((p) => ({
             detachTimestamp: p.bigint().optional(),
 
             capResets: p.many("CampaignCapReset.campaignId"),
+            stats: p.many("PressCampaignStats.campaignId"),
         },
         {
             contentIndex: p.index("contentId"),
         }
     ),
-    PressCampaignStats: p.createTable({
-        id: p.hex(),
+    PressCampaignStats: p.createTable(
+        {
+            id: p.hex(),
 
-        campaignId: p.hex().references("Campaign.id"),
-        campaign: p.one("campaignId"),
+            campaignId: p.hex().references("Campaign.id"),
+            campaign: p.one("campaignId"),
 
-        totalInteractions: p.bigint(),
-        openInteractions: p.bigint(),
-        readInteractions: p.bigint(),
-        referredInteractions: p.bigint(),
-        createReferredLinkInteractions: p.bigint(),
+            totalInteractions: p.bigint(),
+            openInteractions: p.bigint(),
+            readInteractions: p.bigint(),
+            referredInteractions: p.bigint(),
+            createReferredLinkInteractions: p.bigint(),
 
-        totalRewards: p.bigint(),
-    }),
+            totalRewards: p.bigint(),
+        },
+        {
+            campaignIndex: p.index("campaignId"),
+        }
+    ),
     CampaignCapReset: p.createTable(
         {
             id: p.string(), // campaign address + timestamp
