@@ -67,7 +67,10 @@ ponder.get("/admin/:wallet/campaigns", async (ctx) => {
             detachTimestamp: Campaign.detachTimestamp,
         })
         .from(ContentAdministrator)
-        .innerJoin(Campaign, eq(ContentAdministrator.contentId, Campaign.id))
+        .innerJoin(
+            Campaign,
+            eq(ContentAdministrator.contentId, Campaign.contentId)
+        )
         .where(eq(ContentAdministrator.user, wallet));
 
     // Return the result as json
@@ -100,10 +103,13 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
             totalRewards: PressCampaignStats.totalRewards,
         })
         .from(ContentAdministrator)
-        .innerJoin(Campaign, eq(ContentAdministrator.contentId, Campaign.id))
+        .innerJoin(
+            Campaign,
+            eq(ContentAdministrator.contentId, Campaign.contentId)
+        )
         .innerJoin(
             PressCampaignStats,
-            eq(Campaign.contentId, PressCampaignStats.campaignId)
+            eq(Campaign.id, PressCampaignStats.campaignId)
         )
         .where(eq(ContentAdministrator.user, wallet));
 
