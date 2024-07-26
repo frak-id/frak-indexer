@@ -104,4 +104,6 @@ export function IndexerStack({ app, stack }: StackContext) {
     stack.addOutputs({
         indexerServiceId: indexerService.id,
     });
+
+    return indexerService;
 }

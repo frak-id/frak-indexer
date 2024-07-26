@@ -3,6 +3,7 @@ import { ContainerImage } from "aws-cdk-lib/aws-ecs";
 import { Duration } from "aws-cdk-lib/core";
 import { Service, type StackContext, use } from "sst/constructs";
 import { ConfigStack } from "./Config";
+import { IndexerStack } from "./Indexer";
 import { buildSecretsMap } from "./utils";
 
 /**
@@ -35,15 +36,13 @@ export function ErpcStack({ app, stack }: StackContext) {
         imageTag
     );
 
+    // Get our indexer service
+    const indexerService = use(IndexerStack);
+
     // The service itself
     const erpcService = new Service(stack, "ErpcService", {
         path: "packages/erpc",
         port: 4000,
-        // Domain mapping
-        customDomain: {
-            domainName: "erpc.frak.id",
-            hostedZone: "frak.id",
-        },
         // Setup some capacity options
         scaling: {
             minContainers: 1,
@@ -66,18 +65,10 @@ export function ErpcStack({ app, stack }: StackContext) {
             ERPC_LOG_LEVEL: "warn",
         },
         cdk: {
-            applicationLoadBalancerTargetGroup: {
-                deregistrationDelay: Duration.seconds(60),
-                healthCheck: {
-                    // todo: Should have a health path or something like that
-                    path: "/",
-                    port: "traffic-port",
-                    interval: Duration.seconds(20),
-                    healthyThresholdCount: 2,
-                    unhealthyThresholdCount: 5,
-                    healthyHttpCodes: "200-299",
-                },
-            },
+            vpc: indexerService.cdk?.vpc,
+            // Don't auto setup the ALB since we will be using the one from the indexer service
+            // todo: setup the ALB after the indexer service is deployed
+            applicationLoadBalancer: false,
             // Customise fargate service to enable circuit breaker (if the new deployment is failing)
             fargateService: {
                 circuitBreaker: {
@@ -95,16 +86,6 @@ export function ErpcStack({ app, stack }: StackContext) {
                 containerName: "erpc",
                 image: erpcImage,
                 secrets: cdkSecretsMap,
-                /*healthCheck: {
-                    command: [
-                        "CMD-SHELL",
-                        "curl -f http://localhost:4001 || exit 1",
-                    ],
-                    interval: Duration.seconds(30),
-                    timeout: Duration.seconds(15),
-                    retries: 3,
-                    startPeriod: Duration.seconds(30),
-                },*/
             },
         },
     });
