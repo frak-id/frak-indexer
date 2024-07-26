@@ -78,8 +78,6 @@ export function ErpcStack({ app, stack }: StackContext) {
                 desiredCount: 1,
                 minHealthyPercent: 0,
                 maxHealthyPercent: 100,
-                // Increase health check grace period
-                healthCheckGracePeriod: Duration.seconds(120),
             },
             // Directly specify the image position in the registry here
             container: {
