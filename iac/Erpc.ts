@@ -5,6 +5,7 @@ import { Service, type StackContext, use } from "sst/constructs";
 import { ConfigStack } from "./Config";
 import { IndexerStack } from "./Indexer";
 import { buildSecretsMap } from "./utils";
+import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 
 /**
  * The CDK stack that will deploy the erpc service
@@ -112,18 +113,22 @@ export function ErpcStack({ app, stack }: StackContext) {
     // Add the listener on port 8080 for the rpc
     const httpListener = alb.addListener("ErpcHttpListener", {
         port: 8080,
+        protocol: ApplicationProtocol.HTTP,
     });
     httpListener.addTargets("ErpcHttpTarget", {
         port: 4000,
+        protocol: ApplicationProtocol.HTTP,
         targets: [erpcFargateService],
     });
 
     // Add the metrics listener
     const metricsListener = alb.addListener("ErpcMetricsListener", {
         port: 8081,
+        protocol: ApplicationProtocol.HTTP,
     });
     metricsListener.addTargets("ErpcHttpTarget", {
         port: 4001,
+        protocol: ApplicationProtocol.HTTP,
         targets: [erpcFargateService],
     });
 
