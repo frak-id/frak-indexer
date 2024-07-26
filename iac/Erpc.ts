@@ -1,11 +1,11 @@
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { ContainerImage } from "aws-cdk-lib/aws-ecs";
+import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
 import { Service, type StackContext, use } from "sst/constructs";
 import { ConfigStack } from "./Config";
 import { IndexerStack } from "./Indexer";
 import { buildSecretsMap } from "./utils";
-import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 
 /**
  * The CDK stack that will deploy the erpc service
@@ -119,6 +119,13 @@ export function ErpcStack({ app, stack }: StackContext) {
         port: 4000,
         protocol: ApplicationProtocol.HTTP,
         targets: [erpcFargateService],
+        healthCheck: {
+            port: "4001",
+            interval: Duration.seconds(20),
+            healthyThresholdCount: 2,
+            unhealthyThresholdCount: 5,
+            healthyHttpCodes: "200-299",
+        },
     });
 
     // Add the metrics listener
@@ -130,6 +137,13 @@ export function ErpcStack({ app, stack }: StackContext) {
         port: 4001,
         protocol: ApplicationProtocol.HTTP,
         targets: [erpcFargateService],
+        healthCheck: {
+            port: "4001",
+            interval: Duration.seconds(20),
+            healthyThresholdCount: 2,
+            unhealthyThresholdCount: 5,
+            healthyHttpCodes: "200-299",
+        },
     });
 
     stack.addOutputs({
