@@ -1,15 +1,44 @@
+import { Repository } from "aws-cdk-lib/aws-ecr";
+import { ContainerImage } from "aws-cdk-lib/aws-ecs";
 import { Secret } from "aws-cdk-lib/aws-ecs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
-import type { Config, Stack } from "sst/constructs";
+import type { App, Config, Stack } from "sst/constructs";
 
 const specificSecretsList = ["ERPC_DATABASE_URL", "DATABASE_URL"];
+
+/**
+ * Get an ECS image from the given name
+ */
+export function getImageFromName({
+    stack,
+    app,
+    name,
+}: { stack: Stack; app: App; name: string }) {
+    // Get the container props of our prebuilt binaries
+    const containerRegistry = Repository.fromRepositoryAttributes(
+        stack,
+        `${name}Ecr`,
+        {
+            repositoryArn: `arn:aws:ecr:eu-west-1:${app.account}:repository/${name}`,
+            repositoryName: name,
+        }
+    );
+
+    const imageTag = process.env.COMMIT_SHA ?? "latest";
+    console.log(`Will use the image ${imageTag}`);
+    return ContainerImage.fromEcrRepository(containerRegistry, imageTag);
+}
 
 /**
  * Build a list of secret name to CDK secret, for direct binding
  * @param stack
  * @param secrets
  */
-export function buildSecretsMap(stack: Stack, secrets: Config.Secret[]) {
+export function buildSecretsMap({
+    stack,
+    secrets,
+    name,
+}: { stack: Stack; secrets: Config.Secret[]; name: string }) {
     return secrets.reduce(
         (acc, secret) => {
             const isSpecificSecret = specificSecretsList.includes(secret.name);
@@ -21,7 +50,7 @@ export function buildSecretsMap(stack: Stack, secrets: Config.Secret[]) {
             const stringParameter =
                 StringParameter.fromSecureStringParameterAttributes(
                     stack,
-                    `Secret${secret.name}`,
+                    `Secret_${name}_${secret.name}`,
                     {
                         parameterName: ssmPath,
                     }
