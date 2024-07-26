@@ -84,8 +84,47 @@ export function ErpcStack({ app, stack }: StackContext) {
                 containerName: "erpc",
                 image: erpcImage,
                 secrets: cdkSecretsMap,
+                portMappings: [
+                    {
+                        containerPort: 4000,
+                        hostPort: 4000,
+                    },
+                    {
+                        containerPort: 4001,
+                        hostPort: 4001,
+                    },
+                ],
             },
         },
+    });
+
+    const erpcFargateService = erpcService.cdk?.fargateService;
+    if (!erpcFargateService) {
+        throw new Error("No fargate service found in the erpc service");
+    }
+    const alb = indexerService.cdk?.applicationLoadBalancer;
+    if (!alb) {
+        throw new Error("No ALB found in the indexer service");
+    }
+
+    // Add the ALB target + listener
+
+    // Add the listener on port 8080 for the rpc
+    const httpListener = alb.addListener("ErpcHttpListener", {
+        port: 8080,
+    });
+    httpListener.addTargets("ErpcHttpTarget", {
+        port: 4000,
+        targets: [erpcFargateService],
+    });
+
+    // Add the metrics listener
+    const metricsListener = alb.addListener("ErpcMetricsListener", {
+        port: 8081,
+    });
+    metricsListener.addTargets("ErpcHttpTarget", {
+        port: 4001,
+        targets: [erpcFargateService],
     });
 
     stack.addOutputs({
