@@ -38,6 +38,8 @@ export default createSchema((p) => ({
         contentId: p.bigint().references("Content.id"),
         content: p.one("contentId"),
 
+        referralTree: p.hex(),
+
         createdTimestamp: p.bigint(),
         lastUpdateTimestamp: p.bigint().optional(),
         removedTimestamp: p.bigint().optional(),

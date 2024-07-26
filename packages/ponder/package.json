@@ -13,9 +13,9 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@ponder/core": "^0.5.2",
+    "@ponder/core": "^0.5.3",
     "hono": "^4.5.1",
-    "viem": "^1.19.9"
+    "viem": "^1.21.4"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
