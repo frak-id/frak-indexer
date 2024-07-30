@@ -110,6 +110,24 @@ export function IndexerStack({ app, stack }: StackContext) {
             healthyHttpCodes: "200",
         },
     });
+    const erpcMetricsListener = alb.addListener("ErpcMetricsListener", {
+        port: 4001,
+        protocol: ApplicationProtocol.HTTP,
+    });
+    erpcMetricsListener.addTargets("ErpcMetricsTarget", {
+        port: 4001,
+        protocol: ApplicationProtocol.HTTP,
+        targets: [erpcFargateService],
+        deregistrationDelay: Duration.seconds(30),
+        healthCheck: {
+            path: "/",
+            port: "4001",
+            interval: Duration.seconds(30),
+            healthyThresholdCount: 2,
+            unhealthyThresholdCount: 5,
+            healthyHttpCodes: "200",
+        },
+    });
     erpcListener.connections.allowInternally(Port.tcp(4001));
     erpcListener.connections.allowInternally(Port.tcp(8080));
     erpcListener.connections.allowFrom(alb.connections, Port.tcp(8080));
