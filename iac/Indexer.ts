@@ -11,7 +11,8 @@ import {
 } from "aws-cdk-lib/aws-cloudfront";
 import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Vpc } from "aws-cdk-lib/aws-ec2";
-import { ApplicationLoadBalancer, ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
+import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
 import {
     type App,
@@ -35,11 +36,17 @@ export function IndexerStack({ app, stack }: StackContext) {
         natGateways: 1,
     });
 
-    // Add the indexer service
-    const indexerService = addIndexerService({ stack, app, vpc });
+    // Create the cluster for each services
+    const cluster = new Cluster(stack, "EcsCluster", {
+        clusterName: `${stack.stage}-IndexingCluster`,
+        vpc,
+    });
 
     // Then add the erpc service
-    const erpcService = addErpcService({ stack, app, vpc });
+    const erpcService = addErpcService({ stack, app, vpc, cluster });
+
+    // Add the indexer service
+    const indexerService = addIndexerService({ stack, app, vpc, cluster });
 
     // If we are missing the fargate services, early exit
     const indexerFaragateService = indexerService.cdk?.fargateService;
@@ -76,11 +83,11 @@ export function IndexerStack({ app, stack }: StackContext) {
     // todo: add erpc service to the ALB
     // Add the listener on port 8080 for the rpc
     /*const erpcListener = alb.addListener("ErpcListener", {
-        port: 8080,
+        port: 4001,
         protocol: ApplicationProtocol.HTTP,
     });
     erpcListener.addTargets("ErpcTarget", {
-        port: 4000,
+        port: 4001,
         protocol: ApplicationProtocol.HTTP,
         targets: [erpcFargateService],
         deregistrationDelay: Duration.seconds(30),
@@ -141,13 +148,94 @@ export function IndexerStack({ app, stack }: StackContext) {
 }
 
 /**
+ * Add the eRPC service to the stack
+ */
+function addErpcService({
+    stack,
+    app,
+    vpc,
+    cluster,
+}: { stack: Stack; app: App; vpc: Vpc; cluster: ICluster }) {
+    // All the secrets env variable we will be using (in local you can just use a .env file)
+    const { rpcSecrets, erpcDb } = use(ConfigStack);
+    const secrets = [...rpcSecrets, erpcDb];
+
+    // Get our CDK secrets map
+    const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "erpc" });
+
+    // Get the container props of our prebuilt binaries
+    const erpcImage = getImageFromName({ stack, app, name: "erpc" });
+
+    // The service itself
+    const erpcService = new Service(stack, "ErpcService", {
+        path: "packages/erpc",
+        port: 4000,
+        // Setup some capacity options
+        scaling: {
+            minContainers: 1,
+            maxContainers: 1,
+            cpuUtilization: 90,
+            memoryUtilization: 90,
+        },
+        // Bind the secret we will be using
+        bind: secrets,
+        // Arm architecture (lower cost)
+        architecture: "arm64",
+        // Hardware config
+        cpu: "1 vCPU",
+        memory: "4 GB",
+        storage: "30 GB",
+        // Log retention
+        logRetention: "one_week",
+        // Set the right environment variables
+        environment: {
+            ERPC_LOG_LEVEL: "warn",
+        },
+        cdk: {
+            vpc,
+            cluster,
+            // Don't auto setup the ALB since we will be using the one from the indexer service
+            // todo: setup the ALB after the indexer service is deployed
+            applicationLoadBalancer: false,
+            // Customise fargate service to enable circuit breaker (if the new deployment is failing)
+            fargateService: {
+                circuitBreaker: {
+                    enable: true,
+                },
+                // Disable rolling update
+                desiredCount: 1,
+                minHealthyPercent: 0,
+                maxHealthyPercent: 100,
+            },
+            // Directly specify the image position in the registry here
+            container: {
+                containerName: "erpc",
+                image: erpcImage,
+                secrets: cdkSecretsMap,
+                portMappings: [
+                    { containerPort: 4000, hostPort: 4000 },
+                    { containerPort: 4001, hostPort: 4001 },
+                ],
+            },
+        },
+    });
+
+    stack.addOutputs({
+        erpcServiceId: erpcService.id,
+    });
+
+    return erpcService;
+}
+
+/**
  * Add the indexer service to the stack
  */
 function addIndexerService({
     stack,
     app,
     vpc,
-}: { stack: Stack; app: App; vpc: Vpc }) {
+    cluster,
+}: { stack: Stack; app: App; vpc: Vpc; cluster: ICluster }) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
     const { rpcSecrets, ponderDb } = use(ConfigStack);
     const secrets = [...rpcSecrets, ponderDb];
@@ -194,6 +282,7 @@ function addIndexerService({
         },
         cdk: {
             vpc,
+            cluster,
             // Don't auto setup the ALB since we will be using the one from the indexer service
             // todo: setup the ALB after the indexer service is deployed
             applicationLoadBalancer: false,
@@ -223,82 +312,4 @@ function addIndexerService({
     });
 
     return indexerService;
-}
-
-/**
- * Add the eRPC service to the stack
- */
-function addErpcService({
-    stack,
-    app,
-    vpc,
-}: { stack: Stack; app: App; vpc: Vpc }) {
-    // All the secrets env variable we will be using (in local you can just use a .env file)
-    const { rpcSecrets, erpcDb } = use(ConfigStack);
-    const secrets = [...rpcSecrets, erpcDb];
-
-    // Get our CDK secrets map
-    const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "erpc" });
-
-    // Get the container props of our prebuilt binaries
-    const erpcImage = getImageFromName({ stack, app, name: "erpc" });
-
-    // The service itself
-    const erpcService = new Service(stack, "ErpcService", {
-        path: "packages/erpc",
-        port: 4000,
-        // Setup some capacity options
-        scaling: {
-            minContainers: 1,
-            maxContainers: 1,
-            cpuUtilization: 90,
-            memoryUtilization: 90,
-        },
-        // Bind the secret we will be using
-        bind: secrets,
-        // Arm architecture (lower cost)
-        architecture: "arm64",
-        // Hardware config
-        cpu: "1 vCPU",
-        memory: "4 GB",
-        storage: "30 GB",
-        // Log retention
-        logRetention: "one_week",
-        // Set the right environment variables
-        environment: {
-            ERPC_LOG_LEVEL: "warn",
-        },
-        cdk: {
-            vpc,
-            // Don't auto setup the ALB since we will be using the one from the indexer service
-            // todo: setup the ALB after the indexer service is deployed
-            applicationLoadBalancer: false,
-            // Customise fargate service to enable circuit breaker (if the new deployment is failing)
-            fargateService: {
-                circuitBreaker: {
-                    enable: true,
-                },
-                // Disable rolling update
-                desiredCount: 1,
-                minHealthyPercent: 0,
-                maxHealthyPercent: 100,
-            },
-            // Directly specify the image position in the registry here
-            container: {
-                containerName: "erpc",
-                image: erpcImage,
-                secrets: cdkSecretsMap,
-                portMappings: [
-                    { containerPort: 4000 },
-                    { containerPort: 4001 },
-                ],
-            },
-        },
-    });
-
-    stack.addOutputs({
-        erpcServiceId: erpcService.id,
-    });
-
-    return erpcService;
 }
