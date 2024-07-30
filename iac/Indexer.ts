@@ -46,15 +46,15 @@ export function IndexerStack({ app, stack }: StackContext) {
     });
 
     // Then add the erpc service
-    //const erpcService = addErpcService({ stack, app, vpc, cluster });
+    const erpcService = addErpcService({ stack, app, vpc, cluster });
 
     // Add the indexer service
     const indexerService = addIndexerService({ stack, app, vpc, cluster });
 
     // If we are missing the fargate services, early exit
     const indexerFaragateService = indexerService.cdk?.fargateService;
-    // const erpcFargateService = erpcService.cdk?.fargateService;
-    if (!(indexerFaragateService)) {
+    const erpcFargateService = erpcService.cdk?.fargateService;
+    if (!(indexerFaragateService && erpcFargateService)) {
         throw new Error(
             "Missing fargate service in the indexer or erpc service"
         );
