@@ -12,10 +12,7 @@ import {
 import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Vpc } from "aws-cdk-lib/aws-ec2";
 import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
-import {
-    ApplicationLoadBalancer,
-    ApplicationProtocol,
-} from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
 import {
     type App,
@@ -202,6 +199,7 @@ function addErpcService({
             applicationLoadBalancer: false,
             // Customise fargate service to enable circuit breaker (if the new deployment is failing)
             fargateService: {
+                enableExecuteCommand: true,
                 circuitBreaker: {
                     enable: true,
                 },
@@ -291,6 +289,7 @@ function addIndexerService({
             applicationLoadBalancer: false,
             // Customise fargate service to enable circuit breaker (if the new deployment is failing)
             fargateService: {
+                enableExecuteCommand: true,
                 circuitBreaker: {
                     enable: true,
                 },
