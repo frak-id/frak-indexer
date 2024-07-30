@@ -85,7 +85,7 @@ export function IndexerStack({ app, stack }: StackContext) {
 
     // todo: add erpc service to the ALB
     // Add the listener on port 8080 for the rpc
-    const erpcListener = alb.addListener("ErpcListener", {
+    /*const erpcListener = alb.addListener("ErpcListener", {
         port: 4000,
         protocol: ApplicationProtocol.HTTP,
     });
@@ -102,7 +102,7 @@ export function IndexerStack({ app, stack }: StackContext) {
             unhealthyThresholdCount: 5,
             healthyHttpCodes: "200-299",
         },
-    });
+    });*/
 
     const cachePolicy = new CachePolicy(this, "CachePolicy", {
         queryStringBehavior: CacheQueryStringBehavior.all(),
