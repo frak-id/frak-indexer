@@ -15,7 +15,6 @@ import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
 import {
     ApplicationLoadBalancer,
     ApplicationProtocol,
-    ListenerCondition,
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
 import {
@@ -87,14 +86,14 @@ export function IndexerStack({ app, stack }: StackContext) {
             unhealthyThresholdCount: 5,
             healthyHttpCodes: "200-299",
         },
-        priority: 20,
     });
     indexerListener.connections.allowInternally(Port.tcp(80));
+    indexerListener.connections.allowFrom(alb.connections, Port.tcp(80));
 
     // todo: add erpc service to the ALB
     // Add the listener on port 8080 for the rpc
     const erpcListener = alb.addListener("ErpcListener", {
-        port: 80,
+        port: 8080,
         protocol: ApplicationProtocol.HTTP,
     });
     erpcListener.addTargets("ErpcTarget", {
@@ -110,11 +109,11 @@ export function IndexerStack({ app, stack }: StackContext) {
             unhealthyThresholdCount: 5,
             healthyHttpCodes: "200",
         },
-        conditions: [ListenerCondition.pathPatterns(["/main-rpc/*"])],
-        priority: 10,
     });
     erpcListener.connections.allowInternally(Port.tcp(4001));
     erpcListener.connections.allowInternally(Port.tcp(8080));
+    erpcListener.connections.allowFrom(alb.connections, Port.tcp(8080));
+    erpcListener.connections.allowFrom(alb.connections, Port.tcp(4001));
 
     const cachePolicy = new CachePolicy(this, "CachePolicy", {
         queryStringBehavior: CacheQueryStringBehavior.all(),
