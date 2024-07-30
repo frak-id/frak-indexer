@@ -24,7 +24,7 @@ export function getImageFromName({
         }
     );
 
-    const imageTag = process.env.COMMIT_SHA ?? "latest";
+    const imageTag = process.env.IMAGE_TAG ?? "latest";
     console.log(`Will use the image ${imageTag}`);
     return ContainerImage.fromEcrRepository(containerRegistry, imageTag);
 }

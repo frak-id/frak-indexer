@@ -31,6 +31,16 @@ jobs:
         with:
           node-version: '22'
 
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          base: ${{ github.ref }}
+          list-files: 'shell'
+          filters: |
+            images:
+              - 'packages/erpc/**'
+              - 'packages/ponder/**'
+
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
@@ -69,6 +79,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: "🔨 Build Ponder docker dependencies"
+        if: steps.changes.outputs.images == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./packages/ponder
@@ -82,6 +93,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: "🔨 Build ERPC docker dependencies"
+        if: steps.changes.outputs.images == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./packages/erpc
@@ -99,4 +111,4 @@ jobs:
           echo "Deploying with stage: prod"
           pnpm sst deploy --stage prod
         env:
-          COMMIT_SHA: ${{ github.sha }}
+          IMAGE_TAG: ${{ steps.changes.outputs.images == 'true' && github.sha || 'latest' }}
