@@ -12,7 +12,10 @@ import {
 import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Vpc } from "aws-cdk-lib/aws-ec2";
 import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
-import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import {
+    ApplicationLoadBalancer,
+    ApplicationProtocol,
+} from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
 import {
     type App,
@@ -82,24 +85,24 @@ export function IndexerStack({ app, stack }: StackContext) {
 
     // todo: add erpc service to the ALB
     // Add the listener on port 8080 for the rpc
-    /*const erpcListener = alb.addListener("ErpcListener", {
-        port: 4001,
+    const erpcListener = alb.addListener("ErpcListener", {
+        port: 4000,
         protocol: ApplicationProtocol.HTTP,
     });
     erpcListener.addTargets("ErpcTarget", {
-        port: 4001,
+        port: 4000,
         protocol: ApplicationProtocol.HTTP,
         targets: [erpcFargateService],
         deregistrationDelay: Duration.seconds(30),
         healthCheck: {
             path: "/health",
-            port: "4001",
-            interval: Duration.seconds(10),
+            port: "80",
+            interval: Duration.seconds(20),
             healthyThresholdCount: 2,
             unhealthyThresholdCount: 5,
             healthyHttpCodes: "200-299",
         },
-    });*/
+    });
 
     const cachePolicy = new CachePolicy(this, "CachePolicy", {
         queryStringBehavior: CacheQueryStringBehavior.all(),
