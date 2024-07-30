@@ -12,7 +12,11 @@ import {
 import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Vpc } from "aws-cdk-lib/aws-ec2";
 import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
-import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import {
+    ApplicationLoadBalancer,
+    ApplicationProtocol,
+    ListenerAction,
+} from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
 import {
     type App,
@@ -82,9 +86,10 @@ export function IndexerStack({ app, stack }: StackContext) {
 
     // todo: add erpc service to the ALB
     // Add the listener on port 8080 for the rpc
-    /*const erpcListener = alb.addListener("ErpcListener", {
-        port: 4000,
+    const erpcListener = alb.addListener("ErpcListener", {
+        port: 8080,
         protocol: ApplicationProtocol.HTTP,
+        defaultAction: ListenerAction.fixedResponse(404),
     });
     erpcListener.addTargets("ErpcTarget", {
         port: 4000,
@@ -92,14 +97,14 @@ export function IndexerStack({ app, stack }: StackContext) {
         targets: [erpcFargateService],
         deregistrationDelay: Duration.seconds(30),
         healthCheck: {
-            path: "/health",
-            port: "80",
-            interval: Duration.seconds(20),
+            path: "/",
+            port: "4001",
+            interval: Duration.seconds(30),
             healthyThresholdCount: 2,
             unhealthyThresholdCount: 5,
-            healthyHttpCodes: "200-299",
+            healthyHttpCodes: "200",
         },
-    });*/
+    });
 
     const cachePolicy = new CachePolicy(this, "CachePolicy", {
         queryStringBehavior: CacheQueryStringBehavior.all(),
