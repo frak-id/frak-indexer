@@ -8,7 +8,7 @@ database:
       table: rpc_cache
 server:
   httpHost: 0.0.0.0
-  httpPort: 4000
+  httpPort: 8080
 metrics:
   enabled: true
   host: 0.0.0.0

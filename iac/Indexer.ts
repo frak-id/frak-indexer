@@ -10,7 +10,7 @@ import {
     ViewerProtocolPolicy,
 } from "aws-cdk-lib/aws-cloudfront";
 import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
-import { Port, SecurityGroup, Vpc } from "aws-cdk-lib/aws-ec2";
+import { Port, Vpc } from "aws-cdk-lib/aws-ec2";
 import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
 import {
     ApplicationLoadBalancer,
@@ -69,13 +69,13 @@ export function IndexerStack({ app, stack }: StackContext) {
 
     // Allow connections to the given ports
     alb.connections.allowTo(indexerFaragateService, Port.tcp(80));
-    alb.connections.allowTo(erpcFargateService, Port.tcpRange(4000, 4001));
+    alb.connections.allowTo(erpcFargateService, Port.tcp(8080));
+    alb.connections.allowTo(erpcFargateService, Port.tcp(4001));
 
     // Add the indexer service to the ALB
     const indexerListener = alb.addListener("IndexerListener", {
         port: 80,
     });
-    indexerListener.connections.allowInternally(Port.tcp(80));
     indexerListener.addTargets("IndexerTarget", {
         port: 80,
         targets: [indexerFaragateService],
@@ -88,6 +88,7 @@ export function IndexerStack({ app, stack }: StackContext) {
             healthyHttpCodes: "200-299",
         },
     });
+    indexerListener.connections.allowInternally(Port.tcp(80));
 
     // todo: add erpc service to the ALB
     // Add the listener on port 8080 for the rpc
@@ -96,10 +97,8 @@ export function IndexerStack({ app, stack }: StackContext) {
         protocol: ApplicationProtocol.HTTP,
         defaultAction: ListenerAction.fixedResponse(404),
     });
-    erpcListener.connections.allowInternally(Port.tcpRange(4000, 4001));
-    erpcListener.connections.allowInternally(Port.tcp(8080));
     erpcListener.addTargets("ErpcTarget", {
-        port: 4000,
+        port: 8080,
         protocol: ApplicationProtocol.HTTP,
         targets: [erpcFargateService],
         deregistrationDelay: Duration.seconds(30),
@@ -112,6 +111,8 @@ export function IndexerStack({ app, stack }: StackContext) {
             healthyHttpCodes: "200",
         },
     });
+    erpcListener.connections.allowInternally(Port.tcp(4001));
+    erpcListener.connections.allowInternally(Port.tcp(8080));
 
     const cachePolicy = new CachePolicy(this, "CachePolicy", {
         queryStringBehavior: CacheQueryStringBehavior.all(),
@@ -181,7 +182,7 @@ function addErpcService({
     // The service itself
     const erpcService = new Service(stack, "ErpcService", {
         path: "packages/erpc",
-        port: 4000,
+        port: 8080,
         // Setup some capacity options
         scaling: {
             minContainers: 1,
@@ -226,7 +227,7 @@ function addErpcService({
                 image: erpcImage,
                 secrets: cdkSecretsMap,
                 portMappings: [
-                    { containerPort: 4000, hostPort: 4000 },
+                    { containerPort: 8080, hostPort: 8080 },
                     { containerPort: 4001, hostPort: 4001 },
                 ],
             },
