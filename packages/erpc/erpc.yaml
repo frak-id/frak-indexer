@@ -4,7 +4,7 @@ database:
   evmJsonRpcCache:
     driver: postgresql
     postgresql:
-      connectionUri: ${DATABASE_URL}
+      connectionUri: ${ERPC_DATABASE_URL}
       table: rpc_cache
 server:
   httpHost: 0.0.0.0
