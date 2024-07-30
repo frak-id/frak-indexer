@@ -14,7 +14,7 @@ metrics:
   host: 0.0.0.0
   port: 4001
 projects:
-  - id: main
+  - id: main-rpc
     networks:
       # Arb sepolia
       - architecture: evm
