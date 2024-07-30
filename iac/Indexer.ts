@@ -94,7 +94,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     // todo: add erpc service to the ALB
     // Add the listener on port 8080 for the rpc
     const erpcListener = alb.addListener("ErpcListener", {
-        port: 81,
+        port: 80,
         protocol: ApplicationProtocol.HTTP,
     });
     erpcListener.addTargets("ErpcTarget", {
@@ -110,7 +110,7 @@ export function IndexerStack({ app, stack }: StackContext) {
             unhealthyThresholdCount: 5,
             healthyHttpCodes: "200",
         },
-        //conditions: [ListenerCondition.pathPatterns(["/main-rpc/*"])],
+        conditions: [ListenerCondition.pathPatterns(["/main-rpc/*"])],
         priority: 10,
     });
     erpcListener.connections.allowInternally(Port.tcp(4001));
