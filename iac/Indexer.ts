@@ -10,7 +10,7 @@ import {
     ViewerProtocolPolicy,
 } from "aws-cdk-lib/aws-cloudfront";
 import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
-import { Vpc } from "aws-cdk-lib/aws-ec2";
+import { Port, SecurityGroup, Vpc } from "aws-cdk-lib/aws-ec2";
 import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
 import {
     ApplicationLoadBalancer,
@@ -67,10 +67,15 @@ export function IndexerStack({ app, stack }: StackContext) {
         internetFacing: true,
     });
 
+    // Allow connections to the given ports
+    alb.connections.allowTo(indexerFaragateService, Port.tcp(80));
+    alb.connections.allowTo(erpcFargateService, Port.tcpRange(4000, 4001));
+
     // Add the indexer service to the ALB
     const indexerListener = alb.addListener("IndexerListener", {
         port: 80,
     });
+    indexerListener.connections.allowInternally(Port.tcp(80));
     indexerListener.addTargets("IndexerTarget", {
         port: 80,
         targets: [indexerFaragateService],
@@ -91,6 +96,8 @@ export function IndexerStack({ app, stack }: StackContext) {
         protocol: ApplicationProtocol.HTTP,
         defaultAction: ListenerAction.fixedResponse(404),
     });
+    erpcListener.connections.allowInternally(Port.tcpRange(4000, 4001));
+    erpcListener.connections.allowInternally(Port.tcp(8080));
     erpcListener.addTargets("ErpcTarget", {
         port: 4000,
         protocol: ApplicationProtocol.HTTP,
