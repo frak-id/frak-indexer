@@ -13,7 +13,8 @@ export function getImageFromName({
     stack,
     app,
     name,
-}: { stack: Stack; app: App; name: string }) {
+    tag,
+}: { stack: Stack; app: App; name: string; tag?: string }) {
     // Get the container props of our prebuilt binaries
     const containerRegistry = Repository.fromRepositoryAttributes(
         stack,
@@ -24,7 +25,7 @@ export function getImageFromName({
         }
     );
 
-    const imageTag = process.env.IMAGE_TAG ?? "latest";
+    const imageTag = tag ?? "latest";
     console.log(`Will use the image ${imageTag}`);
     return ContainerImage.fromEcrRepository(containerRegistry, imageTag);
 }

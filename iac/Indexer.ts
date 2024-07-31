@@ -203,7 +203,12 @@ function addErpcService({
     const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "erpc" });
 
     // Get the container props of our prebuilt binaries
-    const erpcImage = getImageFromName({ stack, app, name: "erpc" });
+    const erpcImage = getImageFromName({
+        stack,
+        app,
+        name: "erpc",
+        tag: process.env.ERPC_IMAGE_TAG,
+    });
 
     // The service itself
     const erpcService = new Service(stack, "ErpcService", {
@@ -284,7 +289,12 @@ function addIndexerService({
     const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "indexer" });
 
     // Get the container props of our prebuilt binaries
-    const indexerImage = getImageFromName({ stack, app, name: "indexer" });
+    const indexerImage = getImageFromName({
+        stack,
+        app,
+        name: "indexer",
+        tag: process.env.PONDER_IMAGE_TAG,
+    });
 
     // The service itself
     const indexerService = new Service(stack, "IndexerService", {

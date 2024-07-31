@@ -38,10 +38,9 @@ Both services are deployed as containerized applications on AWS ECS (Elastic Con
 This project uses SST for infrastructure deployment. To deploy:
 
 1. Ensure you have AWS credentials configured.
-2. Install dependencies: `npm install`
-3. Deploy the stack: `npx sst deploy --stage prod`
-
-(Add more detailed deployment instructions if necessary)
+2. Setup the secrets required to run the project (check the `iac/Config.ts` file for the required secrets).
+3. Install dependencies: `pnpm install`
+4. Deploy the stack: `npx run deploy`
 
 ## Contributing
 
