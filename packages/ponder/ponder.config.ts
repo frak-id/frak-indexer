@@ -1,5 +1,5 @@
-import { createConfig, loadBalance, mergeAbis } from "@ponder/core";
-import { http, parseAbiItem } from "viem";
+import { createConfig, mergeAbis } from "@ponder/core";
+import { http, fallback, parseAbiItem } from "viem";
 import {
     interactionCampaignAbi,
     referralCampaignAbi,
@@ -13,9 +13,22 @@ import {
 } from "./abis/frak-interaction-abis";
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 
-// 10k with alchemy only, 5k if blockpi also enabled
+/**
+ * Overall max block range
+ */
 const maxBlockRange = 10000;
 
+/**
+ * Get an erpc transport for the given chain id
+ * @param chainId
+ * @returns
+ */
+const getErpcTransport = (chainId: number) =>
+    http(`${process.env.ERPC_BASE_URL}/${chainId}`);
+
+/**
+ * Ponder configuration
+ */
 export default createConfig({
     database: {
         kind: "postgres",
@@ -26,14 +39,12 @@ export default createConfig({
         // Testnets
         arbitrumSepolia: {
             chainId: 421614,
-            transport: loadBalance([
-                http("https://sepolia-rollup.arbitrum.io/rpc"),
+            transport: fallback([
+                getErpcTransport(421614),
                 http(
                     `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
                 ),
-                /*http(
-                    `https://arbitrum-sepolia.blockpi.network/v1/rpc/${process.env.BLOCKPI_API_KEY_ARB_SEPOLIA}`
-                ),*/
+                http("https://sepolia-rollup.arbitrum.io/rpc"),
             ]),
             pollingInterval: 10_000,
             maxRequestsPerSecond: 64,

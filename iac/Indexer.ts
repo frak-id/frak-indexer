@@ -319,6 +319,8 @@ function addIndexerService({
             // Ponder related stuff
             PONDER_LOG_LEVEL: "info",
             PONDER_TELEMETRY_DISABLED: "true",
+            // Erpc base endpoint
+            ERPC_BASE_URL: "https://indexer.frak.id/rpc-main/evm",
         },
         cdk: {
             vpc,
