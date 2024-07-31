@@ -15,6 +15,9 @@ import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
 import {
     ApplicationLoadBalancer,
     ApplicationProtocol,
+    ApplicationTargetGroup,
+    ListenerAction,
+    ListenerCondition,
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
 import {
@@ -66,73 +69,77 @@ export function IndexerStack({ app, stack }: StackContext) {
         internetFacing: true,
     });
 
-    // Allow connections to the given ports
-    alb.connections.allowTo(indexerFaragateService, Port.tcp(80));
+    // Allow connections to the applications ports
+    alb.connections.allowTo(indexerFaragateService, Port.tcp(42069));
     alb.connections.allowTo(erpcFargateService, Port.tcp(8080));
     alb.connections.allowTo(erpcFargateService, Port.tcp(4001));
 
-    // Add the indexer service to the ALB
-    const indexerListener = alb.addListener("IndexerListener", {
+    // Create the listener on port 80
+    const httpListener = alb.addListener("HttpListener", {
         port: 80,
     });
-    indexerListener.addTargets("IndexerTarget", {
-        port: 80,
-        targets: [indexerFaragateService],
-        deregistrationDelay: Duration.seconds(30),
-        healthCheck: {
-            path: "/health",
-            interval: Duration.seconds(20),
-            healthyThresholdCount: 2,
-            unhealthyThresholdCount: 5,
-            healthyHttpCodes: "200-299",
-        },
-    });
-    indexerListener.connections.allowInternally(Port.tcp(80));
-    indexerListener.connections.allowFrom(alb.connections, Port.tcp(80));
+    httpListener.connections.allowInternally(Port.tcp(4001));
+    httpListener.connections.allowInternally(Port.tcp(8080));
+    httpListener.connections.allowInternally(Port.tcp(42069));
 
-    // todo: add erpc service to the ALB
-    // Add the listener on port 8080 for the rpc
-    const erpcListener = alb.addListener("ErpcListener", {
-        port: 8080,
-        protocol: ApplicationProtocol.HTTP,
+    // Create our erpc target group on port 8080 and bind it to the http listener
+    const erpcTargetGroup = new ApplicationTargetGroup(
+        stack,
+        "ErpcTargetGroup",
+        {
+            vpc: vpc,
+            port: 8080,
+            protocol: ApplicationProtocol.HTTP,
+            targets: [erpcFargateService],
+            deregistrationDelay: Duration.seconds(30),
+            healthCheck: {
+                path: "/",
+                port: "4001",
+                interval: Duration.seconds(30),
+                healthyThresholdCount: 2,
+                unhealthyThresholdCount: 5,
+                healthyHttpCodes: "200",
+            },
+        }
+    );
+    httpListener.addAction("ErpcForwardAction", {
+        action: ListenerAction.forward([erpcTargetGroup]),
     });
-    erpcListener.addTargets("ErpcTarget", {
-        port: 8080,
-        protocol: ApplicationProtocol.HTTP,
-        targets: [erpcFargateService],
-        deregistrationDelay: Duration.seconds(30),
-        healthCheck: {
-            path: "/",
-            port: "4001",
-            interval: Duration.seconds(30),
-            healthyThresholdCount: 2,
-            unhealthyThresholdCount: 5,
-            healthyHttpCodes: "200",
-        },
+    httpListener.addTargetGroups("ErpcTarget", {
+        targetGroups: [erpcTargetGroup],
+        priority: 10,
+        conditions: [ListenerCondition.pathPatterns(["/main-rpc/*"])],
     });
-    const erpcMetricsListener = alb.addListener("ErpcMetricsListener", {
-        port: 4001,
-        protocol: ApplicationProtocol.HTTP,
-    });
-    erpcMetricsListener.addTargets("ErpcMetricsTarget", {
-        port: 4001,
-        protocol: ApplicationProtocol.HTTP,
-        targets: [erpcFargateService],
-        deregistrationDelay: Duration.seconds(30),
-        healthCheck: {
-            path: "/",
-            port: "4001",
-            interval: Duration.seconds(30),
-            healthyThresholdCount: 2,
-            unhealthyThresholdCount: 5,
-            healthyHttpCodes: "200",
-        },
-    });
-    erpcListener.connections.allowInternally(Port.tcp(4001));
-    erpcListener.connections.allowInternally(Port.tcp(8080));
-    erpcListener.connections.allowFrom(alb.connections, Port.tcp(8080));
-    erpcListener.connections.allowFrom(alb.connections, Port.tcp(4001));
 
+    // Add the indexer service to the ALB on bind it to the port 42069
+    const indexerTargetGroup = new ApplicationTargetGroup(
+        stack,
+        "IndexerTargetGroup",
+        {
+            vpc: vpc,
+            port: 42069,
+            protocol: ApplicationProtocol.HTTP,
+            targets: [indexerFaragateService],
+            deregistrationDelay: Duration.seconds(30),
+            healthCheck: {
+                path: "/health",
+                interval: Duration.seconds(20),
+                healthyThresholdCount: 2,
+                unhealthyThresholdCount: 5,
+                healthyHttpCodes: "200-299",
+            },
+        }
+    );
+    httpListener.addAction("IndexerForwardAction", {
+        action: ListenerAction.forward([indexerTargetGroup]),
+    });
+    httpListener.addTargetGroups("IndexerTarget", {
+        targetGroups: [indexerTargetGroup],
+        priority: 20,
+        conditions: [ListenerCondition.pathPatterns(["/*"])],
+    });
+
+    // Create our CDN cache policy
     const cachePolicy = new CachePolicy(this, "CachePolicy", {
         queryStringBehavior: CacheQueryStringBehavior.all(),
         headerBehavior: CacheHeaderBehavior.none(),
@@ -246,8 +253,8 @@ function addErpcService({
                 image: erpcImage,
                 secrets: cdkSecretsMap,
                 portMappings: [
-                    { containerPort: 8080, hostPort: 8080 },
-                    { containerPort: 4001, hostPort: 4001 },
+                    { containerPort: 8080 },
+                    { containerPort: 4001 },
                 ],
             },
         },
