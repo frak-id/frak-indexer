@@ -108,7 +108,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     httpListener.addTargetGroups("ErpcTarget", {
         targetGroups: [erpcTargetGroup],
         priority: 10,
-        conditions: [ListenerCondition.pathPatterns(["/main-rpc/*"])],
+        conditions: [ListenerCondition.pathPatterns(["/rpc-main/*"])],
     });
 
     // Add the indexer service to the ALB on bind it to the port 42069

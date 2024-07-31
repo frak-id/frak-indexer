@@ -92,7 +92,7 @@ jobs:
             262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:${{ github.sha }}
           # Github actions cache
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: "🔨 Build ERPC docker dependencies"
         if: steps.changes.outputs.images == 'true'
@@ -105,8 +105,9 @@ jobs:
             262732185023.dkr.ecr.eu-west-1.amazonaws.com/erpc:latest
             262732185023.dkr.ecr.eu-west-1.amazonaws.com/erpc:${{ github.sha }}
           # Github actions cache
+          no-cache: true
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: "🚀 SST Deploy"
         run: |
