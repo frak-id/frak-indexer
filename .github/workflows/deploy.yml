@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - staging
+      - feat/erpc-setup
 
 concurrency:
   group: ${{ github.ref }}-deploy
@@ -29,6 +30,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          base: ${{ github.ref }}
+          list-files: 'shell'
+          filters: |
+            erpc:
+              - 'packages/erpc/**'
+            ponder:
+              - 'packages/ponder/**'
 
       - uses: pnpm/action-setup@v4
         with:
@@ -62,12 +74,15 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Set up QEMU
+        if: steps.changes.outputs.ponder == 'true' || steps.changes.outputs.erpc == 'true'
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
+        if: steps.changes.outputs.ponder == 'true' || steps.changes.outputs.erpc == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: "🔨 Build Ponder docker dependencies"
+        if: steps.changes.outputs.ponder == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./packages/ponder
@@ -78,9 +93,10 @@ jobs:
             262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:${{ github.sha }}
           # Github actions cache
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: "🔨 Build ERPC docker dependencies"
+        if: steps.changes.outputs.erpc == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./packages/erpc
@@ -91,11 +107,12 @@ jobs:
             262732185023.dkr.ecr.eu-west-1.amazonaws.com/erpc:${{ github.sha }}
           # Github actions cache
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: "🚀 SST Deploy"
         run: |
           echo "Deploying with stage: prod"
           pnpm sst deploy --stage prod
         env:
-          COMMIT_SHA: ${{ github.sha }}
+          ERPC_IMAGE_TAG: ${{ steps.changes.outputs.erpc == 'true' && github.sha || 'latest' }}
+          PONDER_IMAGE_TAG: ${{ steps.changes.outputs.ponder == 'true' && github.sha || 'latest' }}
