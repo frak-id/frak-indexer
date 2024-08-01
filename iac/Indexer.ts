@@ -233,7 +233,7 @@ function addErpcService({
         logRetention: "one_week",
         // Set the right environment variables
         environment: {
-            ERPC_LOG_LEVEL: "warn",
+            ERPC_LOG_LEVEL: "debug",
         },
         cdk: {
             vpc,
