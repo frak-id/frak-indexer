@@ -107,6 +107,7 @@ jobs:
           # Github actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=min
+          no-cache: true
 
       - name: "🚀 SST Deploy"
         run: |
