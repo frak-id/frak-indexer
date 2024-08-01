@@ -72,21 +72,21 @@ projects:
       #                                   Mainnets                                   #
       # ---------------------------------------------------------------------------- #
       # Polygon
-      - architecture: evm
-        evm:
-          chainId: 137
-        failsafe:
-          timeout:
-            duration: 30s
-          retry:
-            maxCount: 5
-            delay: 500ms
-            backoffMaxDelay: 10s
-            backoffFactor: 0.5
-            jitter: 200ms
-          hedge:
-            delay: 1000ms
-            maxCount: 2
+      # - architecture: evm
+      #   evm:
+      #     chainId: 137
+      #   failsafe:
+      #     timeout:
+      #       duration: 30s
+      #     retry:
+      #       maxCount: 5
+      #       delay: 500ms
+      #       backoffMaxDelay: 10s
+      #       backoffFactor: 0.5
+      #       jitter: 200ms
+      #     hedge:
+      #       delay: 1000ms
+      #       maxCount: 2
       # Arb
       - architecture: evm
         evm:
