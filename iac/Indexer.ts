@@ -233,7 +233,7 @@ function addErpcService({
         logRetention: "one_week",
         // Set the right environment variables
         environment: {
-            ERPC_LOG_LEVEL: "debug",
+            ERPC_LOG_LEVEL: "warn",
         },
         cdk: {
             vpc,
@@ -327,7 +327,7 @@ function addIndexerService({
         // Set the right environment variables
         environment: {
             // Ponder related stuff
-            PONDER_LOG_LEVEL: "info",
+            PONDER_LOG_LEVEL: "warn",
             PONDER_TELEMETRY_DISABLED: "true",
             // Erpc base endpoint
             ERPC_BASE_URL: "https://indexer.frak.id/rpc-main/evm",
