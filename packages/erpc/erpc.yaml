@@ -15,6 +15,25 @@ metrics:
   port: 4001
 projects:
   - id: rpc-main
+    # TODO: Should be split in two projects, one for indexer and one for frontend
+    cors:
+      # todo: Should be more specific, but since indexer would also use it, allow everything for now
+      allowedOrigins: 
+        - "*"
+      # HTTP methods allowed for CORS requests
+      allowedMethods: 
+        - "GET"
+        - "POST"
+        - "OPTIONS"
+      # Headers allowed in actual requests
+      allowedHeaders:
+        - "Content-Type"
+        - "Authorization"
+      # Headers exposed to the browser
+      exposedHeaders:
+        - "X-Request-ID"
+      allowCredentials: true
+      maxAge: 3600
     networks:
       # ---------------------------------------------------------------------------- #
       #                                    Tesnets                                   #
