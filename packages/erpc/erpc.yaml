@@ -155,9 +155,11 @@ projects:
             delay: 1000ms
             maxCount: 2
     upstreams:
+     - id: envio-public
+       endpoint: evm+envio://rpc.hypersync.xyz
+       rateLimitBudget: envio
      - id: alchemy-multi-chain
-       endpoint: alchemy://${ALCHEMY_API_KEY}
-       type: evm+alchemy
+       endpoint: evm+alchemy://${ALCHEMY_API_KEY}
        rateLimitBudget: alchemy
        failsafe:
          timeout:
@@ -174,4 +176,10 @@ rateLimiters:
       rules:
         - method: "*"
           maxCount: 300
+          period: 1s
+    # Even if not needed, put higher rate limited budget on envio so it's the number one prio compared to alchemy
+    - id: envio
+      rules:
+        - method: "*"
+          maxCount: 10000
           period: 1s
