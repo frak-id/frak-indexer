@@ -1,6 +1,6 @@
+# Config generated using: https://github.com/KONFeature/erpc-config-generator 
 logLevel: ${ERPC_LOG_LEVEL}
 database:
-  # todo: Should use the same postgres as the indexer but on a different schema
   evmJsonRpcCache:
     driver: postgresql
     postgresql:
@@ -9,177 +9,127 @@ database:
 server:
   httpHost: 0.0.0.0
   httpPort: 8080
+  maxTimeout: 60s
 metrics:
   enabled: true
   host: 0.0.0.0
   port: 4001
 projects:
-  - id: rpc-main
-    # TODO: Should be split in two projects, one for indexer and one for frontend
-    cors:
-      # todo: Should be more specific, but since indexer would also use it, allow everything for now
-      allowedOrigins: 
-        - "*"
-      # HTTP methods allowed for CORS requests
-      allowedMethods: 
-        - "GET"
-        - "POST"
-        - "OPTIONS"
-      # Headers allowed in actual requests
-      allowedHeaders:
-        - "Content-Type"
-        - "Authorization"
-      # Headers exposed to the browser
-      exposedHeaders:
-        - "X-Request-ID"
-      allowCredentials: true
-      maxAge: 3600
-    networks:
-      # ---------------------------------------------------------------------------- #
-      #                                    Tesnets                                   #
-      # ---------------------------------------------------------------------------- #
-      # Arb sepolia
-      - architecture: evm
+  - id: ponder-rpc
+    networks: &var2
+      - rateLimitBudget: network-rate-limit
+        failsafe: &var1
+          timeout:
+            duration: 30s
+          retry:
+            maxAttempts: 5
+            delay: 500ms
+            backoffMaxDelay: 10s
+            backoffFactor: 0.5
+            jitter: 200ms
+          hedge:
+            delay: 1s
+            maxCount: 2
+        architecture: evm
         evm:
           chainId: 421614
-        failsafe:
-          timeout:
-            duration: 120s
-          retry:
-            maxCount: 5
-            delay: 500ms
-            backoffMaxDelay: 20s
-            backoffFactor: 2
-            jitter: 500ms
-          hedge:
-            delay: 2000ms
-            maxCount: 2
-      # Optimism sepolia
-      - architecture: evm
+          finalityDepth: 128
+          blockTrackerInterval: ""
+      - rateLimitBudget: network-rate-limit
+        failsafe: *var1
+        architecture: evm
         evm:
           chainId: 11155420
-        failsafe:
-          timeout:
-            duration: 120s
-          retry:
-            maxCount: 5
-            delay: 500ms
-            backoffMaxDelay: 20s
-            backoffFactor: 2
-            jitter: 500ms
-          hedge:
-            delay: 2000ms
-            maxCount: 2
-      # Base sepolia
-      - architecture: evm
+          finalityDepth: 128
+          blockTrackerInterval: ""
+      - rateLimitBudget: network-rate-limit
+        failsafe: *var1
+        architecture: evm
         evm:
           chainId: 84532
-        failsafe:
-          timeout:
-            duration: 120s
-          retry:
-            maxCount: 5
-            delay: 500ms
-            backoffMaxDelay: 20s
-            backoffFactor: 2
-            jitter: 500ms
-          hedge:
-            delay: 2000ms
-            maxCount: 2
-
-      # ---------------------------------------------------------------------------- #
-      #                                   Mainnets                                   #
-      # ---------------------------------------------------------------------------- #
-      # Polygon
-      # - architecture: evm
-      #   evm:
-      #     chainId: 137
-      #   failsafe:
-      #     timeout:
-      #       duration: 30s
-      #     retry:
-      #       maxCount: 5
-      #       delay: 500ms
-      #       backoffMaxDelay: 10s
-      #       backoffFactor: 0.5
-      #       jitter: 200ms
-      #     hedge:
-      #       delay: 1000ms
-      #       maxCount: 2
-      # Arb
-      - architecture: evm
+          finalityDepth: 128
+          blockTrackerInterval: ""
+      - rateLimitBudget: network-rate-limit
+        failsafe: *var1
+        architecture: evm
+        evm:
+          chainId: 137
+          finalityDepth: 128
+          blockTrackerInterval: ""
+      - rateLimitBudget: network-rate-limit
+        failsafe: *var1
+        architecture: evm
         evm:
           chainId: 42161
-        failsafe:
-          timeout:
-            duration: 30s
-          retry:
-            maxCount: 5
-            delay: 500ms
-            backoffMaxDelay: 10s
-            backoffFactor: 0.5
-            jitter: 200ms
-          hedge:
-            delay: 1000ms
-            maxCount: 2
-      # Arb
-      - architecture: evm
-        evm:
-          chainId: 8453
-        failsafe:
-          timeout:
-            duration: 30s
-          retry:
-            maxCount: 5
-            delay: 500ms
-            backoffMaxDelay: 10s
-            backoffFactor: 0.5
-            jitter: 200ms
-          hedge:
-            delay: 1000ms
-            maxCount: 2
-      # Arb
-      - architecture: evm
+          finalityDepth: 128
+          blockTrackerInterval: ""
+      - rateLimitBudget: network-rate-limit
+        failsafe: *var1
+        architecture: evm
         evm:
           chainId: 10
-        failsafe:
-          timeout:
-            duration: 30s
-          retry:
-            maxCount: 5
-            delay: 500ms
-            backoffMaxDelay: 10s
-            backoffFactor: 0.5
-            jitter: 200ms
-          hedge:
-            delay: 1000ms
-            maxCount: 2
-    upstreams:
-     - id: envio-public
-       endpoint: evm+envio://rpc.hypersync.xyz
-       rateLimitBudget: envio
-     - id: alchemy-multi-chain
-       endpoint: evm+alchemy://${ALCHEMY_API_KEY}
-       rateLimitBudget: alchemy
-       failsafe:
-         timeout:
-           duration: 15s
-         retry:
-           maxCount: 2
-           delay: 1000ms
-           backoffMaxDelay: 10s
-           backoffFactor: 0.3
-           jitter: 500ms
+          finalityDepth: 128
+          blockTrackerInterval: ""
+      - rateLimitBudget: network-rate-limit
+        failsafe: *var1
+        architecture: evm
+        evm:
+          chainId: 8453
+          finalityDepth: 128
+          blockTrackerInterval: ""
+    upstreams: &var3
+      - id: envio
+        endpoint: evm+envio://rpc.hypersync.xyz
+        rateLimitBudget: envio-rate-limit
+        type: evm+envio
+        vendorName: Envio
+        ignoreMethods: []
+        allowMethods:
+          - "*"
+        autoIgnoreUnsupportedMethods: true
+      - id: alchemy
+        endpoint: evm+alchemy://${ALCHEMY_API_KEY}
+        rateLimitBudget: alchemy-rate-limit
+        type: evm+alchemy
+        vendorName: Alchemy
+        ignoreMethods: []
+        allowMethods:
+          - "*"
+        autoIgnoreUnsupportedMethods: true
+  - id: nexus-rpc
+    networks: *var2
+    upstreams: *var3
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedMethods:
+        - GET
+        - POST
+        - OPTIONS
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      exposedHeaders:
+        - X-Request-ID
+      allowCredentials: true
+      maxAge: 3600
 rateLimiters:
   budgets:
-    - id: alchemy
-      rules:
-        - method: "*"
-          maxCount: 300
-          period: 1s
-    # Even if not needed, put higher rate limited budget on envio so it's the number one prio compared to alchemy
-    - id: envio
+    - id: network-rate-limit
       rules:
         - method: "*"
           maxCount: 10000
+          period: 3s
+          waitTime: ""
+    - id: envio-rate-limit
+      rules:
+        - method: "*"
+          maxCount: 1000
           period: 1s
+          waitTime: ""
+    - id: alchemy-rate-limit
+      rules:
+        - method: "*"
+          maxCount: 200
+          period: 1s
+          waitTime: ""

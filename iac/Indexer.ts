@@ -108,7 +108,9 @@ export function IndexerStack({ app, stack }: StackContext) {
     httpListener.addTargetGroups("ErpcTarget", {
         targetGroups: [erpcTargetGroup],
         priority: 10,
-        conditions: [ListenerCondition.pathPatterns(["/rpc-main/*"])],
+        conditions: [
+            ListenerCondition.pathPatterns(["/ponder-rpc/*", "/nexus-rpc/*"]),
+        ],
     });
 
     // Add the indexer service to the ALB on bind it to the port 42069
@@ -330,7 +332,7 @@ function addIndexerService({
             PONDER_LOG_LEVEL: "warn",
             PONDER_TELEMETRY_DISABLED: "true",
             // Erpc base endpoint
-            ERPC_BASE_URL: "https://indexer.frak.id/rpc-main/evm",
+            ERPC_BASE_URL: "https://indexer.frak.id/ponder-rpc/evm",
         },
         cdk: {
             vpc,
