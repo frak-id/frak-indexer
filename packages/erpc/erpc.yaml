@@ -17,7 +17,7 @@ metrics:
 projects:
   - id: ponder-rpc
     networks: &var2
-      - rateLimitBudget: network-rate-limit
+      - rateLimitBudget: ""
         failsafe: &var1
           timeout:
             duration: 30s
@@ -35,42 +35,42 @@ projects:
           chainId: 421614
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: network-rate-limit
+      - rateLimitBudget: ""
         failsafe: *var1
         architecture: evm
         evm:
           chainId: 11155420
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: network-rate-limit
+      - rateLimitBudget: ""
         failsafe: *var1
         architecture: evm
         evm:
           chainId: 84532
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: network-rate-limit
+      - rateLimitBudget: ""
         failsafe: *var1
         architecture: evm
         evm:
           chainId: 137
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: network-rate-limit
+      - rateLimitBudget: ""
         failsafe: *var1
         architecture: evm
         evm:
           chainId: 42161
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: network-rate-limit
+      - rateLimitBudget: ""
         failsafe: *var1
         architecture: evm
         evm:
           chainId: 10
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: network-rate-limit
+      - rateLimitBudget: ""
         failsafe: *var1
         architecture: evm
         evm:
@@ -96,6 +96,7 @@ projects:
         allowMethods:
           - "*"
         autoIgnoreUnsupportedMethods: true
+    rateLimitBudget: ""
   - id: nexus-rpc
     networks: *var2
     upstreams: *var3
@@ -113,14 +114,9 @@ projects:
         - X-Request-ID
       allowCredentials: true
       maxAge: 3600
+    rateLimitBudget: ""
 rateLimiters:
   budgets:
-    - id: network-rate-limit
-      rules:
-        - method: "*"
-          maxCount: 10000
-          period: 3s
-          waitTime: ""
     - id: envio-rate-limit
       rules:
         - method: "*"
