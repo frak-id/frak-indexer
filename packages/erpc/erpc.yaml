@@ -1,4 +1,4 @@
-# Config generated using: https://github.com/KONFeature/erpc-config-generator 
+# Config generated using: https://github.com/KONFeature/erpc-config-generator
 logLevel: ${ERPC_LOG_LEVEL}
 database:
   evmJsonRpcCache:
@@ -15,10 +15,10 @@ metrics:
   host: 0.0.0.0
   port: 4001
 projects:
-  - id: ponder-rpc
-    networks: &var2
-      - rateLimitBudget: ""
-        failsafe: &var1
+  - rateLimitBudget: ""
+    id: ponder-rpc
+    networks: &var3
+      - failsafe: &var1
           timeout:
             duration: 30s
           retry:
@@ -31,54 +31,64 @@ projects:
             delay: 1s
             maxCount: 2
         architecture: evm
-        evm:
-          chainId: 421614
-          finalityDepth: 128
-          blockTrackerInterval: ""
-      - rateLimitBudget: ""
-        failsafe: *var1
-        architecture: evm
-        evm:
-          chainId: 11155420
-          finalityDepth: 128
-          blockTrackerInterval: ""
-      - rateLimitBudget: ""
-        failsafe: *var1
-        architecture: evm
-        evm:
-          chainId: 84532
-          finalityDepth: 128
-          blockTrackerInterval: ""
-      - rateLimitBudget: ""
-        failsafe: *var1
-        architecture: evm
+        rateLimitBudget: ""
         evm:
           chainId: 137
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: ""
-        failsafe: *var1
+      - failsafe: *var1
         architecture: evm
+        rateLimitBudget: ""
         evm:
           chainId: 42161
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: ""
-        failsafe: *var1
+      - failsafe: *var1
         architecture: evm
+        rateLimitBudget: ""
         evm:
           chainId: 10
           finalityDepth: 128
           blockTrackerInterval: ""
-      - rateLimitBudget: ""
-        failsafe: *var1
+      - failsafe: *var1
         architecture: evm
+        rateLimitBudget: ""
         evm:
           chainId: 8453
           finalityDepth: 128
           blockTrackerInterval: ""
-    upstreams: &var3
-      - id: envio
+      - failsafe: &var2
+          timeout:
+            duration: 60s
+          retry:
+            maxAttempts: 3
+            delay: 1s
+            backoffMaxDelay: 20s
+            backoffFactor: 0.5
+            jitter: 500ms
+        evm:
+          chainId: 421614
+          finalityDepth: 64
+          blockTrackerInterval: ""
+        architecture: evm
+        rateLimitBudget: ""
+      - failsafe: *var2
+        evm:
+          chainId: 11155420
+          finalityDepth: 64
+          blockTrackerInterval: ""
+        architecture: evm
+        rateLimitBudget: ""
+      - failsafe: *var2
+        evm:
+          chainId: 84532
+          finalityDepth: 64
+          blockTrackerInterval: ""
+        architecture: evm
+        rateLimitBudget: ""
+    upstreams:
+      - &var4
+        id: envio
         endpoint: evm+envio://rpc.hypersync.xyz
         rateLimitBudget: envio-rate-limit
         type: evm+envio
@@ -87,19 +97,32 @@ projects:
         allowMethods:
           - "*"
         autoIgnoreUnsupportedMethods: true
-      - id: alchemy
+      - &var5
+        id: alchemy
         endpoint: evm+alchemy://${ALCHEMY_API_KEY}
-        rateLimitBudget: alchemy-rate-limit
         type: evm+alchemy
+        rateLimitBudget: alchemy-rate-limit
         vendorName: Alchemy
         ignoreMethods: []
         allowMethods:
           - "*"
         autoIgnoreUnsupportedMethods: true
-    rateLimitBudget: ""
-  - id: nexus-rpc
-    networks: *var2
-    upstreams: *var3
+    auth: {}
+  - rateLimitBudget: ""
+    id: nexus-rpc
+    networks: *var3
+    upstreams:
+      - *var4
+      - *var5
+      - id: pimlico
+        endpoint: pimlico://${PIMLICO_API_KEY}
+        rateLimitBudget: pimlico-rate-limit
+        type: evm+pimlico
+        vendorName: Pimlico
+        ignoreMethods: []
+        allowMethods:
+          - "*"
+        autoIgnoreUnsupportedMethods: true
     cors:
       allowedOrigins:
         - "*"
@@ -114,7 +137,15 @@ projects:
         - X-Request-ID
       allowCredentials: true
       maxAge: 3600
-    rateLimitBudget: ""
+    auth:
+      strategies:
+        - allowMethods:
+            - "*"
+          ignoreMethods: []
+          rateLimitBudget: ""
+          type: secret
+          secret:
+            value: ${NEXUS_RPC_SECRET}
 rateLimiters:
   budgets:
     - id: envio-rate-limit
@@ -127,5 +158,11 @@ rateLimiters:
       rules:
         - method: "*"
           maxCount: 200
+          period: 1s
+          waitTime: ""
+    - id: pimlico-rate-limit
+      rules:
+        - method: "*"
+          maxCount: 400
           period: 1s
           waitTime: ""

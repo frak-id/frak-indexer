@@ -14,6 +14,13 @@ export function ConfigStack({ stack }: StackContext) {
         new Config.Secret(stack, "ALCHEMY_API_KEY"),
     ];
 
+    // Pimlico AA RPC
+    const pimlicoApiKey = new Config.Secret(stack, "PIMLICO_API_KEY");
+
+    // Backend secrets
+    const ponderRpcSecret = new Config.Secret(stack, "PONDER_RPC_SECRET");
+    const nexusRpcSecret = new Config.Secret(stack, "NEXUS_RPC_SECRET");
+
     // Databases
     const ponderDb = new Config.Secret(stack, "DATABASE_URL");
     const erpcDb = new Config.Secret(stack, "ERPC_DATABASE_URL");
@@ -21,7 +28,10 @@ export function ConfigStack({ stack }: StackContext) {
     // Return all of that
     return {
         rpcSecrets,
+        pimlicoApiKey,
         ponderDb,
         erpcDb,
+        ponderRpcSecret,
+        nexusRpcSecret,
     };
 }

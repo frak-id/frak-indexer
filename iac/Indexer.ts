@@ -198,8 +198,20 @@ function addErpcService({
     cluster,
 }: { stack: Stack; app: App; vpc: Vpc; cluster: ICluster }) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
-    const { rpcSecrets, erpcDb } = use(ConfigStack);
-    const secrets = [...rpcSecrets, erpcDb];
+    const {
+        rpcSecrets,
+        erpcDb,
+        pimlicoApiKey,
+        nexusRpcSecret,
+        ponderRpcSecret,
+    } = use(ConfigStack);
+    const secrets = [
+        ...rpcSecrets,
+        pimlicoApiKey,
+        erpcDb,
+        nexusRpcSecret,
+        ponderRpcSecret,
+    ];
 
     // Get our CDK secrets map
     const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "erpc" });
@@ -284,8 +296,8 @@ function addIndexerService({
     cluster,
 }: { stack: Stack; app: App; vpc: Vpc; cluster: ICluster }) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
-    const { rpcSecrets, ponderDb } = use(ConfigStack);
-    const secrets = [...rpcSecrets, ponderDb];
+    const { rpcSecrets, ponderDb, ponderRpcSecret } = use(ConfigStack);
+    const secrets = [...rpcSecrets, ponderDb, ponderRpcSecret];
 
     // Get our CDK secrets map
     const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "indexer" });
