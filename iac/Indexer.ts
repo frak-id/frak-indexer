@@ -240,8 +240,8 @@ function addErpcService({
         // Arm architecture (lower cost)
         architecture: "arm64",
         // Hardware config
-        cpu: "1 vCPU",
-        memory: "4 GB",
+        cpu: "0.5 vCPU",
+        memory: "2 GB",
         storage: "30 GB",
         // Log retention
         logRetention: "one_week",
@@ -334,7 +334,7 @@ function addIndexerService({
         architecture: "arm64",
         // Hardware config
         cpu: "1 vCPU",
-        memory: "4 GB",
+        memory: "2 GB",
         storage: "30 GB",
         // Log retention
         logRetention: "one_week",
