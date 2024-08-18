@@ -107,6 +107,15 @@ projects:
         allowMethods:
           - "*"
         autoIgnoreUnsupportedMethods: true
+    auth:
+      strategies:
+        - allowMethods:
+            - "*"
+          ignoreMethods: []
+          rateLimitBudget: ""
+          type: secret
+          secret:
+            value: ${PONDER_RPC_SECRET}
   - rateLimitBudget: ""
     id: nexus-rpc
     networks: *var3
