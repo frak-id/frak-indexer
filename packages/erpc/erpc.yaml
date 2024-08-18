@@ -17,7 +17,7 @@ metrics:
 projects:
   - rateLimitBudget: ""
     id: ponder-rpc
-    networks: &var3
+    networks: &var4
       - failsafe: &var1
           timeout:
             duration: 30s
@@ -87,23 +87,30 @@ projects:
         architecture: evm
         rateLimitBudget: ""
     upstreams:
-      - &var4
+      - &var5
         id: envio
         endpoint: evm+envio://rpc.hypersync.xyz
         rateLimitBudget: envio-rate-limit
         type: evm+envio
         vendorName: Envio
-        ignoreMethods: []
+        ignoreMethods: &var3
+          - eth_estimateUserOperationGas
+          - eth_getUserOperationByHash
+          - eth_getUserOperationReceipt
+          - eth_sendUserOperation
+          - eth_supportedEntryPoints
+          - pm_*
+          - pimlico_*
         allowMethods:
           - "*"
         autoIgnoreUnsupportedMethods: true
-      - &var5
+      - &var6
         id: alchemy
         endpoint: evm+alchemy://${ALCHEMY_API_KEY}
         type: evm+alchemy
         rateLimitBudget: alchemy-rate-limit
         vendorName: Alchemy
-        ignoreMethods: []
+        ignoreMethods: *var3
         allowMethods:
           - "*"
         autoIgnoreUnsupportedMethods: true
@@ -118,22 +125,23 @@ projects:
             value: ${PONDER_RPC_SECRET}
   - rateLimitBudget: ""
     id: nexus-rpc
-    networks: *var3
+    networks: *var4
     upstreams:
-      - *var4
       - *var5
+      - *var6
       - id: pimlico
         endpoint: evm+pimlico://${PIMLICO_API_KEY}
         rateLimitBudget: pimlico-rate-limit
         type: evm+pimlico
         vendorName: Pimlico
         ignoreMethods: []
-        allowMethods:
-          - "*"
+        allowMethods: *var3
         autoIgnoreUnsupportedMethods: true
     cors:
       allowedOrigins:
-        - "*"
+        - https://nexus.frak.id
+        - https://nexus-dev.frak.id
+        - http://localhost:3000
       allowedMethods:
         - GET
         - POST
