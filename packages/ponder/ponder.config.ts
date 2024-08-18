@@ -24,7 +24,7 @@ const maxBlockRange = 10000;
  * @returns
  */
 const getErpcTransport = (chainId: number) =>
-    http(`${process.env.ERPC_BASE_URL}/${chainId}`);
+    http(`${process.env.ERPC_BASE_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`);
 
 /**
  * Ponder configuration
@@ -44,7 +44,6 @@ export default createConfig({
                 http(
                     `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
                 ),
-                http("https://sepolia-rollup.arbitrum.io/rpc"),
             ]),
             pollingInterval: 10_000,
             maxRequestsPerSecond: 64,

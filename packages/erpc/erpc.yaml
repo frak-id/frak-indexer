@@ -107,7 +107,6 @@ projects:
         allowMethods:
           - "*"
         autoIgnoreUnsupportedMethods: true
-    auth: {}
   - rateLimitBudget: ""
     id: nexus-rpc
     networks: *var3
@@ -115,7 +114,7 @@ projects:
       - *var4
       - *var5
       - id: pimlico
-        endpoint: pimlico://${PIMLICO_API_KEY}
+        endpoint: evm+pimlico://${PIMLICO_API_KEY}
         rateLimitBudget: pimlico-rate-limit
         type: evm+pimlico
         vendorName: Pimlico
