@@ -116,7 +116,24 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 const upstreams = [
     buildEnvioUpstream({
         rateLimitBudget: envioRateLimits.id,
-        ignoreMethods: [...pimlicoSpecificMethods, "alchemy_*"],
+        ignoreMethods: ["*"],
+        allowMethods: [
+            // Explicitly set allowed method for envio to remove `eth_getBlockByHash` and `eth_getBlockByNumber`
+            //  since they are not returning `baseFeePerGas` attribute required for frontend use
+            //  and since eRPC is overing the allowed method if not defined here: https://github.com/erpc/erpc/blob/cafe32b9d231012de5d329e7825589096f5af4b0/vendors/envio.go#L22
+            "eth_chainId",
+			"eth_blockNumber",
+			"eth_getTransactionByHash",
+			"eth_getTransactionByBlockHashAndIndex",
+			"eth_getTransactionByBlockNumberAndIndex",
+			"eth_getTransactionReceipt",
+			"eth_getBlockReceipts",
+			"eth_getLogs",
+			"eth_getFilterLogs",
+			"eth_getFilterChanges",
+			"eth_uninstallFilter",
+			"eth_newFilter",
+        ]
     }),
     buildAlchemyUpstream({
         apiKey: envVariable("ALCHEMY_API_KEY"),
