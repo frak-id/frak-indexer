@@ -24,7 +24,9 @@ const maxBlockRange = 10000;
  * @returns
  */
 const getErpcTransport = (chainId: number) =>
-    http(`${process.env.ERPC_BASE_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`);
+    http(
+        `${process.env.ERPC_BASE_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
+    );
 
 /**
  * Ponder configuration
