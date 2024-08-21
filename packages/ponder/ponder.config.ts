@@ -24,29 +24,35 @@ const maxBlockRange = 10000;
  * @returns
  */
 function getErpcTransport(chainId: number) {
+    // Build the externel erpc transport, going through the internet gateway each time
+    const externalTransport = http(
+        `${process.env.ERPC_EXTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
+        {
+            batch: true,
+        }
+    );
+
+    if (!process.env.ERPC_INTERNAL_URL) {
+        return externalTransport;
+    }
+
+    // Build the internal erpc transport, directly hitting the ALB internal DNS
     const internalTransport = http(
         `${process.env.ERPC_INTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
         {
             batch: true,
             onFetchResponse: async (response) => {
+                const id = (Math.random() * 1000).toFixed(0);
                 if (response.status !== 200) {
-                    const id = (Math.random() * 1000).toFixed(0);
                     console.error(
-                        `[${id}] Failed to fetch from internal erpc, status: ${response.url} - ${response.status}`
+                        `[${id}] Failed to fetch from internal erpc, status: ${response.url} - ${response.status} - ${await response.text()}`
                     );
-                    if (response.bodyUsed) {
-                        console.error(
-                            `[${id}] Body details: ${await response.text()}`
-                        );
-                    }
+                } else {
+                    console.log(
+                        `[${id}] Fetched from internal erpc, status: ${response.url} - ${response.status}`
+                    );
                 }
             },
-        }
-    );
-    const externalTransport = http(
-        `${process.env.ERPC_EXTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
-        {
-            batch: true,
         }
     );
     return fallback([internalTransport, externalTransport], {

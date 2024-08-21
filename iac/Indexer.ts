@@ -63,6 +63,9 @@ export function IndexerStack({ app, stack }: StackContext) {
         );
     }
 
+    // Add the erpc service as dependency to the indexer service, to ensure the deployment order
+    indexerFaragateService.node.addDependency(erpcFargateService);
+
     // Then create our application load balancer
     const alb = new ApplicationLoadBalancer(stack, "Alb", {
         vpc,
@@ -111,10 +114,10 @@ export function IndexerStack({ app, stack }: StackContext) {
     // );
 
     // Add the internal erpc url to the ponder instance
-    indexerService.addEnvironment(
-        "ERPC_INTERNAL_URL",
-        `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
-    );
+    // indexerService.addEnvironment(
+    //     "ERPC_INTERNAL_URL",
+    //     `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
+    // );
 
     // Create our erpc target group on port 8080 and bind it to the http listener
     const erpcTargetGroup = new ApplicationTargetGroup(
@@ -125,7 +128,7 @@ export function IndexerStack({ app, stack }: StackContext) {
             port: 8080,
             protocol: ApplicationProtocol.HTTP,
             targets: [erpcFargateService],
-            deregistrationDelay: Duration.seconds(30),
+            deregistrationDelay: Duration.seconds(10),
             healthCheck: {
                 path: "/",
                 port: "4001",
@@ -156,10 +159,10 @@ export function IndexerStack({ app, stack }: StackContext) {
             port: 42069,
             protocol: ApplicationProtocol.HTTP,
             targets: [indexerFaragateService],
-            deregistrationDelay: Duration.seconds(30),
+            deregistrationDelay: Duration.seconds(10),
             healthCheck: {
                 path: "/health",
-                interval: Duration.seconds(20),
+                interval: Duration.seconds(30),
                 healthyThresholdCount: 2,
                 unhealthyThresholdCount: 5,
                 healthyHttpCodes: "200-299",
