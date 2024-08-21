@@ -106,7 +106,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         "Allow indexer public port internally"
     );
 
-    // todo: Allow the connection from ponder to the erpc directly???
+    // todo: Allow the connection from ponder to the erpc directly??? Is it needed???
     // alb.connections.securityGroups[0].addIngressRule(
     //     indexerFaragateService.connections.securityGroups[0],
     //     Port.tcp(80),
@@ -114,10 +114,10 @@ export function IndexerStack({ app, stack }: StackContext) {
     // );
 
     // Add the internal erpc url to the ponder instance
-    // indexerService.addEnvironment(
-    //     "ERPC_INTERNAL_URL",
-    //     `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
-    // );
+    indexerService.addEnvironment(
+        "ERPC_INTERNAL_URL",
+        `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
+    );
 
     // Create our erpc target group on port 8080 and bind it to the http listener
     const erpcTargetGroup = new ApplicationTargetGroup(
@@ -161,7 +161,8 @@ export function IndexerStack({ app, stack }: StackContext) {
             targets: [indexerFaragateService],
             deregistrationDelay: Duration.seconds(10),
             healthCheck: {
-                path: "/health",
+                // use status instead of health since health is failing during historical syncing
+                path: "/status",
                 interval: Duration.seconds(30),
                 healthyThresholdCount: 2,
                 unhealthyThresholdCount: 5,
@@ -298,10 +299,6 @@ function addErpcService({
                 circuitBreaker: {
                     enable: true,
                 },
-                // Disable rolling update
-                desiredCount: 1,
-                minHealthyPercent: 0,
-                maxHealthyPercent: 100,
             },
             // Directly specify the image position in the registry here
             container: {
