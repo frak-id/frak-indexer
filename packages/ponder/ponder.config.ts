@@ -23,10 +23,37 @@ const maxBlockRange = 10000;
  * @param chainId
  * @returns
  */
-const getErpcTransport = (chainId: number) =>
-    http(
-        `${process.env.ERPC_BASE_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
+function getErpcTransport(chainId: number) {
+    const internalTransport = http(
+        `${process.env.ERPC_INTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
+        {
+            batch: true,
+            onFetchResponse: async (response) => {
+                if (response.status !== 200) {
+                    const id = (Math.random() * 1000).toFixed(0);
+                    console.error(
+                        `[${id}] Failed to fetch from internal erpc, status: ${response.url} - ${response.status}`
+                    );
+                    if (response.bodyUsed) {
+                        console.error(
+                            `[${id}] Body details: ${await response.text()}`
+                        );
+                    }
+                }
+            },
+        }
     );
+    const externalTransport = http(
+        `${process.env.ERPC_EXTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
+        {
+            batch: true,
+        }
+    );
+    return fallback([internalTransport, externalTransport], {
+        key: `erpc-transport-${chainId}`,
+        name: `eRPC transport for chain ${chainId}`,
+    });
+}
 
 /**
  * Ponder configuration

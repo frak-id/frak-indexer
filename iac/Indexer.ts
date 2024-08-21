@@ -70,17 +70,51 @@ export function IndexerStack({ app, stack }: StackContext) {
     });
 
     // Allow connections to the applications ports
-    alb.connections.allowTo(indexerFaragateService, Port.tcp(42069));
-    alb.connections.allowTo(erpcFargateService, Port.tcp(8080));
-    alb.connections.allowTo(erpcFargateService, Port.tcp(4001));
+    alb.connections.allowTo(
+        indexerFaragateService,
+        Port.tcp(42069),
+        "Allow connection from ALB to public indexer port"
+    );
+    alb.connections.allowTo(
+        erpcFargateService,
+        Port.tcp(8080),
+        "Allow connection from ALB to public erpc port"
+    );
+    alb.connections.allowTo(
+        erpcFargateService,
+        Port.tcp(4001),
+        "Allow connection from ALB to metrics erpc port"
+    );
 
     // Create the listener on port 80
     const httpListener = alb.addListener("HttpListener", {
         port: 80,
     });
-    httpListener.connections.allowInternally(Port.tcp(4001));
-    httpListener.connections.allowInternally(Port.tcp(8080));
-    httpListener.connections.allowInternally(Port.tcp(42069));
+    httpListener.connections.allowInternally(
+        Port.tcp(4001),
+        "Allow erpc metrics port internally"
+    );
+    httpListener.connections.allowInternally(
+        Port.tcp(8080),
+        "Allow erpc public port internally"
+    );
+    httpListener.connections.allowInternally(
+        Port.tcp(42069),
+        "Allow indexer public port internally"
+    );
+
+    // todo: Allow the connection from ponder to the erpc directly???
+    // alb.connections.securityGroups[0].addIngressRule(
+    //     indexerFaragateService.connections.securityGroups[0],
+    //     Port.tcp(80),
+    //     "Allow traffic from Ponder service"
+    // );
+
+    // Add the internal erpc url to the ponder instance
+    indexerService.addEnvironment(
+        "ERPC_INTERNAL_URL",
+        `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
+    );
 
     // Create our erpc target group on port 8080 and bind it to the http listener
     const erpcTargetGroup = new ApplicationTargetGroup(
@@ -231,9 +265,9 @@ function addErpcService({
         // Setup some capacity options
         scaling: {
             minContainers: 1,
-            maxContainers: 1,
-            cpuUtilization: 90,
-            memoryUtilization: 90,
+            maxContainers: 4,
+            cpuUtilization: 80,
+            memoryUtilization: 80,
         },
         // Bind the secret we will be using
         bind: secrets,
@@ -241,7 +275,7 @@ function addErpcService({
         architecture: "arm64",
         // Hardware config
         cpu: "0.5 vCPU",
-        memory: "2 GB",
+        memory: "1 GB",
         storage: "30 GB",
         // Log retention
         logRetention: "one_week",
@@ -343,8 +377,8 @@ function addIndexerService({
             // Ponder related stuff
             PONDER_LOG_LEVEL: "warn",
             PONDER_TELEMETRY_DISABLED: "true",
-            // Erpc base endpoint
-            ERPC_BASE_URL: "https://indexer.frak.id/ponder-rpc/evm",
+            // Erpc external endpoint
+            ERPC_EXTERNAL_URL: "https://indexer.frak.id/ponder-rpc/evm",
         },
         cdk: {
             vpc,

@@ -28,34 +28,34 @@ projects:
             backoffFactor: 0.5
             jitter: 200ms
           hedge:
-            delay: 1s
+            delay: 5s
             maxCount: 2
         architecture: evm
         rateLimitBudget: ""
         evm:
           chainId: 137
-          finalityDepth: 128
+          finalityDepth: 1024
           blockTrackerInterval: ""
       - failsafe: *var1
         architecture: evm
         rateLimitBudget: ""
         evm:
           chainId: 42161
-          finalityDepth: 128
+          finalityDepth: 1024
           blockTrackerInterval: ""
       - failsafe: *var1
         architecture: evm
         rateLimitBudget: ""
         evm:
           chainId: 10
-          finalityDepth: 128
+          finalityDepth: 1024
           blockTrackerInterval: ""
       - failsafe: *var1
         architecture: evm
         rateLimitBudget: ""
         evm:
           chainId: 8453
-          finalityDepth: 128
+          finalityDepth: 1024
           blockTrackerInterval: ""
       - failsafe: &var2
           timeout:
