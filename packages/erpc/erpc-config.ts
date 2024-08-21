@@ -153,7 +153,8 @@ const nexusProject: ProjectConfig = buildProject({
         allowedOrigins: [
             "https://nexus.frak.id",
             "https://nexus-dev.frak.id",
-            "http://localhost:3000",
+            "http://localhost:30*",
+            "https://localhost:30*",
         ],
         allowedMethods: ["GET", "POST", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
