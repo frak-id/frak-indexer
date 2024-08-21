@@ -58,39 +58,34 @@ projects:
           finalityDepth: 1024
           blockTrackerInterval: ""
       - failsafe: &var2
-          timeout:
-            duration: 60s
-          retry:
-            maxAttempts: 3
-            delay: 1s
-            backoffMaxDelay: 20s
-            backoffFactor: 0.5
-            jitter: 500ms
+          hedge:
+            delay: 5s
+            maxCount: 2
+        architecture: evm
+        rateLimitBudget: ""
         evm:
           chainId: 421614
-          finalityDepth: 64
+          finalityDepth: 1024
           blockTrackerInterval: ""
+      - failsafe: *var2
         architecture: evm
         rateLimitBudget: ""
-      - failsafe: *var2
         evm:
           chainId: 11155420
-          finalityDepth: 64
+          finalityDepth: 1024
           blockTrackerInterval: ""
+      - failsafe: *var2
         architecture: evm
         rateLimitBudget: ""
-      - failsafe: *var2
         evm:
           chainId: 84532
-          finalityDepth: 64
+          finalityDepth: 1024
           blockTrackerInterval: ""
-        architecture: evm
-        rateLimitBudget: ""
     upstreams:
       - &var4
         id: envio
         endpoint: evm+envio://rpc.hypersync.xyz
-        rateLimitBudget: envio-rate-limit
+        rateLimitBudget: ""
         type: evm+envio
         vendorName: Envio
         ignoreMethods:
@@ -176,12 +171,6 @@ projects:
             value: ${NEXUS_RPC_SECRET}
 rateLimiters:
   budgets:
-    - id: envio-rate-limit
-      rules:
-        - method: "*"
-          maxCount: 1000
-          period: 1s
-          waitTime: ""
     - id: alchemy-rate-limit
       rules:
         - method: "*"
@@ -191,6 +180,6 @@ rateLimiters:
     - id: pimlico-rate-limit
       rules:
         - method: "*"
-          maxCount: 400
+          maxCount: 500
           period: 1s
           waitTime: ""

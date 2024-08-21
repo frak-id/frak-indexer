@@ -106,13 +106,6 @@ export function IndexerStack({ app, stack }: StackContext) {
         "Allow indexer public port internally"
     );
 
-    // todo: Allow the connection from ponder to the erpc directly??? Is it needed???
-    // alb.connections.securityGroups[0].addIngressRule(
-    //     indexerFaragateService.connections.securityGroups[0],
-    //     Port.tcp(80),
-    //     "Allow traffic from Ponder service"
-    // );
-
     // Add the internal erpc url to the ponder instance
     indexerService.addEnvironment(
         "ERPC_INTERNAL_URL",

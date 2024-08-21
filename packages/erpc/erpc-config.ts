@@ -28,16 +28,6 @@ import {
 /* -------------------------------------------------------------------------- */
 
 // Build every rate limits
-const envioRateLimits = buildRateLimit({
-    id: "envio-rate-limit",
-    rules: [
-        {
-            method: "*",
-            maxCount: 1_000,
-            period: "1s",
-        },
-    ],
-});
 const alchemyRateLimits = buildRateLimit({
     id: "alchemy-rate-limit",
     rules: [
@@ -53,7 +43,7 @@ const pimlicoRateLimits = buildRateLimit({
     rules: [
         {
             method: "*",
-            maxCount: 400,
+            maxCount: 500,
             period: "1s",
         },
     ],
@@ -87,20 +77,10 @@ const testnetNetworks = buildEvmNetworks({
     generic: {
         // Some failsafe config
         failsafe: {
-            timeout: {
-                duration: "60s",
+            hedge: {
+                delay: "5s",
+                maxCount: 2,
             },
-            retry: {
-                maxAttempts: 3,
-                delay: "1s",
-                backoffMaxDelay: "20s",
-                backoffFactor: 0.5,
-                jitter: "500ms",
-            },
-        },
-        // Overide finality depth
-        evm: {
-            finalityDepth: 64,
         },
     },
 });
@@ -115,7 +95,6 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 // Build each upstream we will use
 const upstreams = [
     buildEnvioUpstream({
-        rateLimitBudget: envioRateLimits.id,
         ignoreMethods: ["*"],
         allowMethods: [
             // Explicitly set allowed method for envio to remove `eth_getBlockByHash` and `eth_getBlockByNumber`
@@ -217,7 +196,7 @@ const config: Config = {
     },
     projects: [ponderProject, nexusProject],
     rateLimiters: {
-        budgets: [envioRateLimits, alchemyRateLimits, pimlicoRateLimits],
+        budgets: [alchemyRateLimits, pimlicoRateLimits],
     },
 };
 
