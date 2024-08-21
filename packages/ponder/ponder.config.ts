@@ -16,7 +16,7 @@ import { contentRegistryAbi } from "./abis/frak-registry-abis";
 /**
  * Overall max block range
  */
-const maxBlockRange = 10000;
+const maxBlockRange = 10_000;
 
 /**
  * Get an erpc transport for the given chain id
@@ -24,41 +24,26 @@ const maxBlockRange = 10000;
  * @returns
  */
 function getErpcTransport(chainId: number) {
+    // Build the internal erpc transport, directly hitting the ALB internal DNS
+    if (!process.env.ERPC_INTERNAL_URL) {
+        return http(
+            `${process.env.ERPC_INTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
+            {
+                key: `erpc-internal-transport-${chainId}`,
+                name: `eRPC internal transport for chain ${chainId}`,
+            }
+        );
+    }
+
     // Build the externel erpc transport, going through the internet gateway each time
-    const externalTransport = http(
+    return http(
         `${process.env.ERPC_EXTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
         {
             batch: true,
+            key: `erpc-external-transport-${chainId}`,
+            name: `eRPC external transport for chain ${chainId}`,
         }
     );
-
-    if (!process.env.ERPC_INTERNAL_URL) {
-        return externalTransport;
-    }
-
-    // Build the internal erpc transport, directly hitting the ALB internal DNS
-    const internalTransport = http(
-        `${process.env.ERPC_INTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
-        {
-            batch: true,
-            onFetchResponse: async (response) => {
-                const id = (Math.random() * 1000).toFixed(0);
-                if (response.status !== 200) {
-                    console.error(
-                        `[${id}] Failed to fetch from internal erpc, status: ${response.url} - ${response.status} - ${await response.text()}`
-                    );
-                } else {
-                    console.log(
-                        `[${id}] Fetched from internal erpc, status: ${response.url} - ${response.status}`
-                    );
-                }
-            },
-        }
-    );
-    return fallback([internalTransport, externalTransport], {
-        key: `erpc-transport-${chainId}`,
-        name: `eRPC transport for chain ${chainId}`,
-    });
 }
 
 /**
@@ -80,8 +65,7 @@ export default createConfig({
                     `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
                 ),
             ]),
-            pollingInterval: 10_000,
-            maxRequestsPerSecond: 64,
+            pollingInterval: 5_000,
         },
     },
     contracts: {
