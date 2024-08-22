@@ -39,4 +39,4 @@ COPY --from=install /temp/prod/node_modules node_modules
 
 # run the app
 EXPOSE 42069/tcp
-ENTRYPOINT [ "pnpm", "ponder", "--log-format", "json", "--log-level", "debug", "start"]
+ENTRYPOINT [ "pnpm", "ponder", "--log-format", "json", "--log-level", "info", "start"]

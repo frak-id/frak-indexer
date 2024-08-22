@@ -55,14 +55,13 @@ export default createConfig({
         arbitrumSepolia: {
             chainId: 421614,
             transport: fallback([
-                getErpcTransport(421614),
+                // getErpcTransport(421614),
+                http("https://421614.rpc.hypersync.xyz"),
                 http(
                     `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
                 ),
             ]),
             pollingInterval: 5_000,
-            // Disable caching, since erpc will handle that nicely
-            disableCache: true,
         },
     },
     contracts: {
