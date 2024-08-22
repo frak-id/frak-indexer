@@ -97,33 +97,12 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 ];
 
 // Build each upstream we will use
-const upstreams = [
-    buildEnvioUpstream({
-        ignoreMethods: ["*"],
-        allowMethods: [
-            // Explicitly set allowed method for envio to remove `eth_getBlockByHash` and `eth_getBlockByNumber`
-            //  since they are not returning `baseFeePerGas` attribute required for frontend use
-            //  and since eRPC is overing the allowed method if not defined here: https://github.com/erpc/erpc/blob/cafe32b9d231012de5d329e7825589096f5af4b0/vendors/envio.go#L22
-            "eth_chainId",
-            "eth_blockNumber",
-            "eth_getTransactionByHash",
-            "eth_getTransactionByBlockHashAndIndex",
-            "eth_getTransactionByBlockNumberAndIndex",
-            "eth_getTransactionReceipt",
-            "eth_getBlockReceipts",
-            "eth_getLogs",
-            "eth_getFilterLogs",
-            "eth_getFilterChanges",
-            "eth_uninstallFilter",
-            "eth_newFilter",
-        ],
-    }),
-    buildAlchemyUpstream({
-        apiKey: envVariable("ALCHEMY_API_KEY"),
-        rateLimitBudget: alchemyRateLimits.id,
-        ignoreMethods: pimlicoSpecificMethods,
-    }),
-];
+const envioUpstream = buildEnvioUpstream();
+const alchemyUpstream = buildAlchemyUpstream({
+    apiKey: envVariable("ALCHEMY_API_KEY"),
+    rateLimitBudget: alchemyRateLimits.id,
+    ignoreMethods: pimlicoSpecificMethods,
+});
 const pimlicoUpstream = buildPimlicoUpstream({
     apiKey: envVariable("PIMLICO_API_KEY"),
     rateLimitBudget: pimlicoRateLimits.id,
@@ -135,7 +114,7 @@ const pimlicoUpstream = buildPimlicoUpstream({
 const ponderProject: ProjectConfig = buildProject({
     id: "ponder-rpc",
     networks,
-    upstreams,
+    upstreams: [envioUpstream, alchemyUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
@@ -152,7 +131,7 @@ const ponderProject: ProjectConfig = buildProject({
 const nexusProject: ProjectConfig = buildProject({
     id: "nexus-rpc",
     networks,
-    upstreams: [...upstreams, pimlicoUpstream],
+    upstreams: [alchemyUpstream, pimlicoUpstream],
     cors: {
         allowedOrigins: [
             "https://nexus.frak.id",

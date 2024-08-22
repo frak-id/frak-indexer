@@ -368,7 +368,7 @@ function addIndexerService({
         // Set the right environment variables
         environment: {
             // Ponder related stuff
-            PONDER_LOG_LEVEL: "trace",
+            PONDER_LOG_LEVEL: "debug",
             // Erpc external endpoint
             ERPC_EXTERNAL_URL: "https://indexer.frak.id/ponder-rpc/evm",
         },
