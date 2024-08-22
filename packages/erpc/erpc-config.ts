@@ -82,6 +82,10 @@ const testnetNetworks = buildEvmNetworks({
                 maxCount: 2,
             },
         },
+        // Overide finality depth since arb sepolia could have huge reorgs
+        evm: {
+            finalityDepth: 2048,
+        },
     },
 });
 const networks = [...mainnetNetworks, ...testnetNetworks];

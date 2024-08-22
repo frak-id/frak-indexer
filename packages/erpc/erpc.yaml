@@ -61,26 +61,26 @@ projects:
           hedge:
             delay: 5s
             maxCount: 2
-        architecture: evm
-        rateLimitBudget: ""
         evm:
           chainId: 421614
-          finalityDepth: 1024
+          finalityDepth: 2048
           blockTrackerInterval: ""
-      - failsafe: *var2
         architecture: evm
         rateLimitBudget: ""
+      - failsafe: *var2
         evm:
           chainId: 11155420
-          finalityDepth: 1024
+          finalityDepth: 2048
           blockTrackerInterval: ""
-      - failsafe: *var2
         architecture: evm
         rateLimitBudget: ""
+      - failsafe: *var2
         evm:
           chainId: 84532
-          finalityDepth: 1024
+          finalityDepth: 2048
           blockTrackerInterval: ""
+        architecture: evm
+        rateLimitBudget: ""
     upstreams:
       - &var4
         id: envio
