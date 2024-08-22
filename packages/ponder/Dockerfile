@@ -1,5 +1,5 @@
 # Base image is node-22
-FROM node:22-slim as base
+FROM node:22-slim AS base
 
 # Setup pnpm
 ENV PNPM_HOME="/pnpm"
@@ -27,7 +27,8 @@ RUN cd /temp/prod && pnpm --mount=type=cache,id=pnpm,target=/pnpm/store pnpm ins
 FROM base AS release
 
 # Set env to production
-ENV NODE_ENV production
+ENV NODE_ENV=production
+ENV PONDER_LOG_LEVEL=trace
 
 # copy production dependencies and source code into final image
 COPY . .
@@ -39,4 +40,4 @@ COPY --from=install /temp/prod/node_modules node_modules
 
 # run the app
 EXPOSE 42069/tcp
-ENTRYPOINT [ "pnpm", "run", "start", "--trace"]
+ENTRYPOINT [ "pnpm", "run", "start"]
