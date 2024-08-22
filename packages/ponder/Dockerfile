@@ -39,4 +39,4 @@ COPY --from=install /temp/prod/node_modules node_modules
 
 # run the app
 EXPOSE 42069/tcp
-ENTRYPOINT [ "pnpm", "run", "start" ]
+ENTRYPOINT [ "pnpm", "run", "start", "--trace"]

@@ -14,11 +14,6 @@ import {
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 
 /**
- * Overall max block range
- */
-const maxBlockRange = 10_000;
-
-/**
  * Get an erpc transport for the given chain id
  * @param chainId
  * @returns
@@ -76,7 +71,6 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121913,
-                    maxBlockRange,
                 },
             },
         },
@@ -87,7 +81,6 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121923,
-                    maxBlockRange,
                 },
             },
         },
@@ -109,7 +102,6 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121923,
-                    maxBlockRange,
                 },
             },
         },
@@ -124,7 +116,6 @@ export default createConfig({
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121923,
-                    maxBlockRange,
                 },
             },
         },
