@@ -61,6 +61,8 @@ export default createConfig({
                 ),
             ]),
             pollingInterval: 5_000,
+            // Disable caching, since erpc will handle that nicely
+            disableCache: true,
         },
     },
     contracts: {
