@@ -31,6 +31,59 @@ import { Distribution } from "sst/constructs/Distribution.js";
 import { ConfigStack } from "./Config";
 import { buildSecretsMap, getImageFromName } from "./utils";
 
+type PonderInstanceConfig =
+    (typeof ponderInstanceTypeConfig)[keyof typeof ponderInstanceTypeConfig];
+
+/**
+ * Define the differnent types of ponder instance we will deploy
+ */
+const ponderInstanceTypeConfig = {
+    indexing: {
+        suffix: "Indexing",
+        port: 42069,
+        entryPoint: [
+            "pnpm",
+            "ponder",
+            "--log-format",
+            "json",
+            "--log-level",
+            "info",
+            "start",
+        ],
+        fargateService: {
+            desiredCount: 1,
+            minHealthyPercent: 0,
+            maxHealthyPercent: 100,
+        },
+        scaling: {
+            minContainers: 1,
+            maxContainers: 1,
+            cpuUtilization: 90,
+            memoryUtilization: 90,
+        },
+    },
+    serving: {
+        suffix: "Serving",
+        port: 42068,
+        entryPoint: [
+            "pnpm",
+            "ponder",
+            "--log-format",
+            "json",
+            "--log-level",
+            "info",
+            "serve",
+        ],
+        fargateService: undefined,
+        scaling: {
+            minContainers: 1,
+            maxContainers: 4,
+            cpuUtilization: 90,
+            memoryUtilization: 90,
+        },
+    },
+};
+
 /**
  * The CDK stack that will deploy the indexer service
  * @param stack
@@ -52,7 +105,13 @@ export function IndexerStack({ app, stack }: StackContext) {
     const erpcService = addErpcService({ stack, app, vpc, cluster });
 
     // Add the indexer service
-    const indexerService = addIndexerService({ stack, app, vpc, cluster });
+    const indexerService = addIndexerService({
+        stack,
+        app,
+        vpc,
+        cluster,
+        instanceType: ponderInstanceTypeConfig.indexing,
+    });
 
     // If we are missing the fargate services, early exit
     const indexerFaragateService = indexerService.cdk?.fargateService;
@@ -315,13 +374,21 @@ function addErpcService({
 
 /**
  * Add the indexer service to the stack
+ *  - todo: options to expose a "serve" only instance with scalability
  */
 function addIndexerService({
     stack,
     app,
     vpc,
     cluster,
-}: { stack: Stack; app: App; vpc: Vpc; cluster: ICluster }) {
+    instanceType,
+}: {
+    stack: Stack;
+    app: App;
+    vpc: Vpc;
+    cluster: ICluster;
+    instanceType: PonderInstanceConfig;
+}) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
     const { ponderDb, ponderRpcSecret } = use(ConfigStack);
     const secrets = [ponderDb, ponderRpcSecret];
@@ -338,67 +405,65 @@ function addIndexerService({
     });
 
     // The service itself
-    const indexerService = new Service(stack, "IndexerService", {
-        path: "packages/ponder",
-        // SST not happy, can't connect to ECR to fetch the instance during the build process
-        // file: "Dockerfile.prebuilt",
-        port: 42069,
-        // Domain mapping
-        customDomain: {
-            domainName: "indexer.frak.id",
-            hostedZone: "frak.id",
-        },
-        // Setup some capacity options
-        scaling: {
-            minContainers: 1,
-            maxContainers: 1,
-            cpuUtilization: 90,
-            memoryUtilization: 90,
-        },
-        // Bind the secret we will be using
-        bind: secrets,
-        // Arm architecture (lower cost)
-        architecture: "arm64",
-        // Hardware config
-        cpu: "1 vCPU",
-        memory: "2 GB",
-        storage: "30 GB",
-        // Log retention
-        logRetention: "one_week",
-        // Set the right environment variables
-        environment: {
-            // Ponder related stuff
-            PONDER_LOG_LEVEL: "debug",
-            // Erpc external endpoint
-            ERPC_EXTERNAL_URL: "https://indexer.frak.id/ponder-rpc/evm",
-        },
-        cdk: {
-            vpc,
-            cluster,
-            // Don't auto setup the ALB since we will be using the one from the indexer service
-            // todo: setup the ALB after the indexer service is deployed
-            applicationLoadBalancer: false,
-            // Customise fargate service to enable circuit breaker (if the new deployment is failing)
-            fargateService: {
-                enableExecuteCommand: true,
-                circuitBreaker: {
-                    enable: true,
+    const indexerService = new Service(
+        stack,
+        `Indexer${instanceType.suffix}Service`,
+        {
+            path: "packages/ponder",
+            // SST not happy, can't connect to ECR to fetch the instance during the build process
+            // file: "Dockerfile.prebuilt",
+            port: instanceType.port,
+            // Domain mapping
+            // todo: could probably be deleted since we are building it before
+            customDomain: {
+                domainName: "indexer.frak.id",
+                hostedZone: "frak.id",
+            },
+            // Setup some capacity options
+            scaling: instanceType.scaling,
+            // Bind the secret we will be using
+            bind: secrets,
+            // Arm architecture (lower cost)
+            architecture: "arm64",
+            // Hardware config
+            cpu: "1 vCPU",
+            memory: "2 GB",
+            storage: "30 GB",
+            // Log retention
+            logRetention: "one_week",
+            // Set the right environment variables
+            environment: {
+                // Ponder related stuff
+                PONDER_LOG_LEVEL: "debug",
+                // Erpc external endpoint
+                ERPC_EXTERNAL_URL: "https://indexer.frak.id/ponder-rpc/evm",
+            },
+            cdk: {
+                vpc,
+                cluster,
+                // Don't auto setup the ALB since we will be using the one from the indexer service
+                // todo: setup the ALB after the indexer service is deployed
+                applicationLoadBalancer: false,
+                // Customise fargate service to enable circuit breaker (if the new deployment is failing)
+                fargateService: {
+                    enableExecuteCommand: true,
+                    circuitBreaker: {
+                        enable: true,
+                    },
+                    // Increase health check grace period
+                    healthCheckGracePeriod: Duration.seconds(120),
+                    ...instanceType.fargateService,
                 },
-                // Disable rolling update
-                desiredCount: 1,
-                minHealthyPercent: 0,
-                maxHealthyPercent: 100,
-                // Increase health check grace period
-                healthCheckGracePeriod: Duration.seconds(120),
+                // Directly specify the image position in the registry here
+                container: {
+                    containerName: "indexer",
+                    image: indexerImage,
+                    secrets: cdkSecretsMap,
+                    entryPoint: instanceType.entryPoint,
+                },
             },
-            // Directly specify the image position in the registry here
-            container: {
-                containerName: "indexer",
-                image: indexerImage,
-                secrets: cdkSecretsMap,
-            },
-        },
-    });
+        }
+    );
 
     stack.addOutputs({
         indexerServiceId: indexerService.id,

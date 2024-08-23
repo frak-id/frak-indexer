@@ -161,15 +161,16 @@ const config: Config = {
     logLevel: envVariable("ERPC_LOG_LEVEL"),
     database: {
         evmJsonRpcCache: {
-            // driver: "postgresql",
-            // postgresql: {
-            //     connectionUri: envVariable("ERPC_DATABASE_URL"),
-            //     table: "rpc_cache",
-            // },
-            driver: "memory",
-            memory: {
-                maxItems: 1,
+            driver: "postgresql",
+            postgresql: {
+                connectionUri: envVariable("ERPC_DATABASE_URL"),
+                table: "rpc_cache",
             },
+            // No cache test
+            // driver: "memory",
+            // memory: {
+            //     maxItems: 1,
+            // },
         },
     },
     server: {

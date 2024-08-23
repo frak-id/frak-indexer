@@ -29,7 +29,7 @@ function getTransport(chainId: number) {
         `${erpcUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
     );
 
-    return fallback([erpcTransport, envioTransport]);
+    return fallback([envioTransport, erpcTransport]);
 }
 
 /**
