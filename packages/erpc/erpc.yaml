@@ -1,11 +1,5 @@
 # Config generated using: https://github.com/KONFeature/erpc-config-generator
 logLevel: ${ERPC_LOG_LEVEL}
-database:
-  evmJsonRpcCache:
-    driver: postgresql
-    postgresql:
-      connectionUri: ${ERPC_DATABASE_URL}
-      table: rpc_cache
 server:
   httpHost: 0.0.0.0
   httpPort: 8080

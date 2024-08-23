@@ -29,7 +29,13 @@ function getTransport(chainId: number) {
         `${erpcUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
     );
 
-    return fallback([envioTransport, erpcTransport]);
+    return fallback([
+        erpcTransport,
+        http(
+            `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+        ),
+        envioTransport,
+    ]);
 }
 
 /**

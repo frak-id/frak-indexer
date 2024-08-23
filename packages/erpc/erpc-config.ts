@@ -159,20 +159,15 @@ const nexusProject: ProjectConfig = buildProject({
 // Build the global config
 const config: Config = {
     logLevel: envVariable("ERPC_LOG_LEVEL"),
-    database: {
-        evmJsonRpcCache: {
-            driver: "postgresql",
-            postgresql: {
-                connectionUri: envVariable("ERPC_DATABASE_URL"),
-                table: "rpc_cache",
-            },
-            // No cache test
-            // driver: "memory",
-            // memory: {
-            //     maxItems: 1,
-            // },
-        },
-    },
+    // database: {
+    //     evmJsonRpcCache: {
+    //         driver: "postgresql",
+    //         postgresql: {
+    //             connectionUri: envVariable("ERPC_DATABASE_URL"),
+    //             table: "rpc_cache",
+    //         },
+    //     },
+    // },
     server: {
         httpHost: "0.0.0.0",
         httpPort: 8080,

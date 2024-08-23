@@ -39,7 +39,7 @@ type PonderInstanceConfig =
  */
 const ponderInstanceTypeConfig = {
     indexing: {
-        suffix: "Indexing",
+        suffix: "Indexer",
         port: 42069,
         entryPoint: [
             "pnpm",
@@ -63,7 +63,7 @@ const ponderInstanceTypeConfig = {
         },
     },
     serving: {
-        suffix: "Serving",
+        suffix: "IndexerServing",
         port: 42068,
         entryPoint: [
             "pnpm",
@@ -390,8 +390,8 @@ function addIndexerService({
     instanceType: PonderInstanceConfig;
 }) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
-    const { ponderDb, ponderRpcSecret } = use(ConfigStack);
-    const secrets = [ponderDb, ponderRpcSecret];
+    const { rpcSecrets, ponderDb, ponderRpcSecret } = use(ConfigStack);
+    const secrets = [...rpcSecrets, ponderDb, ponderRpcSecret];
 
     // Get our CDK secrets map
     const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "indexer" });
@@ -405,65 +405,61 @@ function addIndexerService({
     });
 
     // The service itself
-    const indexerService = new Service(
-        stack,
-        `Indexer${instanceType.suffix}Service`,
-        {
-            path: "packages/ponder",
-            // SST not happy, can't connect to ECR to fetch the instance during the build process
-            // file: "Dockerfile.prebuilt",
-            port: instanceType.port,
-            // Domain mapping
-            // todo: could probably be deleted since we are building it before
-            customDomain: {
-                domainName: "indexer.frak.id",
-                hostedZone: "frak.id",
-            },
-            // Setup some capacity options
-            scaling: instanceType.scaling,
-            // Bind the secret we will be using
-            bind: secrets,
-            // Arm architecture (lower cost)
-            architecture: "arm64",
-            // Hardware config
-            cpu: "1 vCPU",
-            memory: "2 GB",
-            storage: "30 GB",
-            // Log retention
-            logRetention: "one_week",
-            // Set the right environment variables
-            environment: {
-                // Ponder related stuff
-                PONDER_LOG_LEVEL: "debug",
-                // Erpc external endpoint
-                ERPC_EXTERNAL_URL: "https://indexer.frak.id/ponder-rpc/evm",
-            },
-            cdk: {
-                vpc,
-                cluster,
-                // Don't auto setup the ALB since we will be using the one from the indexer service
-                // todo: setup the ALB after the indexer service is deployed
-                applicationLoadBalancer: false,
-                // Customise fargate service to enable circuit breaker (if the new deployment is failing)
-                fargateService: {
-                    enableExecuteCommand: true,
-                    circuitBreaker: {
-                        enable: true,
-                    },
-                    // Increase health check grace period
-                    healthCheckGracePeriod: Duration.seconds(120),
-                    ...instanceType.fargateService,
+    const indexerService = new Service(stack, `${instanceType.suffix}Service`, {
+        path: "packages/ponder",
+        // SST not happy, can't connect to ECR to fetch the instance during the build process
+        // file: "Dockerfile.prebuilt",
+        port: instanceType.port,
+        // Domain mapping
+        // todo: could probably be deleted since we are building it before
+        customDomain: {
+            domainName: "indexer.frak.id",
+            hostedZone: "frak.id",
+        },
+        // Setup some capacity options
+        scaling: instanceType.scaling,
+        // Bind the secret we will be using
+        bind: secrets,
+        // Arm architecture (lower cost)
+        architecture: "arm64",
+        // Hardware config
+        cpu: "1 vCPU",
+        memory: "2 GB",
+        storage: "30 GB",
+        // Log retention
+        logRetention: "one_week",
+        // Set the right environment variables
+        environment: {
+            // Ponder related stuff
+            PONDER_LOG_LEVEL: "debug",
+            // Erpc external endpoint
+            ERPC_EXTERNAL_URL: "https://indexer.frak.id/ponder-rpc/evm",
+        },
+        cdk: {
+            vpc,
+            cluster,
+            // Don't auto setup the ALB since we will be using the one from the indexer service
+            // todo: setup the ALB after the indexer service is deployed
+            applicationLoadBalancer: false,
+            // Customise fargate service to enable circuit breaker (if the new deployment is failing)
+            fargateService: {
+                enableExecuteCommand: true,
+                circuitBreaker: {
+                    enable: true,
                 },
-                // Directly specify the image position in the registry here
-                container: {
-                    containerName: "indexer",
-                    image: indexerImage,
-                    secrets: cdkSecretsMap,
-                    entryPoint: instanceType.entryPoint,
-                },
+                // Increase health check grace period
+                healthCheckGracePeriod: Duration.seconds(120),
+                ...instanceType.fargateService,
             },
-        }
-    );
+            // Directly specify the image position in the registry here
+            container: {
+                containerName: "indexer",
+                image: indexerImage,
+                secrets: cdkSecretsMap,
+                entryPoint: instanceType.entryPoint,
+            },
+        },
+    });
 
     stack.addOutputs({
         indexerServiceId: indexerService.id,
