@@ -14,11 +14,12 @@ export function getImageFromName({
     app,
     name,
     tag,
-}: { stack: Stack; app: App; name: string; tag?: string }) {
+    suffix
+}: { stack: Stack; app: App; name: string; tag?: string, suffix?: string }) {
     // Get the container props of our prebuilt binaries
     const containerRegistry = Repository.fromRepositoryAttributes(
         stack,
-        `${name}Ecr`,
+        `${name}Ecr${suffix}`,
         {
             repositoryArn: `arn:aws:ecr:eu-west-1:${app.account}:repository/${name}`,
             repositoryName: name,

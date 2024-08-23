@@ -142,12 +142,12 @@ export function IndexerStack({ app, stack }: StackContext) {
     // Allow connections to the applications ports
     alb.connections.allowTo(
         indexerFaragateService,
-        Port.tcp(ponderInstanceTypeConfig.indexing.port),
+        Port.tcp(42069),
         "Allow connection from ALB to public indexer indexing port"
     );
     alb.connections.allowTo(
         indexerServingFargeteService,
-        Port.tcp(ponderInstanceTypeConfig.serving.port),
+        Port.tcp(42069),
         "Allow connection from ALB to public indexer serving port"
     );
     alb.connections.allowTo(
@@ -174,12 +174,8 @@ export function IndexerStack({ app, stack }: StackContext) {
         "Allow erpc public port internally"
     );
     httpListener.connections.allowInternally(
-        Port.tcp(ponderInstanceTypeConfig.indexing.port),
+        Port.tcp(42069),
         "Allow indexer indexing public port internally"
-    );
-    httpListener.connections.allowInternally(
-        Port.tcp(ponderInstanceTypeConfig.serving.port),
-        "Allow indexer serving public port internally"
     );
 
     // Add the internal erpc url to the ponder instance
@@ -225,7 +221,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         "IndexerTargetGroup",
         {
             vpc: vpc,
-            port: ponderInstanceTypeConfig.indexing.port,
+            port: 42069,
             protocol: ApplicationProtocol.HTTP,
             targets: [indexerFaragateService],
             deregistrationDelay: Duration.seconds(10),
@@ -254,7 +250,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         "IndexerServingTargetGroup",
         {
             vpc: vpc,
-            port: ponderInstanceTypeConfig.serving.port,
+            port: 42069,
             protocol: ApplicationProtocol.HTTP,
             targets: [indexerServingFargeteService],
             deregistrationDelay: Duration.seconds(10),
@@ -273,7 +269,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     });
     httpListener.addTargetGroups("IndexerServingTarget", {
         targetGroups: [indexerServingTargetGroup],
-        priority: 20,
+        priority: 30,
         conditions: [ListenerCondition.pathPatterns(["/*"])],
     });
 
@@ -448,6 +444,7 @@ function addIndexerService({
         app,
         name: "indexer",
         tag: process.env.PONDER_IMAGE_TAG,
+        suffix: instanceType.suffix,
     });
 
     // The service itself
@@ -455,7 +452,7 @@ function addIndexerService({
         path: "packages/ponder",
         // SST not happy, can't connect to ECR to fetch the instance during the build process
         // file: "Dockerfile.prebuilt",
-        port: instanceType.port,
+        port: 42069,
         // Setup some capacity options
         scaling: instanceType.scaling,
         // Bind the secret we will be using
@@ -493,7 +490,7 @@ function addIndexerService({
             },
             // Directly specify the image position in the registry here
             container: {
-                containerName: "indexer",
+                containerName: instanceType.suffix.toLowerCase(),
                 image: indexerImage,
                 secrets: cdkSecretsMap,
                 entryPoint: instanceType.entryPoint,
@@ -502,7 +499,7 @@ function addIndexerService({
     });
 
     stack.addOutputs({
-        indexerServiceId: indexerService.id,
+        [`${instanceType.suffix}ServiceId`]: indexerService.id,
     });
 
     return indexerService;
