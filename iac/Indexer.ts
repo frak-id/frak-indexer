@@ -323,8 +323,8 @@ function addIndexerService({
     cluster,
 }: { stack: Stack; app: App; vpc: Vpc; cluster: ICluster }) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
-    const { rpcSecrets, ponderDb, ponderRpcSecret } = use(ConfigStack);
-    const secrets = [...rpcSecrets, ponderDb, ponderRpcSecret];
+    const { ponderDb, ponderRpcSecret } = use(ConfigStack);
+    const secrets = [ponderDb, ponderRpcSecret];
 
     // Get our CDK secrets map
     const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "indexer" });

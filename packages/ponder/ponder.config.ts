@@ -14,31 +14,22 @@ import {
 import { contentRegistryAbi } from "./abis/frak-registry-abis";
 
 /**
- * Get an erpc transport for the given chain id
+ * Get an transport for the given chain id
  * @param chainId
  * @returns
  */
-function getErpcTransport(chainId: number) {
-    // Build the internal erpc transport, directly hitting the ALB internal DNS
-    if (!process.env.ERPC_INTERNAL_URL) {
-        return http(
-            `${process.env.ERPC_INTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
-            {
-                key: `erpc-internal-transport-${chainId}`,
-                name: `eRPC internal transport for chain ${chainId}`,
-            }
-        );
-    }
+function getTransport(chainId: number) {
+    // Get an envio transport
+    const envioTransport = http(`https://${chainId}.rpc.hypersync.xyz`);
 
-    // Build the externel erpc transport, going through the internet gateway each time
-    return http(
-        `${process.env.ERPC_EXTERNAL_URL}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`,
-        {
-            batch: true,
-            key: `erpc-external-transport-${chainId}`,
-            name: `eRPC external transport for chain ${chainId}`,
-        }
+    // Get our erpc instance transport
+    const erpcUrl =
+        process.env.ERPC_INTERNAL_URL ?? process.env.ERPC_EXTERNAL_URL;
+    const erpcTransport = http(
+        `${erpcUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
     );
+
+    return fallback([envioTransport, erpcTransport]);
 }
 
 /**
@@ -54,13 +45,7 @@ export default createConfig({
         // Testnets
         arbitrumSepolia: {
             chainId: 421614,
-            transport: fallback([
-                // getErpcTransport(421614),
-                http("https://421614.rpc.hypersync.xyz"),
-                http(
-                    `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-                ),
-            ]),
+            transport: getTransport(421614),
             pollingInterval: 5_000,
         },
     },
