@@ -440,7 +440,7 @@ function addIndexerService({
     const secrets = [...rpcSecrets, ponderDb, ponderRpcSecret];
 
     // Get our CDK secrets map
-    const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "indexer" });
+    const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: instanceType.suffix });
 
     // Get the container props of our prebuilt binaries
     const indexerImage = getImageFromName({

@@ -97,7 +97,10 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 ];
 
 // Build each upstream we will use
-const envioUpstream = buildEnvioUpstream();
+const envioUpstream = buildEnvioUpstream({
+    ignoreMethods: ["*"],
+    allowMethods: ["eth_getLogs"],
+});
 const alchemyUpstream = buildAlchemyUpstream({
     apiKey: envVariable("ALCHEMY_API_KEY"),
     rateLimitBudget: alchemyRateLimits.id,
@@ -159,15 +162,15 @@ const nexusProject: ProjectConfig = buildProject({
 // Build the global config
 const config: Config = {
     logLevel: envVariable("ERPC_LOG_LEVEL"),
-    // database: {
-    //     evmJsonRpcCache: {
-    //         driver: "postgresql",
-    //         postgresql: {
-    //             connectionUri: envVariable("ERPC_DATABASE_URL"),
-    //             table: "rpc_cache",
-    //         },
-    //     },
-    // },
+    database: {
+        evmJsonRpcCache: {
+            driver: "postgresql",
+            postgresql: {
+                connectionUri: envVariable("ERPC_DATABASE_URL"),
+                table: "rpc_cache",
+            },
+        },
+    },
     server: {
         httpHost: "0.0.0.0",
         httpPort: 8080,
