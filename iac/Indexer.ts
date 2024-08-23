@@ -112,11 +112,19 @@ export function IndexerStack({ app, stack }: StackContext) {
         cluster,
         instanceType: ponderInstanceTypeConfig.indexing,
     });
+    const indexerServeService = addIndexerService({
+        stack,
+        app,
+        vpc,
+        cluster,
+        instanceType: ponderInstanceTypeConfig.serving,
+    });
 
     // If we are missing the fargate services, early exit
     const indexerFaragateService = indexerService.cdk?.fargateService;
+    const indexerServingFargeteService = indexerServeService.cdk?.fargateService;
     const erpcFargateService = erpcService.cdk?.fargateService;
-    if (!(indexerFaragateService && erpcFargateService)) {
+    if (!(indexerFaragateService && erpcFargateService && indexerServingFargeteService)) {
         throw new Error(
             "Missing fargate service in the indexer or erpc service"
         );
@@ -134,8 +142,13 @@ export function IndexerStack({ app, stack }: StackContext) {
     // Allow connections to the applications ports
     alb.connections.allowTo(
         indexerFaragateService,
-        Port.tcp(42069),
-        "Allow connection from ALB to public indexer port"
+        Port.tcp(ponderInstanceTypeConfig.indexing.port),
+        "Allow connection from ALB to public indexer indexing port"
+    );
+    alb.connections.allowTo(
+        indexerServingFargeteService,
+        Port.tcp(ponderInstanceTypeConfig.serving.port),
+        "Allow connection from ALB to public indexer serving port"
     );
     alb.connections.allowTo(
         erpcFargateService,
@@ -161,8 +174,12 @@ export function IndexerStack({ app, stack }: StackContext) {
         "Allow erpc public port internally"
     );
     httpListener.connections.allowInternally(
-        Port.tcp(42069),
-        "Allow indexer public port internally"
+        Port.tcp(ponderInstanceTypeConfig.indexing.port),
+        "Allow indexer indexing public port internally"
+    );
+    httpListener.connections.allowInternally(
+        Port.tcp(ponderInstanceTypeConfig.serving.port),
+        "Allow indexer serving public port internally"
     );
 
     // Add the internal erpc url to the ponder instance
@@ -208,7 +225,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         "IndexerTargetGroup",
         {
             vpc: vpc,
-            port: 42069,
+            port: ponderInstanceTypeConfig.indexing.port,
             protocol: ApplicationProtocol.HTTP,
             targets: [indexerFaragateService],
             deregistrationDelay: Duration.seconds(10),
@@ -227,6 +244,35 @@ export function IndexerStack({ app, stack }: StackContext) {
     });
     httpListener.addTargetGroups("IndexerTarget", {
         targetGroups: [indexerTargetGroup],
+        priority: 15,
+        conditions: [ListenerCondition.pathPatterns(["/metrics"])],
+    });
+
+    // Add the indexer service to the ALB on bind it to the port 42069
+    const indexerServingTargetGroup = new ApplicationTargetGroup(
+        stack,
+        "IndexerServingTargetGroup",
+        {
+            vpc: vpc,
+            port: ponderInstanceTypeConfig.serving.port,
+            protocol: ApplicationProtocol.HTTP,
+            targets: [indexerServingFargeteService],
+            deregistrationDelay: Duration.seconds(10),
+            healthCheck: {
+                // use status instead of health since health is failing during historical syncing
+                path: "/status",
+                interval: Duration.seconds(30),
+                healthyThresholdCount: 2,
+                unhealthyThresholdCount: 5,
+                healthyHttpCodes: "200-299",
+            },
+        }
+    );
+    httpListener.addAction("IndexerServingForwardAction", {
+        action: ListenerAction.forward([indexerServingTargetGroup]),
+    });
+    httpListener.addTargetGroups("IndexerServingTarget", {
+        targetGroups: [indexerServingTargetGroup],
         priority: 20,
         conditions: [ListenerCondition.pathPatterns(["/*"])],
     });
@@ -410,12 +456,6 @@ function addIndexerService({
         // SST not happy, can't connect to ECR to fetch the instance during the build process
         // file: "Dockerfile.prebuilt",
         port: instanceType.port,
-        // Domain mapping
-        // todo: could probably be deleted since we are building it before
-        customDomain: {
-            domainName: "indexer.frak.id",
-            hostedZone: "frak.id",
-        },
         // Setup some capacity options
         scaling: instanceType.scaling,
         // Bind the secret we will be using
