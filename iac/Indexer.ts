@@ -11,78 +11,18 @@ import {
 } from "aws-cdk-lib/aws-cloudfront";
 import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Port, Vpc } from "aws-cdk-lib/aws-ec2";
-import { Cluster, type ICluster } from "aws-cdk-lib/aws-ecs";
-import {
-    ApplicationLoadBalancer,
-    ApplicationProtocol,
-    ApplicationTargetGroup,
-    ListenerAction,
-    ListenerCondition,
-} from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import { Cluster } from "aws-cdk-lib/aws-ecs";
+import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
-import {
-    type App,
-    Service,
-    type Stack,
-    type StackContext,
-    use,
-} from "sst/constructs";
+import type { StackContext } from "sst/constructs";
 import { Distribution } from "sst/constructs/Distribution.js";
-import { ConfigStack } from "./Config";
-import { buildSecretsMap, getImageFromName } from "./utils";
-
-type PonderInstanceConfig =
-    (typeof ponderInstanceTypeConfig)[keyof typeof ponderInstanceTypeConfig];
-
-/**
- * Define the differnent types of ponder instance we will deploy
- */
-const ponderInstanceTypeConfig = {
-    indexing: {
-        suffix: "Indexer",
-        port: 42069,
-        entryPoint: [
-            "pnpm",
-            "ponder",
-            "--log-format",
-            "json",
-            "--log-level",
-            "info",
-            "start",
-        ],
-        fargateService: {
-            desiredCount: 1,
-            minHealthyPercent: 0,
-            maxHealthyPercent: 100,
-        },
-        scaling: {
-            minContainers: 1,
-            maxContainers: 1,
-            cpuUtilization: 90,
-            memoryUtilization: 90,
-        },
-    },
-    serving: {
-        suffix: "IndexerServing",
-        port: 42068,
-        entryPoint: [
-            "pnpm",
-            "ponder",
-            "--log-format",
-            "json",
-            "--log-level",
-            "info",
-            "serve",
-        ],
-        fargateService: undefined,
-        scaling: {
-            minContainers: 1,
-            maxContainers: 4,
-            cpuUtilization: 90,
-            memoryUtilization: 90,
-        },
-    },
-};
+import {
+    addFullErpcExposure,
+    addFullPonderIndexerExposure,
+    addHttpListener,
+} from "./builder/Alb";
+import { addErpcService } from "./builder/Erpc";
+import { addPonderService, ponderInstanceTypeConfig } from "./builder/Ponder";
 
 /**
  * The CDK stack that will deploy the indexer service
@@ -102,36 +42,47 @@ export function IndexerStack({ app, stack }: StackContext) {
     });
 
     // Then add the erpc service
-    const erpcService = addErpcService({ stack, app, vpc, cluster });
+    const { erpcService, erpcTargetGroup } = addErpcService({
+        stack,
+        app,
+        vpc,
+        cluster,
+    });
 
     // Add the indexer service
-    const indexerService = addIndexerService({
+    const {
+        service: indexerSstService,
+        fargateService: indexerService,
+        targetGroup: indexerTargetGroup,
+    } = addPonderService({
         stack,
         app,
         vpc,
         cluster,
         instanceType: ponderInstanceTypeConfig.indexing,
     });
-    const indexerServeService = addIndexerService({
+    const {
+        service: readerSstService,
+        fargateService: readerService,
+        targetGroup: readerTargetGroup,
+    } = addPonderService({
         stack,
         app,
         vpc,
         cluster,
-        instanceType: ponderInstanceTypeConfig.serving,
+        instanceType: ponderInstanceTypeConfig.reading,
     });
 
     // If we are missing the fargate services, early exit
-    const indexerFaragateService = indexerService.cdk?.fargateService;
-    const indexerServingFargeteService = indexerServeService.cdk?.fargateService;
     const erpcFargateService = erpcService.cdk?.fargateService;
-    if (!(indexerFaragateService && erpcFargateService && indexerServingFargeteService)) {
+    if (!erpcFargateService) {
         throw new Error(
             "Missing fargate service in the indexer or erpc service"
         );
     }
 
     // Add the erpc service as dependency to the indexer service, to ensure the deployment order
-    indexerFaragateService.node.addDependency(erpcFargateService);
+    indexerService.node.addDependency(erpcFargateService);
 
     // Then create our application load balancer
     const alb = new ApplicationLoadBalancer(stack, "Alb", {
@@ -139,14 +90,24 @@ export function IndexerStack({ app, stack }: StackContext) {
         internetFacing: true,
     });
 
+    // Add the internal erpc url to the ponder instance
+    indexerSstService.addEnvironment(
+        "ERPC_INTERNAL_URL",
+        `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
+    );
+    readerSstService.addEnvironment(
+        "ERPC_INTERNAL_URL",
+        `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
+    );
+
     // Allow connections to the applications ports
     alb.connections.allowTo(
-        indexerFaragateService,
+        indexerService,
         Port.tcp(42069),
         "Allow connection from ALB to public indexer indexing port"
     );
     alb.connections.allowTo(
-        indexerServingFargeteService,
+        readerService,
         Port.tcp(42069),
         "Allow connection from ALB to public indexer serving port"
     );
@@ -162,115 +123,20 @@ export function IndexerStack({ app, stack }: StackContext) {
     );
 
     // Create the listener on port 80
-    const httpListener = alb.addListener("HttpListener", {
-        port: 80,
-    });
-    httpListener.connections.allowInternally(
-        Port.tcp(4001),
-        "Allow erpc metrics port internally"
-    );
-    httpListener.connections.allowInternally(
-        Port.tcp(8080),
-        "Allow erpc public port internally"
-    );
-    httpListener.connections.allowInternally(
-        Port.tcp(42069),
-        "Allow indexer indexing public port internally"
-    );
-
-    // Add the internal erpc url to the ponder instance
-    indexerService.addEnvironment(
-        "ERPC_INTERNAL_URL",
-        `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
-    );
-
-    // Create our erpc target group on port 8080 and bind it to the http listener
-    const erpcTargetGroup = new ApplicationTargetGroup(
-        stack,
-        "ErpcTargetGroup",
-        {
-            vpc: vpc,
-            port: 8080,
-            protocol: ApplicationProtocol.HTTP,
-            targets: [erpcFargateService],
-            deregistrationDelay: Duration.seconds(10),
-            healthCheck: {
-                path: "/",
-                port: "4001",
-                interval: Duration.seconds(30),
-                healthyThresholdCount: 2,
-                unhealthyThresholdCount: 5,
-                healthyHttpCodes: "200",
-            },
-        }
-    );
-    httpListener.addAction("ErpcForwardAction", {
-        action: ListenerAction.forward([erpcTargetGroup]),
-    });
-    httpListener.addTargetGroups("ErpcTarget", {
-        targetGroups: [erpcTargetGroup],
-        priority: 10,
-        conditions: [
-            ListenerCondition.pathPatterns(["/ponder-rpc/*", "/nexus-rpc/*"]),
-        ],
+    addHttpListener({
+        alb,
+        erpcTargetGroup,
+        readerTargetGroup,
     });
 
-    // Add the indexer service to the ALB on bind it to the port 42069
-    const indexerTargetGroup = new ApplicationTargetGroup(
-        stack,
-        "IndexerTargetGroup",
-        {
-            vpc: vpc,
-            port: 42069,
-            protocol: ApplicationProtocol.HTTP,
-            targets: [indexerFaragateService],
-            deregistrationDelay: Duration.seconds(10),
-            healthCheck: {
-                // use status instead of health since health is failing during historical syncing
-                path: "/status",
-                interval: Duration.seconds(30),
-                healthyThresholdCount: 2,
-                unhealthyThresholdCount: 5,
-                healthyHttpCodes: "200-299",
-            },
-        }
-    );
-    httpListener.addAction("IndexerForwardAction", {
-        action: ListenerAction.forward([indexerTargetGroup]),
+    // Create full exposure around erpc + ponder on secific ports
+    addFullErpcExposure({
+        alb,
+        erpcTargetGroup,
     });
-    httpListener.addTargetGroups("IndexerTarget", {
-        targetGroups: [indexerTargetGroup],
-        priority: 15,
-        conditions: [ListenerCondition.pathPatterns(["/metrics"])],
-    });
-
-    // Add the indexer service to the ALB on bind it to the port 42069
-    const indexerServingTargetGroup = new ApplicationTargetGroup(
-        stack,
-        "IndexerServingTargetGroup",
-        {
-            vpc: vpc,
-            port: 42069,
-            protocol: ApplicationProtocol.HTTP,
-            targets: [indexerServingFargeteService],
-            deregistrationDelay: Duration.seconds(10),
-            healthCheck: {
-                // use status instead of health since health is failing during historical syncing
-                path: "/status",
-                interval: Duration.seconds(30),
-                healthyThresholdCount: 2,
-                unhealthyThresholdCount: 5,
-                healthyHttpCodes: "200-299",
-            },
-        }
-    );
-    httpListener.addAction("IndexerServingForwardAction", {
-        action: ListenerAction.forward([indexerServingTargetGroup]),
-    });
-    httpListener.addTargetGroups("IndexerServingTarget", {
-        targetGroups: [indexerServingTargetGroup],
-        priority: 30,
-        conditions: [ListenerCondition.pathPatterns(["/*"])],
+    addFullPonderIndexerExposure({
+        alb,
+        indexerTargetGroup,
     });
 
     // Create our CDN cache policy
@@ -315,191 +181,6 @@ export function IndexerStack({ app, stack }: StackContext) {
     stack.addOutputs({
         AlbArn: alb.loadBalancerArn,
         DistributionId: distribution.cdk.distribution.distributionId,
-    });
-
-    return indexerService;
-}
-
-/**
- * Add the eRPC service to the stack
- */
-function addErpcService({
-    stack,
-    app,
-    vpc,
-    cluster,
-}: { stack: Stack; app: App; vpc: Vpc; cluster: ICluster }) {
-    // All the secrets env variable we will be using (in local you can just use a .env file)
-    const {
-        rpcSecrets,
-        erpcDb,
-        pimlicoApiKey,
-        nexusRpcSecret,
-        ponderRpcSecret,
-    } = use(ConfigStack);
-    const secrets = [
-        ...rpcSecrets,
-        pimlicoApiKey,
-        erpcDb,
-        nexusRpcSecret,
-        ponderRpcSecret,
-    ];
-
-    // Get our CDK secrets map
-    const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: "erpc" });
-
-    // Get the container props of our prebuilt binaries
-    const erpcImage = getImageFromName({
-        stack,
-        app,
-        name: "erpc",
-        tag: process.env.ERPC_IMAGE_TAG,
-    });
-
-    // The service itself
-    const erpcService = new Service(stack, "ErpcService", {
-        path: "packages/erpc",
-        port: 8080,
-        // Setup some capacity options
-        scaling: {
-            minContainers: 1,
-            maxContainers: 4,
-            cpuUtilization: 80,
-            memoryUtilization: 80,
-        },
-        // Bind the secret we will be using
-        bind: secrets,
-        // Arm architecture (lower cost)
-        architecture: "arm64",
-        // Hardware config
-        cpu: "0.5 vCPU",
-        memory: "1 GB",
-        storage: "30 GB",
-        // Log retention
-        logRetention: "one_week",
-        // Set the right environment variables
-        environment: {
-            ERPC_LOG_LEVEL: "warn",
-        },
-        cdk: {
-            vpc,
-            cluster,
-            // Don't auto setup the ALB since we will be using the one from the indexer service
-            // todo: setup the ALB after the indexer service is deployed
-            applicationLoadBalancer: false,
-            // Customise fargate service to enable circuit breaker (if the new deployment is failing)
-            fargateService: {
-                enableExecuteCommand: true,
-                circuitBreaker: {
-                    enable: true,
-                },
-            },
-            // Directly specify the image position in the registry here
-            container: {
-                containerName: "erpc",
-                image: erpcImage,
-                secrets: cdkSecretsMap,
-                portMappings: [
-                    { containerPort: 8080 },
-                    { containerPort: 4001 },
-                ],
-            },
-        },
-    });
-
-    stack.addOutputs({
-        erpcServiceId: erpcService.id,
-    });
-
-    return erpcService;
-}
-
-/**
- * Add the indexer service to the stack
- *  - todo: options to expose a "serve" only instance with scalability
- */
-function addIndexerService({
-    stack,
-    app,
-    vpc,
-    cluster,
-    instanceType,
-}: {
-    stack: Stack;
-    app: App;
-    vpc: Vpc;
-    cluster: ICluster;
-    instanceType: PonderInstanceConfig;
-}) {
-    // All the secrets env variable we will be using (in local you can just use a .env file)
-    const { rpcSecrets, ponderDb, ponderRpcSecret } = use(ConfigStack);
-    const secrets = [...rpcSecrets, ponderDb, ponderRpcSecret];
-
-    // Get our CDK secrets map
-    const cdkSecretsMap = buildSecretsMap({ stack, secrets, name: instanceType.suffix });
-
-    // Get the container props of our prebuilt binaries
-    const indexerImage = getImageFromName({
-        stack,
-        app,
-        name: "indexer",
-        tag: process.env.PONDER_IMAGE_TAG,
-        suffix: instanceType.suffix,
-    });
-
-    // The service itself
-    const indexerService = new Service(stack, `${instanceType.suffix}Service`, {
-        path: "packages/ponder",
-        // SST not happy, can't connect to ECR to fetch the instance during the build process
-        // file: "Dockerfile.prebuilt",
-        port: 42069,
-        // Setup some capacity options
-        scaling: instanceType.scaling,
-        // Bind the secret we will be using
-        bind: secrets,
-        // Arm architecture (lower cost)
-        architecture: "arm64",
-        // Hardware config
-        cpu: "1 vCPU",
-        memory: "2 GB",
-        storage: "30 GB",
-        // Log retention
-        logRetention: "one_week",
-        // Set the right environment variables
-        environment: {
-            // Ponder related stuff
-            PONDER_LOG_LEVEL: "debug",
-            // Erpc external endpoint
-            ERPC_EXTERNAL_URL: "https://indexer.frak.id/ponder-rpc/evm",
-        },
-        cdk: {
-            vpc,
-            cluster,
-            // Don't auto setup the ALB since we will be using the one from the indexer service
-            // todo: setup the ALB after the indexer service is deployed
-            applicationLoadBalancer: false,
-            // Customise fargate service to enable circuit breaker (if the new deployment is failing)
-            fargateService: {
-                enableExecuteCommand: true,
-                circuitBreaker: {
-                    enable: true,
-                },
-                // Increase health check grace period
-                healthCheckGracePeriod: Duration.seconds(120),
-                ...instanceType.fargateService,
-            },
-            // Directly specify the image position in the registry here
-            container: {
-                containerName: instanceType.suffix.toLowerCase(),
-                image: indexerImage,
-                secrets: cdkSecretsMap,
-                entryPoint: instanceType.entryPoint,
-            },
-        },
-    });
-
-    stack.addOutputs({
-        [`${instanceType.suffix}ServiceId`]: indexerService.id,
     });
 
     return indexerService;

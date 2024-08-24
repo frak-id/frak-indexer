@@ -14,8 +14,8 @@ export function getImageFromName({
     app,
     name,
     tag,
-    suffix
-}: { stack: Stack; app: App; name: string; tag?: string, suffix?: string }) {
+    suffix,
+}: { stack: Stack; app: App; name: string; tag?: string; suffix?: string }) {
     // Get the container props of our prebuilt binaries
     const containerRegistry = Repository.fromRepositoryAttributes(
         stack,
