@@ -90,7 +90,20 @@ projects:
         ignoreMethods:
           - "*"
         allowMethods:
+          - eth_chainId
+          - eth_blockNumber
+          - eth_getBlockByNumber
+          - eth_getBlockByHash
+          - eth_getTransactionByHash
+          - eth_getTransactionByBlockHashAndIndex
+          - eth_getTransactionByBlockNumberAndIndex
+          - eth_getTransactionReceipt
+          - eth_getBlockReceipts
           - eth_getLogs
+          - eth_getFilterLogs
+          - eth_getFilterChanges
+          - eth_uninstallFilter
+          - eth_newFilter
         autoIgnoreUnsupportedMethods: true
       - &var4
         id: alchemy

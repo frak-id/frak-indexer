@@ -30,11 +30,11 @@ function getTransport(chainId: number) {
     );
 
     return fallback([
+        erpcTransport,
         http(
             `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
         ),
         envioTransport,
-        erpcTransport,
     ]);
 }
 

@@ -99,7 +99,24 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 // Build each upstream we will use
 const envioUpstream = buildEnvioUpstream({
     ignoreMethods: ["*"],
-    allowMethods: ["eth_getLogs"],
+    // todo: simple port of the vendors/evio.go stuff hereh
+    //  since ts sdk doesn't support null value if ts definition doesn't give optional stuff
+    allowMethods: [
+        "eth_chainId",
+        "eth_blockNumber",
+        "eth_getBlockByNumber",
+        "eth_getBlockByHash",
+        "eth_getTransactionByHash",
+        "eth_getTransactionByBlockHashAndIndex",
+        "eth_getTransactionByBlockNumberAndIndex",
+        "eth_getTransactionReceipt",
+        "eth_getBlockReceipts",
+        "eth_getLogs",
+        "eth_getFilterLogs",
+        "eth_getFilterChanges",
+        "eth_uninstallFilter",
+        "eth_newFilter",
+    ],
 });
 const alchemyUpstream = buildAlchemyUpstream({
     apiKey: envVariable("ALCHEMY_API_KEY"),
