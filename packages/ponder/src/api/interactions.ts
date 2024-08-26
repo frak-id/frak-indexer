@@ -22,7 +22,7 @@ ponder.get("/interactions/:wallet", async (ctx) => {
     const { InteractionEvent, ContentInteractionContract } = ctx.tables;
 
     // Perform the sql query
-    const contents = await ctx.db
+    const interactions = await ctx.db
         .select({
             data: InteractionEvent.data,
             type: InteractionEvent.type,
@@ -39,5 +39,5 @@ ponder.get("/interactions/:wallet", async (ctx) => {
         .orderBy(desc(InteractionEvent.timestamp));
 
     // Return the result as json
-    return ctx.json(contents);
+    return ctx.json(interactions);
 });
