@@ -1,5 +1,5 @@
 import { createConfig, mergeAbis } from "@ponder/core";
-import { http, fallback, parseAbiItem } from "viem";
+import { http, parseAbiItem } from "viem";
 import {
     interactionCampaignAbi,
     referralCampaignAbi,
@@ -19,23 +19,13 @@ import { contentRegistryAbi } from "./abis/frak-registry-abis";
  * @returns
  */
 function getTransport(chainId: number) {
-    // Get an envio transport
-    const envioTransport = http(`https://${chainId}.rpc.hypersync.xyz`);
-
     // Get our erpc instance transport
     const erpcUrl =
         process.env.ERPC_INTERNAL_URL ?? process.env.ERPC_EXTERNAL_URL;
     const erpcTransport = http(
         `${erpcUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
     );
-
-    return fallback([
-        erpcTransport,
-        http(
-            `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        ),
-        envioTransport,
-    ]);
+    return erpcTransport;
 }
 
 /**

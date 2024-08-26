@@ -42,12 +42,13 @@ export function IndexerStack({ app, stack }: StackContext) {
     });
 
     // Then add the erpc service
-    const { erpcService, erpcTargetGroup } = addErpcService({
-        stack,
-        app,
-        vpc,
-        cluster,
-    });
+    const { erpcService, erpcMonitorTargetGroup, erpcTargetGroup } =
+        addErpcService({
+            stack,
+            app,
+            vpc,
+            cluster,
+        });
 
     // Add the indexer service
     const {
@@ -133,6 +134,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     addFullErpcExposure({
         alb,
         erpcTargetGroup,
+        erpcMonitorTargetGroup,
     });
     addFullPonderIndexerExposure({
         alb,

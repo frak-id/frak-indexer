@@ -71,21 +71,10 @@ export function addFullPonderIndexerExposure({
     alb: ApplicationLoadBalancer;
     indexerTargetGroup: ApplicationTargetGroup;
 }) {
-    const listener = alb.addListener("PondexerIndexerListener", {
+    alb.addListener("PondexerIndexerListener", {
         port: 8080,
         protocol: ApplicationProtocol.HTTP,
-    });
-    listener.connections.allowInternally(
-        Port.tcp(42069),
-        "Allow indexer public port internally"
-    );
-
-    // Create our listener for ponder reader
-    listener.addAction("PonderIndexerForwardAction", {
-        action: ListenerAction.forward([indexerTargetGroup]),
-    });
-    listener.addTargetGroups("PonderIndexerTarget", {
-        targetGroups: [indexerTargetGroup],
+        defaultTargetGroups: [indexerTargetGroup],
     });
 }
 
@@ -96,28 +85,20 @@ export function addFullPonderIndexerExposure({
 export function addFullErpcExposure({
     alb,
     erpcTargetGroup,
+    erpcMonitorTargetGroup,
 }: {
     alb: ApplicationLoadBalancer;
     erpcTargetGroup: ApplicationTargetGroup;
+    erpcMonitorTargetGroup: ApplicationTargetGroup;
 }) {
-    const listener = alb.addListener("ErpcListener", {
+    alb.addListener("ErpcListener", {
         port: 8081,
         protocol: ApplicationProtocol.HTTP,
+        defaultTargetGroups: [erpcTargetGroup],
     });
-    listener.connections.allowInternally(
-        Port.tcp(4001),
-        "Allow erpc metrics port internally"
-    );
-    listener.connections.allowInternally(
-        Port.tcp(8080),
-        "Allow erpc public port internally"
-    );
-
-    // Create our listener for ponder reader
-    listener.addAction("ErpcListenerForwardAction", {
-        action: ListenerAction.forward([erpcTargetGroup]),
-    });
-    listener.addTargetGroups("ErpcListenerTarget", {
-        targetGroups: [erpcTargetGroup],
+    alb.addListener("ErpcMonitorListener", {
+        port: 8082,
+        protocol: ApplicationProtocol.HTTP,
+        defaultTargetGroups: [erpcMonitorTargetGroup],
     });
 }
