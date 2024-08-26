@@ -59,7 +59,7 @@ export default createConfig({
         // The interaction manager
         ContentInteractionManager: {
             abi: contentInteractionManagerAbi,
-            address: "0xFE0717cACd6Fff3001EdD3f360Eb2854F54861DD",
+            address: "0xB3fc8bD4e71a15a674ed6BAb63e884720FC4A3B4",
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121923,
@@ -75,7 +75,7 @@ export default createConfig({
                 referralFeatureFacetAbi,
             ]),
             factory: {
-                address: "0xFE0717cACd6Fff3001EdD3f360Eb2854F54861DD",
+                address: "0xB3fc8bD4e71a15a674ed6BAb63e884720FC4A3B4",
                 event: parseAbiItem(
                     "event InteractionContractDeployed(uint256 indexed contentId, address interactionContract)"
                 ),
@@ -91,7 +91,7 @@ export default createConfig({
         Campaigns: {
             abi: mergeAbis([interactionCampaignAbi, referralCampaignAbi]),
             factory: {
-                address: "0x440B19d7694f4B8949b02e674870880c5e40250C",
+                address: "0xB178c17AC5ad0455b1a10b05d25Fe4847567Ef1D",
                 event: parseAbiItem("event CampaignCreated(address campaign)"),
                 parameter: "campaign",
             },
