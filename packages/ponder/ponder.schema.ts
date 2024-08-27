@@ -1,7 +1,10 @@
 import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
-    // Content related stuff
+    /* -------------------------------------------------------------------------- */
+    /*                            Content related stuff                           */
+    /* -------------------------------------------------------------------------- */
+
     Content: p.createTable({
         id: p.bigint(),
 
@@ -31,7 +34,10 @@ export default createSchema((p) => ({
         createdTimestamp: p.bigint(),
     }),
 
-    // Interaction related
+    /* -------------------------------------------------------------------------- */
+    /*                          Interaction related stuff                         */
+    /* -------------------------------------------------------------------------- */
+
     ContentInteractionContract: p.createTable({
         id: p.hex(), // address
 
@@ -45,7 +51,40 @@ export default createSchema((p) => ({
         removedTimestamp: p.bigint().optional(),
     }),
 
-    // Campaign related
+    InteractionEvent: p.createTable(
+        {
+            id: p.string(),
+
+            interactionId: p.hex().references("ContentInteractionContract.id"),
+            interaction: p.one("interactionId"),
+
+            user: p.hex(),
+            type: p.enum("InteractionEventType"),
+            data: p.json().optional(),
+
+            timestamp: p.bigint(),
+        },
+        {
+            interactionIndex: p.index("interactionId"),
+            userIndex: p.index("user"),
+
+            userInteractionIndex: p.index(["user", "interactionId"]),
+        }
+    ),
+
+    InteractionEventType: p.createEnum([
+        // Referral type
+        "REFERRED",
+        "CREATE_REFERRAL_LINK",
+        // Press type
+        "OPEN_ARTICLE",
+        "READ_ARTICLE",
+    ]),
+
+    /* -------------------------------------------------------------------------- */
+    /*                           Campaign related stuff                           */
+    /* -------------------------------------------------------------------------- */
+
     Campaign: p.createTable(
         {
             id: p.hex(),
@@ -103,45 +142,26 @@ export default createSchema((p) => ({
         }
     ),
 
-    // Interaction events
-    InteractionEvent: p.createTable(
-        {
-            id: p.string(),
+    /* -------------------------------------------------------------------------- */
+    /*                            Rewards related stuff                           */
+    /* -------------------------------------------------------------------------- */
+    Token: p.createTable({
+        // Address of the token contract
+        id: p.hex(),
 
-            interactionId: p.hex().references("ContentInteractionContract.id"),
-            interaction: p.one("interactionId"),
-
-            user: p.hex(),
-            type: p.enum("InteractionEventType"),
-            data: p.json().optional(),
-
-            timestamp: p.bigint(),
-        },
-        {
-            interactionIndex: p.index("interactionId"),
-            userIndex: p.index("user"),
-
-            userInteractionIndex: p.index(["user", "interactionId"]),
-        }
-    ),
-
-    InteractionEventType: p.createEnum([
-        // Referral type
-        "REFERRED",
-        "CREATE_REFERRAL_LINK",
-        // Press type
-        "OPEN_ARTICLE",
-        "READ_ARTICLE",
-    ]),
-
-    // Rewards related stuff
+        // Token information
+        decimals: p.int(),
+        name: p.string(),
+        symbol: p.string(),
+    }),
     RewardingContract: p.createTable(
         {
             // Address of the rewarding contract
             id: p.hex(),
 
             // Address of the token that will be distributed
-            token: p.hex(),
+            tokenId: p.hex().references("Token.id"),
+            token: p.one("tokenId"),
 
             // The total amount distributed and claimed
             totalDistributed: p.bigint(),
@@ -151,7 +171,7 @@ export default createSchema((p) => ({
             rewards: p.many("Reward.contractId"),
         },
         {
-            tokenIndex: p.index("token"),
+            tokenIndex: p.index("tokenId"),
         }
     ),
     Reward: p.createTable(

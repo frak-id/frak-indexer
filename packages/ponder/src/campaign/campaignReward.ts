@@ -1,5 +1,5 @@
 import { type Context, ponder } from "@/generated";
-import type { Address } from "viem";
+import { type Address, erc20Abi } from "viem";
 import { referralCampaignAbi } from "../../abis/frak-campaign-abis";
 
 ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
@@ -129,7 +129,7 @@ async function getRewardingContract({
     contract: Address;
     context: Context;
 }) {
-    const { RewardingContract } = context.db;
+    const { RewardingContract, Token } = context.db;
     // Try to find a rewarding contract for the given event emitter
     let rewardingContract = await RewardingContract.findUnique({
         id: contract,
@@ -145,11 +145,51 @@ async function getRewardingContract({
         rewardingContract = await RewardingContract.create({
             id: contract,
             data: {
-                token,
+                tokenId: token,
                 totalDistributed: 0n,
                 totalClaimed: 0n,
             },
         });
+    }
+
+    // Create the token if needed
+    const token = await Token.findUnique({ id: rewardingContract.tokenId });
+    if (!token) {
+        try {
+            // Fetch a few onchain data
+            const [name, symbol, decimals] = await context.client.multicall({
+                contracts: [
+                    {
+                        abi: erc20Abi,
+                        functionName: "name",
+                        address: rewardingContract.tokenId,
+                    },
+                    {
+                        abi: erc20Abi,
+                        functionName: "symbol",
+                        address: rewardingContract.tokenId,
+                    },
+                    {
+                        abi: erc20Abi,
+                        functionName: "decimals",
+                        address: rewardingContract.tokenId,
+                    },
+                ] as const,
+                allowFailure: false,
+            });
+
+            // Create the token
+            await Token.create({
+                id: rewardingContract.tokenId,
+                data: {
+                    name,
+                    symbol,
+                    decimals,
+                },
+            });
+        } catch (e) {
+            console.error(e, "Unable to fetch token data");
+        }
     }
 
     return rewardingContract;

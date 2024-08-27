@@ -1,6 +1,7 @@
 import { ponder } from "@/generated";
 import { and, desc, eq, like, not } from "@ponder/core";
 import { type Address, isAddress } from "viem";
+import { getTokens } from "./tokens";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error
@@ -19,20 +20,34 @@ ponder.get("/rewards/:wallet", async (ctx) => {
     }
 
     // Get the tables we will query
-    const { Reward } = ctx.tables;
+    const { Reward, RewardingContract } = ctx.tables;
 
     // Perform the sql query
     const rewards = await ctx.db
         .select({
             amount: Reward.pendingAmount,
             address: Reward.contractId,
+            token: RewardingContract.tokenId,
         })
         .from(Reward)
+        .innerJoin(
+            RewardingContract,
+            eq(RewardingContract.id, Reward.contractId)
+        )
         .where(and(eq(Reward.user, wallet), not(eq(Reward.pendingAmount, 0n))))
         .orderBy(desc(Reward.pendingAmount));
 
+    // Get all the tokens for the rewards
+    const tokens = await getTokens({
+        addresses: rewards.map((r) => r.token),
+        ctx,
+    });
+
     // Return the result as json
-    return ctx.json(rewards);
+    return ctx.json({
+        rewards,
+        tokens,
+    });
 });
 
 /**
@@ -48,7 +63,8 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
     const walletfilter = `%${wallet}`;
 
     // Get the tables we will query
-    const { RewardAddedEvent, RewardClaimedEvent } = ctx.tables;
+    const { RewardAddedEvent, RewardClaimedEvent, RewardingContract, Reward } =
+        ctx.tables;
 
     // Perform the sql query
     const rewardAddedPromise = ctx.db
@@ -56,8 +72,14 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
             amount: RewardAddedEvent.amount,
             txHash: RewardAddedEvent.txHash,
             timestamp: RewardAddedEvent.timestamp,
+            token: RewardingContract.tokenId,
         })
         .from(RewardAddedEvent)
+        .innerJoin(Reward, eq(Reward.id, RewardAddedEvent.rewardId))
+        .innerJoin(
+            RewardingContract,
+            eq(RewardingContract.id, Reward.contractId)
+        )
         .where(like(RewardAddedEvent.rewardId, walletfilter))
         .limit(100)
         .orderBy(desc(RewardAddedEvent.timestamp));
@@ -68,8 +90,14 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
             amount: RewardClaimedEvent.amount,
             txHash: RewardClaimedEvent.txHash,
             timestamp: RewardClaimedEvent.timestamp,
+            token: RewardingContract.tokenId,
         })
         .from(RewardClaimedEvent)
+        .innerJoin(Reward, eq(Reward.id, RewardClaimedEvent.rewardId))
+        .innerJoin(
+            RewardingContract,
+            eq(RewardingContract.id, Reward.contractId)
+        )
         .where(like(RewardClaimedEvent.rewardId, walletfilter))
         .limit(100)
         .orderBy(desc(RewardClaimedEvent.timestamp));
@@ -79,9 +107,16 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
         rewardClaimedPromise,
     ]);
 
+    // Get all the tokens for the rewards events
+    const tokens = await getTokens({
+        addresses: [...rewardAdded, ...rewardClaimed].map((r) => r.token),
+        ctx,
+    });
+
     // Return the result as json
     return ctx.json({
         added: rewardAdded,
         claimed: rewardClaimed,
+        tokens,
     });
 });

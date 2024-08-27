@@ -41,8 +41,8 @@ export const ponderInstanceTypeConfig = {
         hardware: {
             cpu: "0.5 vCPU",
             memory: "1 GB",
-            storage: "20 GB"
-        } as const
+            storage: "20 GB",
+        } as const,
     },
     reading: {
         suffix: "IndexerReader",
@@ -65,8 +65,8 @@ export const ponderInstanceTypeConfig = {
         hardware: {
             cpu: "0.25 vCPU",
             memory: "0.5 GB",
-            storage: "10 GB"
-        } as const
+            storage: "10 GB",
+        } as const,
     },
 };
 
