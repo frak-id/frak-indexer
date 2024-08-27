@@ -38,6 +38,11 @@ export const ponderInstanceTypeConfig = {
             cpuUtilization: 90,
             memoryUtilization: 90,
         },
+        hardware: {
+            cpu: "0.5 vCPU",
+            memory: "1 GB",
+            storage: "20 GB"
+        } as const
     },
     reading: {
         suffix: "IndexerReader",
@@ -57,6 +62,11 @@ export const ponderInstanceTypeConfig = {
             cpuUtilization: 90,
             memoryUtilization: 90,
         },
+        hardware: {
+            cpu: "0.25 vCPU",
+            memory: "0.5 GB",
+            storage: "10 GB"
+        } as const
     },
 };
 
@@ -109,8 +119,8 @@ export function addPonderService({
         // Arm architecture (lower cost)
         architecture: "arm64",
         // Hardware config
-        cpu: "1 vCPU",
-        memory: "2 GB",
+        cpu: instanceType.hardware.cpu,
+        memory: instanceType.hardware.memory,
         storage: "30 GB",
         // Log retention
         logRetention: "one_week",
