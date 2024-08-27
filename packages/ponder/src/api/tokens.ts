@@ -43,6 +43,11 @@ export async function getTokens({
     addresses,
     ctx,
 }: { addresses: readonly Address[]; ctx: ApiContext }) {
+    // If no addresses, return an empty array
+    if (!addresses || addresses.length === 0) {
+        return [];
+    }
+
     // Convert the addresses to a set
     const addressSet = new Set(addresses);
 
