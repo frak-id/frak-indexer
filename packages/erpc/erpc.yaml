@@ -7,13 +7,15 @@ database:
       connectionUri: ${ERPC_DATABASE_URL}
       table: rpc_cache
 server:
-  httpHost: 0.0.0.0
   httpPort: 8080
+  httpHostV4: 0.0.0.0
+  httpHostV6: "[::]"
   maxTimeout: 60s
 metrics:
-  enabled: true
-  host: 0.0.0.0
   port: 4001
+  hostV4: 0.0.0.0
+  hostV6: "[::]"
+  enabled: true
 projects:
   - rateLimitBudget: ""
     id: ponder-rpc

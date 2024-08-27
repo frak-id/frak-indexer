@@ -11,7 +11,7 @@ import {
     bundlersMethods,
     envVariable,
 } from "@konfeature/erpc-config-generator";
-import type { RpcMethodWithRegex } from "@konfeature/erpc-config-generator";
+import { buildErpcConfig, RpcMethodWithRegex } from "@konfeature/erpc-config-generator";
 import type { EIP1474Methods } from "viem";
 import {
     arbitrum,
@@ -179,31 +179,28 @@ const nexusProject: ProjectConfig = buildProject({
 });
 
 // Build the global config
-const config: Config = {
-    logLevel: envVariable("ERPC_LOG_LEVEL"),
-    database: {
-        evmJsonRpcCache: {
-            driver: "postgresql",
-            postgresql: {
-                connectionUri: envVariable("ERPC_DATABASE_URL"),
-                table: "rpc_cache",
+export default buildErpcConfig({
+    config: {
+        logLevel: envVariable("ERPC_LOG_LEVEL"),
+        database: {
+            evmJsonRpcCache: {
+                driver: "postgresql",
+                postgresql: {
+                    connectionUri: envVariable("ERPC_DATABASE_URL"),
+                    table: "rpc_cache",
+                },
             },
         },
-    },
-    server: {
-        httpHost: "0.0.0.0",
-        httpPort: 8080,
-        maxTimeout: "60s",
-    },
-    metrics: {
-        enabled: true,
-        host: "0.0.0.0",
-        port: 4001,
-    },
-    projects: [ponderProject, nexusProject],
-    rateLimiters: {
-        budgets: [alchemyRateLimits, pimlicoRateLimits],
-    },
-};
-
-export default config;
+        server: {
+            httpPort: 8080,
+            maxTimeout: "60s",
+        },
+        metrics: {
+            enabled: true,
+        },
+        projects: [ponderProject, nexusProject],
+        rateLimiters: {
+            budgets: [alchemyRateLimits, pimlicoRateLimits],
+        },
+    }
+});
