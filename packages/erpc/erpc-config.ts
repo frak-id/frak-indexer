@@ -156,6 +156,8 @@ const nexusProject: ProjectConfig = buildProject({
         allowedOrigins: [
             "https://nexus.frak.id",
             "https://nexus-dev.frak.id",
+            "https://business-dev.frak.id",
+            "https://business.frak.id",
             "http://localhost:30*",
             "https://localhost:30*",
         ],
