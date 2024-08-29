@@ -1,5 +1,4 @@
 import {
-    type Config,
     type ProjectConfig,
     buildAlchemyUpstream,
     buildEnvioUpstream,
@@ -11,7 +10,10 @@ import {
     bundlersMethods,
     envVariable,
 } from "@konfeature/erpc-config-generator";
-import { buildErpcConfig, RpcMethodWithRegex } from "@konfeature/erpc-config-generator";
+import {
+    type RpcMethodWithRegex,
+    buildErpcConfig,
+} from "@konfeature/erpc-config-generator";
 import type { EIP1474Methods } from "viem";
 import {
     arbitrum,
@@ -202,5 +204,5 @@ export default buildErpcConfig({
         rateLimiters: {
             budgets: [alchemyRateLimits, pimlicoRateLimits],
         },
-    }
+    },
 });

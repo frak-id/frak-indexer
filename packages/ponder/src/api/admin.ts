@@ -8,10 +8,9 @@ BigInt.prototype.toJSON = function (): string {
     return this.toString();
 };
 
-/* -------------------------------------------------------------------------- */
-/*                             Reset contents APIs                            */
-/* -------------------------------------------------------------------------- */
-
+/**
+ * Get all of the content where a user is either manager or owner
+ */
 ponder.get("/admin/:wallet/contents", async (ctx) => {
     // Extract wallet
     const wallet = ctx.req.param("wallet") as Address;
@@ -39,11 +38,9 @@ ponder.get("/admin/:wallet/contents", async (ctx) => {
     return ctx.json(contents);
 });
 
-/* -------------------------------------------------------------------------- */
-/*                             Rest campaign APIs                             */
-/* -------------------------------------------------------------------------- */
-
-// Get all the campaign for a wallet
+/**
+ * Get all the campaign for a wallet, where the wallet is the manager
+ */
 ponder.get("/admin/:wallet/campaigns", async (ctx) => {
     // Extract wallet
     const wallet = ctx.req.param("wallet") as Address;
