@@ -24,11 +24,11 @@ export async function increaseCampaignsInteractions({
         >
     >;
 }) {
-    const { ContentInteractionContract, Campaign, PressCampaignStats } =
+    const { ProductInteractionContract, Campaign, PressCampaignStats } =
         context.db;
 
     // Find the interaction contract
-    const interactionContract = await ContentInteractionContract.findUnique({
+    const interactionContract = await ProductInteractionContract.findUnique({
         id: interactionEmitter,
     });
 
@@ -39,7 +39,7 @@ export async function increaseCampaignsInteractions({
     // Find all the associated campaigns, of referral type, that are attached
     const campaigns = await Campaign.findMany({
         where: {
-            contentId: interactionContract.contentId,
+            productId: interactionContract.productId,
             name: "frak.campaign.referral",
             attached: true,
         },

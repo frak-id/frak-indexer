@@ -9,28 +9,28 @@ BigInt.prototype.toJSON = function (): string {
 };
 
 /**
- * Get all the content administrators
+ * Get all the product administrators
  */
-ponder.get("/contents/:id/administrators", async (ctx) => {
+ponder.get("/products/:id/administrators", async (ctx) => {
     // Extract the id
     const id = ctx.req.param("id") as Hex;
     if (!isHex(id)) {
-        return ctx.text("Invalid content id", 400);
+        return ctx.text("Invalid product id", 400);
     }
 
     // Get the tables we will query
-    const { Content, ContentAdministrator } = ctx.tables;
+    const { Product, ProductAdministrator } = ctx.tables;
 
     // Perform the sql query
     const administrators = await ctx.db
         .select({
-            wallet: ContentAdministrator.user,
-            isContentOwner: ContentAdministrator.isOwner,
-            addedTimestamp: ContentAdministrator.createdTimestamp,
+            wallet: ProductAdministrator.user,
+            isProductOwner: ProductAdministrator.isOwner,
+            addedTimestamp: ProductAdministrator.createdTimestamp,
         })
-        .from(ContentAdministrator)
-        .innerJoin(Content, eq(ContentAdministrator.contentId, Content.id))
-        .where(eq(Content.id, BigInt(id)));
+        .from(ProductAdministrator)
+        .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
+        .where(eq(Product.id, BigInt(id)));
 
     // Return the result as json
     return ctx.json(administrators);

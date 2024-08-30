@@ -1,7 +1,7 @@
 import { ponder } from "@/generated";
 import { increaseCampaignsInteractions } from "./stats";
 
-ponder.on("ContentInteraction:ArticleRead", async ({ event, context }) => {
+ponder.on("ProductInteraction:ArticleRead", async ({ event, context }) => {
     const { InteractionEvent } = context.db;
 
     // Insert the press event
@@ -25,7 +25,7 @@ ponder.on("ContentInteraction:ArticleRead", async ({ event, context }) => {
         },
     });
 });
-ponder.on("ContentInteraction:ArticleOpened", async ({ event, context }) => {
+ponder.on("ProductInteraction:ArticleOpened", async ({ event, context }) => {
     const { InteractionEvent } = context.db;
 
     // Insert the press event

@@ -5,13 +5,16 @@ import {
     referralCampaignAbi,
 } from "./abis/frak-campaign-abis";
 import {
-    contentInteractionDiamondAbi,
-    contentInteractionManagerAbi,
     dappInteractionFacetAbi,
     pressInteractionFacetAbi,
+    productInteractionDiamondAbi,
+    productInteractionManagerAbi,
     referralFeatureFacetAbi,
 } from "./abis/frak-interaction-abis";
-import { contentRegistryAbi } from "./abis/frak-registry-abis";
+import {
+    productAdministratorRegistryAbi,
+    productRegistryAbi,
+} from "./abis/frak-registry-abis";
 
 /**
  * Get an transport for the given chain id
@@ -46,10 +49,20 @@ export default createConfig({
         },
     },
     contracts: {
-        // The content registry
-        ContentRegistry: {
-            abi: contentRegistryAbi,
-            address: "0x758F01B484212b38EAe264F75c0DD7842d510D9c",
+        // The product registry
+        ProductRegistry: {
+            abi: productRegistryAbi,
+            address: "0xdA7fBD02eb048bDf6f1607122eEe071e44f0b9F2",
+            network: {
+                arbitrumSepolia: {
+                    startBlock: 64121913,
+                },
+            },
+        },
+        // The product registry
+        ProductAdministratorRegistry: {
+            abi: productAdministratorRegistryAbi,
+            address: "0x62254d732C078BF0484EA7dBd61f7F620184F95e",
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121913,
@@ -57,27 +70,27 @@ export default createConfig({
             },
         },
         // The interaction manager
-        ContentInteractionManager: {
-            abi: contentInteractionManagerAbi,
-            address: "0xB3fc8bD4e71a15a674ed6BAb63e884720FC4A3B4",
+        ProductInteractionManager: {
+            abi: productInteractionManagerAbi,
+            address: "0x5c449C1777Fa729C4136DDF81585FDd7512Ae8bb",
             network: {
                 arbitrumSepolia: {
                     startBlock: 64121923,
                 },
             },
         },
-        // Every content interactions
-        ContentInteraction: {
+        // Every product interactions
+        ProductInteraction: {
             abi: mergeAbis([
-                contentInteractionDiamondAbi,
+                productInteractionDiamondAbi,
                 pressInteractionFacetAbi,
                 dappInteractionFacetAbi,
                 referralFeatureFacetAbi,
             ]),
             factory: {
-                address: "0xB3fc8bD4e71a15a674ed6BAb63e884720FC4A3B4",
+                address: "0x5c449C1777Fa729C4136DDF81585FDd7512Ae8bb",
                 event: parseAbiItem(
-                    "event InteractionContractDeployed(uint256 indexed contentId, address interactionContract)"
+                    "event InteractionContractDeployed(uint256 indexed productId, address interactionContract)"
                 ),
                 parameter: "interactionContract",
             },
@@ -91,7 +104,7 @@ export default createConfig({
         Campaigns: {
             abi: mergeAbis([interactionCampaignAbi, referralCampaignAbi]),
             factory: {
-                address: "0xB178c17AC5ad0455b1a10b05d25Fe4847567Ef1D",
+                address: "0xBE461b8Eb39050cd1c41aaa2f686C93Ec4a5958E",
                 event: parseAbiItem("event CampaignCreated(address campaign)"),
                 parameter: "campaign",
             },

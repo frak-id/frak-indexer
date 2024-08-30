@@ -2,11 +2,11 @@ import * as console from "node:console";
 import { ponder } from "@/generated";
 import { interactionCampaignAbi } from "../../abis/frak-campaign-abis";
 
-ponder.on("ContentInteraction:CampaignAttached", async ({ event, context }) => {
-    const { Campaign, ContentInteractionContract } = context.db;
+ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
+    const { Campaign, ProductInteractionContract } = context.db;
 
     // Find the interaction contract
-    const interactionContract = await ContentInteractionContract.findUnique({
+    const interactionContract = await ProductInteractionContract.findUnique({
         id: event.log.address,
     });
     if (!interactionContract) {
@@ -25,7 +25,7 @@ ponder.on("ContentInteraction:CampaignAttached", async ({ event, context }) => {
         create: {
             name,
             version,
-            contentId: interactionContract.contentId,
+            productId: interactionContract.productId,
             attached: true,
             attachTimestamp: event.block.timestamp,
         },
@@ -33,10 +33,10 @@ ponder.on("ContentInteraction:CampaignAttached", async ({ event, context }) => {
     });
 });
 
-ponder.on("ContentInteraction:CampaignDetached", async ({ event, context }) => {
+ponder.on("ProductInteraction:CampaignDetached", async ({ event, context }) => {
     const { Campaign } = context.db;
 
-    // Find the campaign to content and mark it as detached
+    // Find the campaign to product and mark it as detached
     await Campaign.update({
         id: event.args.campaign,
         data: {
