@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import { eq } from "@ponder/core";
+import { and, eq, not } from "@ponder/core";
 import { type Address, isAddress } from "viem";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -25,14 +25,24 @@ ponder.get("/admin/:wallet/products", async (ctx) => {
     const products = await ctx.db
         .select({
             id: ProductAdministrator.productId,
-            isProductOwner: ProductAdministrator.isOwner,
+            isOwner: ProductAdministrator.isOwner,
+            roles: ProductAdministrator.roles,
             domain: Product.domain,
             name: Product.name,
             productTypes: Product.productTypes,
         })
         .from(ProductAdministrator)
         .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
-        .where(eq(ProductAdministrator.user, wallet));
+        .where(
+            and(
+                eq(ProductAdministrator.user, wallet),
+                // Where owner and administrator is set
+                and(
+                    not(eq(ProductAdministrator.isOwner, false)),
+                    not(eq(ProductAdministrator.roles, 0n))
+                )
+            )
+        );
 
     // Return the result as json
     return ctx.json(products);
@@ -55,7 +65,8 @@ ponder.get("/admin/:wallet/campaigns", async (ctx) => {
     const campaigns = await ctx.db
         .select({
             productId: ProductAdministrator.productId,
-            isProductOwner: ProductAdministrator.isOwner,
+            isOwner: ProductAdministrator.isOwner,
+            roles: ProductAdministrator.roles,
             id: Campaign.id,
             name: Campaign.name,
             version: Campaign.version,
@@ -68,7 +79,16 @@ ponder.get("/admin/:wallet/campaigns", async (ctx) => {
             Campaign,
             eq(ProductAdministrator.productId, Campaign.productId)
         )
-        .where(eq(ProductAdministrator.user, wallet));
+        .where(
+            and(
+                eq(ProductAdministrator.user, wallet),
+                // Where owner and administrator is set
+                and(
+                    not(eq(ProductAdministrator.isOwner, false)),
+                    not(eq(ProductAdministrator.roles, 0n))
+                )
+            )
+        );
 
     // Return the result as json
     return ctx.json(campaigns);
@@ -89,7 +109,8 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
     const campaignsStats = await ctx.db
         .select({
             productId: ProductAdministrator.productId,
-            isProductOwner: ProductAdministrator.isOwner,
+            isOwner: ProductAdministrator.isOwner,
+            roles: ProductAdministrator.roles,
             id: Campaign.id,
             totalInteractions: PressCampaignStats.totalInteractions,
             openInteractions: PressCampaignStats.openInteractions,
@@ -108,7 +129,16 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
             PressCampaignStats,
             eq(Campaign.id, PressCampaignStats.campaignId)
         )
-        .where(eq(ProductAdministrator.user, wallet));
+        .where(
+            and(
+                eq(ProductAdministrator.user, wallet),
+                // Where owner and administrator is set
+                and(
+                    not(eq(ProductAdministrator.isOwner, false)),
+                    not(eq(ProductAdministrator.roles, 0n))
+                )
+            )
+        );
 
     // Return the result as json
     return ctx.json(campaignsStats);

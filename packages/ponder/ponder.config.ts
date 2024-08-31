@@ -55,7 +55,7 @@ export default createConfig({
             address: "0xdA7fBD02eb048bDf6f1607122eEe071e44f0b9F2",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 64121913,
+                    startBlock: 75793399,
                 },
             },
         },
@@ -65,7 +65,7 @@ export default createConfig({
             address: "0x62254d732C078BF0484EA7dBd61f7F620184F95e",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 64121913,
+                    startBlock: 75793399,
                 },
             },
         },
@@ -75,7 +75,7 @@ export default createConfig({
             address: "0x5c449C1777Fa729C4136DDF81585FDd7512Ae8bb",
             network: {
                 arbitrumSepolia: {
-                    startBlock: 64121923,
+                    startBlock: 75793399,
                 },
             },
         },
@@ -96,7 +96,7 @@ export default createConfig({
             },
             network: {
                 arbitrumSepolia: {
-                    startBlock: 64121923,
+                    startBlock: 75793399,
                 },
             },
         },
@@ -110,7 +110,7 @@ export default createConfig({
             },
             network: {
                 arbitrumSepolia: {
-                    startBlock: 64121923,
+                    startBlock: 75793399,
                 },
             },
         },

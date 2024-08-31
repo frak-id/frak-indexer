@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import { eq } from "@ponder/core";
+import { and, eq, not } from "@ponder/core";
 import { type Hex, isHex } from "viem";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -25,12 +25,23 @@ ponder.get("/products/:id/administrators", async (ctx) => {
     const administrators = await ctx.db
         .select({
             wallet: ProductAdministrator.user,
-            isProductOwner: ProductAdministrator.isOwner,
+            isOwner: ProductAdministrator.isOwner,
+            roles: ProductAdministrator.roles,
             addedTimestamp: ProductAdministrator.createdTimestamp,
         })
         .from(ProductAdministrator)
         .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
-        .where(eq(Product.id, BigInt(id)));
+        .where(
+            and(
+                // Find the product
+                eq(Product.id, BigInt(id)),
+                // Where owner and administrator is set
+                and(
+                    not(eq(ProductAdministrator.isOwner, false)),
+                    not(eq(ProductAdministrator.roles, 0n))
+                )
+            )
+        );
 
     // Return the result as json
     return ctx.json(administrators);
