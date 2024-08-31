@@ -1,5 +1,4 @@
-import { Context, ponder } from "@/generated";
-import { DatabaseConfig } from "@ponder/core";
+import { type Context, ponder } from "@/generated";
 import {
     type Address,
     type Hex,
@@ -57,7 +56,7 @@ ponder.on("ProductRegistry:Transfer", async ({ event, context }) => {
             },
         });
     }
-    
+
     // Cleanup the administrators
     await administratorCleanup(context);
 });
@@ -105,7 +104,7 @@ async function administratorCleanup(context: Context) {
     });
 
     // Delete them
-    for(const admin of administrators.items) {
+    for (const admin of administrators.items) {
         await ProductAdministrator.delete({ id: admin.id });
     }
 }

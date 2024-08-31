@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import { and, eq, not } from "@ponder/core";
+import { eq } from "@ponder/core";
 import { type Hex, isHex } from "viem";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
