@@ -2,33 +2,34 @@ import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
     /* -------------------------------------------------------------------------- */
-    /*                            Content related stuff                           */
+    /*                            Product related stuff                           */
     /* -------------------------------------------------------------------------- */
 
-    Content: p.createTable({
+    Product: p.createTable({
         id: p.bigint(),
 
         domain: p.string(),
-        contentTypes: p.bigint(),
+        productTypes: p.bigint(),
         name: p.string(),
 
         createTimestamp: p.bigint(),
         lastUpdateTimestamp: p.bigint().optional(),
 
-        interactionContracts: p.many("ContentInteractionContract.contentId"),
+        interactionContracts: p.many("ProductInteractionContract.productId"),
 
-        campaigns: p.many("Campaign.contentId"),
-        administrators: p.many("ContentAdministrator.contentId"),
+        campaigns: p.many("Campaign.productId"),
+        administrators: p.many("ProductAdministrator.productId"),
     }),
 
-    // Content related stuff
-    ContentAdministrator: p.createTable({
+    // Product related stuff
+    ProductAdministrator: p.createTable({
         id: p.hex(),
 
-        contentId: p.bigint().references("Content.id"),
-        content: p.one("contentId"),
+        productId: p.bigint().references("Product.id"),
+        product: p.one("productId"),
 
         isOwner: p.boolean(),
+        roles: p.bigint(),
         user: p.hex(),
 
         createdTimestamp: p.bigint(),
@@ -38,11 +39,11 @@ export default createSchema((p) => ({
     /*                          Interaction related stuff                         */
     /* -------------------------------------------------------------------------- */
 
-    ContentInteractionContract: p.createTable({
+    ProductInteractionContract: p.createTable({
         id: p.hex(), // address
 
-        contentId: p.bigint().references("Content.id"),
-        content: p.one("contentId"),
+        productId: p.bigint().references("Product.id"),
+        product: p.one("productId"),
 
         referralTree: p.hex(),
 
@@ -55,7 +56,7 @@ export default createSchema((p) => ({
         {
             id: p.string(),
 
-            interactionId: p.hex().references("ContentInteractionContract.id"),
+            interactionId: p.hex().references("ProductInteractionContract.id"),
             interaction: p.one("interactionId"),
 
             user: p.hex(),
@@ -92,8 +93,8 @@ export default createSchema((p) => ({
             name: p.string(),
             version: p.string(),
 
-            contentId: p.bigint().references("Content.id"),
-            content: p.one("contentId"),
+            productId: p.bigint().references("Product.id"),
+            product: p.one("productId"),
 
             attached: p.boolean(),
 
@@ -104,7 +105,7 @@ export default createSchema((p) => ({
             stats: p.many("PressCampaignStats.campaignId"),
         },
         {
-            contentIndex: p.index("contentId"),
+            productIndex: p.index("productId"),
         }
     ),
     PressCampaignStats: p.createTable(

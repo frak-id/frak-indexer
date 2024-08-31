@@ -2,7 +2,7 @@ import { ponder } from "@/generated";
 import { increaseCampaignsInteractions } from "./stats";
 
 ponder.on(
-    "ContentInteraction:ReferralLinkCreation",
+    "ProductInteraction:ReferralLinkCreation",
     async ({ event, context }) => {
         const { InteractionEvent } = context.db;
 
@@ -29,7 +29,7 @@ ponder.on(
     }
 );
 
-ponder.on("ContentInteraction:UserReferred", async ({ event, context }) => {
+ponder.on("ProductInteraction:UserReferred", async ({ event, context }) => {
     const { InteractionEvent } = context.db;
 
     // Insert the press event
