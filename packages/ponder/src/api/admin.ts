@@ -33,16 +33,7 @@ ponder.get("/admin/:wallet/products", async (ctx) => {
         })
         .from(ProductAdministrator)
         .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
-        .where(
-            and(
-                eq(ProductAdministrator.user, wallet),
-                // Where owner and administrator is set
-                and(
-                    not(eq(ProductAdministrator.isOwner, false)),
-                    not(eq(ProductAdministrator.roles, 0n))
-                )
-            )
-        );
+        .where(eq(ProductAdministrator.user, wallet));
 
     // Return the result as json
     return ctx.json(products);
@@ -79,16 +70,7 @@ ponder.get("/admin/:wallet/campaigns", async (ctx) => {
             Campaign,
             eq(ProductAdministrator.productId, Campaign.productId)
         )
-        .where(
-            and(
-                eq(ProductAdministrator.user, wallet),
-                // Where owner and administrator is set
-                and(
-                    not(eq(ProductAdministrator.isOwner, false)),
-                    not(eq(ProductAdministrator.roles, 0n))
-                )
-            )
-        );
+        .where(eq(ProductAdministrator.user, wallet));
 
     // Return the result as json
     return ctx.json(campaigns);
@@ -129,16 +111,7 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
             PressCampaignStats,
             eq(Campaign.id, PressCampaignStats.campaignId)
         )
-        .where(
-            and(
-                eq(ProductAdministrator.user, wallet),
-                // Where owner and administrator is set
-                and(
-                    not(eq(ProductAdministrator.isOwner, false)),
-                    not(eq(ProductAdministrator.roles, 0n))
-                )
-            )
-        );
+        .where(eq(ProductAdministrator.user, wallet));
 
     // Return the result as json
     return ctx.json(campaignsStats);

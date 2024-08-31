@@ -31,17 +31,7 @@ ponder.get("/products/:id/administrators", async (ctx) => {
         })
         .from(ProductAdministrator)
         .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
-        .where(
-            and(
-                // Find the product
-                eq(Product.id, BigInt(id)),
-                // Where owner and administrator is set
-                and(
-                    not(eq(ProductAdministrator.isOwner, false)),
-                    not(eq(ProductAdministrator.roles, 0n))
-                )
-            )
-        );
+        .where(eq(Product.id, BigInt(id)));
 
     // Return the result as json
     return ctx.json(administrators);

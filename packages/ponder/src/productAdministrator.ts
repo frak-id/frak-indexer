@@ -1,4 +1,5 @@
-import { ponder } from "@/generated";
+import { Context, ponder } from "@/generated";
+import { DatabaseConfig } from "@ponder/core";
 import {
     type Address,
     type Hex,
@@ -56,6 +57,9 @@ ponder.on("ProductRegistry:Transfer", async ({ event, context }) => {
             },
         });
     }
+    
+    // Cleanup the administrators
+    await administratorCleanup(context);
 });
 
 ponder.on(
@@ -76,9 +80,32 @@ ponder.on(
                 roles: event.args.roles,
             },
         });
+
+        // Cleanup the administrators
+        await administratorCleanup(context);
     }
 );
 
 function productAdministratorId(productId: bigint, user: Address): Hex {
     return keccak256(`${toHex(productId)}-${user}`);
+}
+
+/**
+ * Find every administrator where isOwner = false and roles = 0 and delete them
+ */
+async function administratorCleanup(context: Context) {
+    const { ProductAdministrator } = context.db;
+
+    // Get the administrators to delete
+    const administrators = await ProductAdministrator.findMany({
+        where: {
+            isOwner: false,
+            roles: 0n,
+        },
+    });
+
+    // Delete them
+    for(const admin of administrators.items) {
+        await ProductAdministrator.delete({ id: admin.id });
+    }
 }
