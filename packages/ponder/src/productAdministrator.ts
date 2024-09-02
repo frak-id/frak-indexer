@@ -98,13 +98,13 @@ async function administratorCleanup(context: Context) {
     // Get the administrators to delete
     const administrators = await ProductAdministrator.findMany({
         where: {
-            isOwner: false,
-            roles: 0n,
+            AND: [{ isOwner: false }, { roles: 0n }],
         },
     });
 
     // Delete them
     for (const admin of administrators.items) {
+        console.log(`Will delete administrator ${admin.id}`);
         await ProductAdministrator.delete({ id: admin.id });
     }
 }
