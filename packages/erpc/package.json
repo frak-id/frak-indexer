@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
-    "@konfeature/erpc-config-generator": "0.0.8",
+    "@konfeature/erpc-config-generator": "0.0.9",
     "@types/aws-lambda": "8.10.138",
     "@types/node": "^22.4.0",
     "aws-cdk-lib": "2.142.1",

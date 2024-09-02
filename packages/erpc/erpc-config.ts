@@ -196,9 +196,11 @@ export default buildErpcConfig({
         server: {
             httpPort: 8080,
             maxTimeout: "60s",
+            listenV6: false,
         },
         metrics: {
             enabled: true,
+            listenV6: false,
         },
         projects: [ponderProject, nexusProject],
         rateLimiters: {

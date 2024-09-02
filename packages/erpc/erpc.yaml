@@ -10,11 +10,15 @@ server:
   httpPort: 8080
   httpHostV4: 0.0.0.0
   httpHostV6: "[::]"
+  listenV4: true
+  listenV6: false
   maxTimeout: 60s
 metrics:
   port: 4001
   hostV4: 0.0.0.0
   hostV6: "[::]"
+  listenV4: true
+  listenV6: false
   enabled: true
 projects:
   - rateLimitBudget: ""

@@ -14,18 +14,11 @@ import {
 ponder.on("ProductRegistry:Transfer", async ({ event, context }) => {
     const { ProductAdministrator } = context.db;
 
-    // Delete the previous administrator
-    if (!isAddressEqual(event.args.from, zeroAddress)) {
-        await ProductAdministrator.delete({
-            id: productAdministratorId(event.args.id, event.args.from),
-        });
-    }
-
     const productId = event.args.id;
 
     // Remove the previous administrator
     if (!isAddressEqual(event.args.from, zeroAddress)) {
-        ProductAdministrator.upsert({
+        await ProductAdministrator.upsert({
             id: productAdministratorId(event.args.id, event.args.from),
             create: {
                 isOwner: false,
@@ -42,7 +35,7 @@ ponder.on("ProductRegistry:Transfer", async ({ event, context }) => {
 
     // Create the new administrator
     if (!isAddressEqual(event.args.to, zeroAddress)) {
-        ProductAdministrator.upsert({
+        await ProductAdministrator.upsert({
             id: productAdministratorId(event.args.id, event.args.to),
             create: {
                 isOwner: true,
@@ -66,7 +59,7 @@ ponder.on(
     async ({ event, context }) => {
         const { ProductAdministrator } = context.db;
 
-        ProductAdministrator.upsert({
+        await ProductAdministrator.upsert({
             id: productAdministratorId(event.args.product, event.args.user),
             create: {
                 isOwner: false,
