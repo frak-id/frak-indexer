@@ -1,5 +1,6 @@
 import type { Context, Schema } from "@/generated";
 import type { Address } from "viem";
+import { interactionCampaignAbi } from "../../abis/frak-campaign-abis";
 
 /**
  * Get the rewarding contract for the given event emitter
@@ -11,9 +12,11 @@ export async function increaseCampaignsInteractions({
     interactionEmitter,
     context,
     increments,
+    blockNumber,
 }: {
     interactionEmitter: Address;
     context: Context;
+    blockNumber: bigint;
     increments: Partial<
         Pick<
             Schema["PressCampaignStats"],
@@ -48,13 +51,43 @@ export async function increaseCampaignsInteractions({
         return;
     }
 
+    // Ensure the given campaign was active at this block
+    let isActiveDuringInteraction: boolean[] = [];
+    try {
+        isActiveDuringInteraction = await context.client.multicall({
+            allowFailure: false,
+            contracts: campaigns.items.map(
+                (campaign) =>
+                    ({
+                        address: campaign.id,
+                        abi: interactionCampaignAbi,
+                        functionName: "isActive",
+                    }) as const
+            ),
+            blockNumber: blockNumber,
+        });
+    } catch (error) {
+        console.error("Error during campaign.isActive multicall check", error);
+        return;
+    }
+
     // Perform the increments
     // todo: Should use an `updateMany` if we are sure that campaign stats are created
-    for (const campaign of campaigns.items) {
+    for (const [index, campaign] of campaigns.items.entries()) {
         if (!campaign.id) {
             console.error("Campaign id not found", campaign);
             continue;
         }
+
+        // Check if the campaign was active during the interaction
+        if (!isActiveDuringInteraction[index]) {
+            console.log("Campaign was not active during the interaction", {
+                campaign,
+                interactionEmitter,
+            });
+            continue;
+        }
+
         try {
             // Create the stats if not found
             await PressCampaignStats.upsert({

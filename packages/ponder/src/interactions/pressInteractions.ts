@@ -19,6 +19,7 @@ ponder.on("ProductInteraction:ArticleRead", async ({ event, context }) => {
     // Update the current campaigns stats
     await increaseCampaignsInteractions({
         interactionEmitter: event.log.address,
+        blockNumber: event.block.number,
         context,
         increments: {
             readInteractions: 1n,
@@ -43,6 +44,7 @@ ponder.on("ProductInteraction:ArticleOpened", async ({ event, context }) => {
     // Update the current campaigns stats
     await increaseCampaignsInteractions({
         interactionEmitter: event.log.address,
+        blockNumber: event.block.number,
         context,
         increments: {
             openInteractions: 1n,

@@ -21,6 +21,7 @@ ponder.on(
         // Update the current campaigns stats
         await increaseCampaignsInteractions({
             interactionEmitter: event.log.address,
+            blockNumber: event.block.number,
             context,
             increments: {
                 createReferredLinkInteractions: 1n,
@@ -47,6 +48,7 @@ ponder.on("ProductInteraction:UserReferred", async ({ event, context }) => {
     // Update the current campaigns stats
     await increaseCampaignsInteractions({
         interactionEmitter: event.log.address,
+        blockNumber: event.block.number,
         context,
         increments: {
             referredInteractions: 1n,
