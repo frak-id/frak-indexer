@@ -57,8 +57,8 @@ importers:
   packages/ponder:
     dependencies:
       '@ponder/core':
-        specifier: ^0.5.19
-        version: 0.5.19(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.21.8))(@opentelemetry/api@1.9.0)(@types/node@22.4.1)(hono@4.5.8)(typescript@5.5.4)(viem@2.20.0(typescript@5.5.4)(zod@3.23.8))(zod@3.23.8)
+        specifier: ^0.5.20
+        version: 0.5.20(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.21.8))(@opentelemetry/api@1.9.0)(@types/node@22.4.1)(hono@4.5.8)(typescript@5.5.4)(viem@2.20.0(typescript@5.5.4)(zod@3.23.8))(zod@3.23.8)
       hono:
         specifier: ^4.5.8
         version: 4.5.8
@@ -1161,8 +1161,8 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@ponder/core@0.5.19':
-    resolution: {integrity: sha512-eIuGchD+AWkjOtLBO514qUF7fZ56XEzcaiJBNjTdE7/fGRXbitGD+r1nrbeNNBrWIrjl4a6sERKQfPlLipDhpQ==}
+  '@ponder/core@0.5.20':
+    resolution: {integrity: sha512-gIdDu5kB2O9Z51ztq0MtsbnyWX74L5aT1/C77SfzZe7p2tfyHQItx3QGbjFCrDKQ7gH5V+FenLxtZ6UVzZ74oA==}
     engines: {node: '>=18.14'}
     hasBin: true
     peerDependencies:
@@ -1173,8 +1173,8 @@ packages:
       typescript:
         optional: true
 
-  '@ponder/utils@0.1.7':
-    resolution: {integrity: sha512-MZjHG2KMMuIE6/at9SsMUs0vKKY53TSjBcxXa0gLdvcUOa04BGY4LLhzs0Y4c1mVh9sj++lJfbaS1BZ+1yVaIQ==}
+  '@ponder/utils@0.1.8':
+    resolution: {integrity: sha512-Ul5HkBAsyy/fJbE35H96NpiPKgA7v/7OJqyHB/08Oq7MilXvvs4ryk7wPXejB18wnwhfu7bfLTCKSvFOG/UEGA==}
     peerDependencies:
       typescript: '>=5.0.4'
       viem: '>=1.16'
@@ -6958,7 +6958,7 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@ponder/core@0.5.19(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.21.8))(@opentelemetry/api@1.9.0)(@types/node@22.4.1)(hono@4.5.8)(typescript@5.5.4)(viem@2.20.0(typescript@5.5.4)(zod@3.23.8))(zod@3.23.8)':
+  '@ponder/core@0.5.20(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.21.8))(@opentelemetry/api@1.9.0)(@types/node@22.4.1)(hono@4.5.8)(typescript@5.5.4)(viem@2.20.0(typescript@5.5.4)(zod@3.23.8))(zod@3.23.8)':
     dependencies:
       '@babel/code-frame': 7.24.7
       '@commander-js/extra-typings': 12.1.0(commander@12.1.0)
@@ -6966,7 +6966,7 @@ snapshots:
       '@escape.tech/graphql-armor-max-depth': 2.3.0
       '@escape.tech/graphql-armor-max-tokens': 2.4.0
       '@hono/node-server': 1.12.1
-      '@ponder/utils': 0.1.7(typescript@5.5.4)(viem@2.20.0(typescript@5.5.4)(zod@3.23.8))
+      '@ponder/utils': 0.1.8(typescript@5.5.4)(viem@2.20.0(typescript@5.5.4)(zod@3.23.8))
       abitype: 0.10.3(typescript@5.5.4)(zod@3.23.8)
       better-sqlite3: 11.2.1
       commander: 12.1.0
@@ -7035,7 +7035,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@ponder/utils@0.1.7(typescript@5.5.4)(viem@2.20.0(typescript@5.5.4)(zod@3.23.8))':
+  '@ponder/utils@0.1.8(typescript@5.5.4)(viem@2.20.0(typescript@5.5.4)(zod@3.23.8))':
     dependencies:
       viem: 2.20.0(typescript@5.5.4)(zod@3.23.8)
     optionalDependencies:
@@ -8828,7 +8828,7 @@ snapshots:
 
   is-lower-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   is-number@7.0.0: {}
 
@@ -8844,7 +8844,7 @@ snapshots:
 
   is-upper-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.7.0
 
   isarray@1.0.0: {}
 

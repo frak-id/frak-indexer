@@ -13,7 +13,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@ponder/core": "^0.5.19",
+    "@ponder/core": "^0.5.20",
     "hono": "^4.5.8",
     "viem": "^2.20.0"
   },
