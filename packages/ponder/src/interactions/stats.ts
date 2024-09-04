@@ -95,10 +95,11 @@ export async function increaseCampaignsInteractions({
                 create: {
                     campaignId: campaign.id,
                     totalInteractions: 0n,
-                    openInteractions: 0n,
-                    readInteractions: 0n,
-                    referredInteractions: 0n,
-                    createReferredLinkInteractions: 0n,
+                    openInteractions: increments.openInteractions ?? 0n,
+                    readInteractions: increments.readInteractions ?? 0n,
+                    referredInteractions: increments.referredInteractions ?? 0n,
+                    createReferredLinkInteractions:
+                        increments.createReferredLinkInteractions ?? 0n,
                     totalRewards: 0n,
                 },
                 // Update the given field by incrementing them

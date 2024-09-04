@@ -72,7 +72,7 @@ export default createConfig({
         // The interaction manager
         ProductInteractionManager: {
             abi: productInteractionManagerAbi,
-            address: "0x5c449C1777Fa729C4136DDF81585FDd7512Ae8bb",
+            address: "0xC9d1BAB1B9A07c11AB0C264B13AFfD500DD4c2ee",
             network: {
                 arbitrumSepolia: {
                     startBlock: 75793399,
@@ -88,7 +88,7 @@ export default createConfig({
                 referralFeatureFacetAbi,
             ]),
             factory: {
-                address: "0x5c449C1777Fa729C4136DDF81585FDd7512Ae8bb",
+                address: "0xC9d1BAB1B9A07c11AB0C264B13AFfD500DD4c2ee",
                 event: parseAbiItem(
                     "event InteractionContractDeployed(uint256 indexed productId, address interactionContract)"
                 ),

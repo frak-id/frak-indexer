@@ -59,7 +59,7 @@ ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
             readInteractions: 0n,
             referredInteractions: 0n,
             createReferredLinkInteractions: 0n,
-            totalRewards: 0n,
+            totalRewards: event.args.amount,
         },
         // Update the given field by incrementing them
         update: ({ current }) => {

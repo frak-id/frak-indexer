@@ -3,7 +3,8 @@ import { ponder } from "@/generated";
 import { interactionCampaignAbi } from "../../abis/frak-campaign-abis";
 
 ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
-    const { Campaign, ProductInteractionContract } = context.db;
+    const { Campaign, ProductInteractionContract, PressCampaignStats } =
+        context.db;
 
     // Find the interaction contract
     const interactionContract = await ProductInteractionContract.findUnique({
@@ -31,6 +32,23 @@ ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
         },
         update: {},
     });
+
+    // Upsert press campaign stats if it's the right type
+    if (name === "frak.campaign.press") {
+        await PressCampaignStats.upsert({
+            id: event.args.campaign,
+            create: {
+                campaignId: event.args.campaign,
+                totalInteractions: 0n,
+                openInteractions: 0n,
+                readInteractions: 0n,
+                referredInteractions: 0n,
+                createReferredLinkInteractions: 0n,
+                totalRewards: 0n,
+            },
+            update: {},
+        });
+    }
 });
 
 ponder.on("ProductInteraction:CampaignDetached", async ({ event, context }) => {

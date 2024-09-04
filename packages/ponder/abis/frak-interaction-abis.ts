@@ -404,11 +404,6 @@ export const productInteractionDiamondAbi = [
                 internalType: "address",
                 type: "address",
             },
-            {
-                name: "_interactionManagerOwner",
-                internalType: "address",
-                type: "address",
-            },
         ],
         stateMutability: "nonpayable",
     },
@@ -872,7 +867,29 @@ export const productInteractionManagerAbi = [
             { name: "_productId", internalType: "uint256", type: "uint256" },
         ],
         name: "deployInteractionContract",
-        outputs: [],
+        outputs: [
+            {
+                name: "diamond",
+                internalType: "contract ProductInteractionDiamond",
+                type: "address",
+            },
+        ],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_productId", internalType: "uint256", type: "uint256" },
+            { name: "_salt", internalType: "bytes32", type: "bytes32" },
+        ],
+        name: "deployInteractionContract",
+        outputs: [
+            {
+                name: "diamond",
+                internalType: "contract ProductInteractionDiamond",
+                type: "address",
+            },
+        ],
         stateMutability: "nonpayable",
     },
     {
