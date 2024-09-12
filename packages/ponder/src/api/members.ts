@@ -22,6 +22,8 @@ import { type Address, isAddress } from "viem";
 type GetMembersParams = {
     // Indicating if we only want the total count
     noData?: boolean;
+    // Indicating if we only want user address
+    onlyAddress?: boolean;
     // Some filters to apply to the query
     filter?: {
         productIds?: string[];
@@ -63,7 +65,7 @@ ponder.post("/members/:productAdmin", async (ctx) => {
     }
 
     // Get the request params
-    const { filter, sort, limit, offset, noData } =
+    const { filter, sort, limit, offset, noData, onlyAddress } =
         await ctx.req.json<GetMembersParams>();
 
     // Get all the product ids for this admin
@@ -110,7 +112,6 @@ ponder.post("/members/:productAdmin", async (ctx) => {
             productIds: sql<
                 string[]
             >`array_agg(distinct ${ProductInteractionContract.productId}::text)`,
-            // First interaction event timestamp
             firstInteractionTimestamp: min(InteractionEvent.timestamp),
         })
         .from(InteractionEvent)
@@ -166,6 +167,18 @@ ponder.post("/members/:productAdmin", async (ctx) => {
             sort.order === "asc" ? asc(orderByField) : desc(orderByField)
         );
     }
+
+    // If we only want the address, we early exit now
+    if (onlyAddress) {
+        const members = await ctx.db
+            .select({ user: membersSubQuery.user })
+            .from(membersSubQuery);
+        return ctx.json({
+            totalResult: totalResult?.[0]?.count,
+            users: members.map((m) => m.user),
+        });
+    }
+
     const members = await membersQuery;
 
     // Add product names
