@@ -14,7 +14,7 @@ import {
     sum,
 } from "@ponder/core";
 import type { SQL } from "drizzle-orm";
-import { type Address, isAddress } from "viem";
+import { type Address, type Hex, isAddress } from "viem";
 
 /**
  * Params for the members fetching
@@ -32,8 +32,8 @@ type GetMembersParams = {
             max?: number;
         };
         rewards?: {
-            min?: number;
-            max?: number;
+            min?: Hex;
+            max?: Hex;
         };
         firstInteractionTimestamp?: {
             min?: number;
@@ -99,7 +99,6 @@ ponder.post("/members/:productAdmin", async (ctx) => {
             productIds.map((p) => p.id)
         )
     );
-    console.log("Clauses", { whereClauses, havingClauses });
 
     // Then get all the members for the given products id, we want the total interactions for each users who have interacted with the product
     // Relation is as follow: InteractionEvent (user, interactionId) -> ProductInteractionContract (productId)
@@ -227,9 +226,13 @@ function getFilterClauses({
         }
     }
     if (filter?.rewards) {
+        const bigintRewards = {
+            min: filter.rewards.min ? BigInt(filter.rewards.min) : undefined,
+            max: filter.rewards.max ? BigInt(filter.rewards.max) : undefined,
+        };
         const clause = buildRangeClause({
             field: sum(Reward.totalReceived),
-            ...filter.rewards,
+            ...bigintRewards,
         });
         if (clause) {
             havingClauses.push(clause);
@@ -254,8 +257,8 @@ function buildRangeClause({
     max,
 }: {
     field: SQL<bigint | string | number | null>;
-    min?: number;
-    max?: number;
+    min?: number | bigint;
+    max?: number | bigint;
 }) {
     if (min && max) {
         return between(field, min, max);
