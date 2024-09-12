@@ -1,4 +1,4 @@
-import { ponder } from "@/generated";
+import { type ApiContext, ponder } from "@/generated";
 import {
     and,
     asc,
@@ -13,6 +13,7 @@ import {
     sql,
     sum,
 } from "@ponder/core";
+import type { SQL } from "drizzle-orm";
 import { type Address, isAddress } from "viem";
 
 /**
@@ -84,63 +85,19 @@ ponder.post("/members/:productAdmin", async (ctx) => {
         .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
         .where(eq(ProductAdministrator.user, wallet));
 
-    // Build our where and having clauses depending on the filters
-    const whereClauses = [
+    const { whereClauses, havingClauses } = getFilterClauses({
+        tables: ctx.tables,
+        filter,
+    });
+
+    // Append a clause to filter only the products for this admin
+    whereClauses.push(
         inArray(
             ProductInteractionContract.productId,
             productIds.map((p) => p.id)
-        ),
-    ];
-    const havingClauses = [];
-
-    if (filter?.productIds) {
-        whereClauses.push(
-            inArray(
-                ProductInteractionContract.productId,
-                filter.productIds.map((p) => BigInt(p))
-            )
-        );
-    }
-    if (filter?.interactions) {
-        const { min, max } = filter.interactions;
-        if (min && max) {
-            havingClauses.push(between(count(InteractionEvent.id), min, max));
-        } else if (min) {
-            havingClauses.push(gte(count(InteractionEvent.id), min));
-        } else if (max) {
-            havingClauses.push(lte(count(InteractionEvent.id), max));
-        }
-    }
-    if (filter?.rewards) {
-        const { min, max } = filter.rewards;
-        if (min && max) {
-            havingClauses.push(between(sum(Reward.totalReceived), min, max));
-        } else if (min) {
-            havingClauses.push(gte(sum(Reward.totalReceived), min));
-        } else if (max) {
-            havingClauses.push(lte(sum(Reward.totalReceived), max));
-        }
-    }
-    if (filter?.firstInteractionTimestamp) {
-        const { min: interactionMin, max } = filter.firstInteractionTimestamp;
-        if (interactionMin && max) {
-            havingClauses.push(
-                between(
-                    min(InteractionEvent.timestamp),
-                    BigInt(interactionMin),
-                    BigInt(max)
-                )
-            );
-        } else if (interactionMin) {
-            havingClauses.push(
-                gte(min(InteractionEvent.timestamp), BigInt(interactionMin))
-            );
-        } else if (max) {
-            havingClauses.push(
-                lte(min(InteractionEvent.timestamp), BigInt(max))
-            );
-        }
-    }
+        )
+    );
+    console.log("Clauses", { whereClauses, havingClauses });
 
     // Then get all the members for the given products id, we want the total interactions for each users who have interacted with the product
     // Relation is as follow: InteractionEvent (user, interactionId) -> ProductInteractionContract (productId)
@@ -224,3 +181,78 @@ ponder.post("/members/:productAdmin", async (ctx) => {
         members: membersWithPName,
     });
 });
+
+/**
+ * Get all the filter clauses
+ */
+function getFilterClauses({
+    tables,
+    filter,
+}: { tables: ApiContext["tables"]; filter: GetMembersParams["filter"] }) {
+    // Get all the product ids for this admin
+    const { InteractionEvent, ProductInteractionContract, Reward } = tables;
+
+    // Build our where and having clauses depending on the filters
+    const whereClauses = [];
+    const havingClauses = [];
+
+    if (filter?.productIds) {
+        whereClauses.push(
+            inArray(
+                ProductInteractionContract.productId,
+                filter.productIds.map((p) => BigInt(p))
+            )
+        );
+    }
+    if (filter?.interactions) {
+        const clause = buildRangeClause({
+            field: count(InteractionEvent.id),
+            ...filter.interactions,
+        });
+        if (clause) {
+            havingClauses.push(clause);
+        }
+    }
+    if (filter?.rewards) {
+        const clause = buildRangeClause({
+            field: sum(Reward.totalReceived),
+            ...filter.rewards,
+        });
+        if (clause) {
+            havingClauses.push(clause);
+        }
+    }
+    if (filter?.firstInteractionTimestamp) {
+        const clause = buildRangeClause({
+            field: min(InteractionEvent.timestamp),
+            ...filter.firstInteractionTimestamp,
+        });
+        if (clause) {
+            havingClauses.push(clause);
+        }
+    }
+
+    return { whereClauses, havingClauses };
+}
+
+function buildRangeClause({
+    field,
+    min,
+    max,
+}: {
+    field: SQL<bigint | string | number | null>;
+    min?: number;
+    max?: number;
+}) {
+    if (min && max) {
+        return between(field, min, max);
+    }
+    if (min) {
+        return gte(field, min);
+    }
+    if (max) {
+        return lte(field, max);
+    }
+
+    return undefined;
+}
