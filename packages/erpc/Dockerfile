@@ -1,5 +1,5 @@
 # Base image is erpc
-FROM ghcr.io/erpc/erpc:0.0.20
+FROM ghcr.io/erpc/erpc:0.0.23
 
 # Copy the config
 COPY erpc.yaml /root/erpc.yaml
