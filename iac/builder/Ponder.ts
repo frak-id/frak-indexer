@@ -24,7 +24,7 @@ export const ponderInstanceTypeConfig = {
             "--log-format",
             "json",
             "--log-level",
-            "info",
+            "warn",
             "start",
         ],
         fargateService: {
@@ -52,7 +52,7 @@ export const ponderInstanceTypeConfig = {
             "--log-format",
             "json",
             "--log-level",
-            "info",
+            "warn",
             "serve",
         ],
         fargateService: undefined,
@@ -65,7 +65,7 @@ export const ponderInstanceTypeConfig = {
         hardware: {
             cpu: "0.25 vCPU",
             memory: "0.5 GB",
-            storage: "10 GB",
+            storage: "20 GB",
         } as const,
     },
 };
@@ -121,13 +121,13 @@ export function addPonderService({
         // Hardware config
         cpu: instanceType.hardware.cpu,
         memory: instanceType.hardware.memory,
-        storage: "30 GB",
+        storage: instanceType.hardware.storage,
         // Log retention
-        logRetention: "one_week",
+        logRetention: "three_days",
         // Set the right environment variables
         environment: {
             // Ponder related stuff
-            PONDER_LOG_LEVEL: "debug",
+            PONDER_LOG_LEVEL: "warn",
             // Erpc external endpoint
             ERPC_EXTERNAL_URL: "https://indexer.frak.id/ponder-rpc/evm",
         },

@@ -61,11 +61,11 @@ export function addErpcService({
         // Arm architecture (lower cost)
         architecture: "arm64",
         // Hardware config
-        cpu: "0.5 vCPU",
-        memory: "1 GB",
-        storage: "30 GB",
+        cpu: "0.25 vCPU",
+        memory: "0.5 GB",
+        storage: "20 GB",
         // Log retention
-        logRetention: "one_week",
+        logRetention: "three_days",
         // Set the right environment variables
         environment: {
             ERPC_LOG_LEVEL: "warn",

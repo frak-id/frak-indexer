@@ -18,7 +18,7 @@ export default {
         // Global function properties
         app.setDefaultFunctionProps({
             // Log param's
-            logRetention: "one_week",
+            logRetention: "three_days",
             // Runtime node env
             runtime: "nodejs20.x",
             // Use arm64
