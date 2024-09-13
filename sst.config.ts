@@ -1,33 +1,21 @@
-import type { SSTConfig } from "sst";
-import { ConfigStack } from "./iac/Config";
-import { IndexerStack } from "./iac/Indexer";
+/// <reference path="./.sst/platform/config.d.ts" />
 
-export default {
-    config(_input) {
-        // Extract the stage from config, or from env data
-        return {
-            name: "frak-indexer",
+export default $config({
+  app(input) {
+    return {
+      name: "frak-indexer",
+      removal: input?.stage === "production" ? "retain" : "remove",
+      home: "aws",
+      providers: {
+        aws: {
             region: "eu-west-1",
-            ssmPrefix: "/indexer/sst/",
-        };
-    },
-    async stacks(app) {
-        // Remove all resources when non-prod stages are removed
-        app.setDefaultRemovalPolicy("destroy");
-
-        // Global function properties
-        app.setDefaultFunctionProps({
-            // Log param's
-            logRetention: "one_week",
-            // Runtime node env
-            runtime: "nodejs20.x",
-            // Use arm64
-            architecture: "arm_64",
-            // Disable xray tracing
-            tracing: "disabled",
-        });
-
-        app.stack(ConfigStack);
-        app.stack(IndexerStack);
-    },
-} satisfies SSTConfig;
+        }
+      }
+    };
+  },
+  async run() {
+    // todo: need to reput the config variables
+    // await import("./infra/Config");
+    await import("./infra/Indexer");
+  },
+});
