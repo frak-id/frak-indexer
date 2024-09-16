@@ -30,9 +30,9 @@ import { addPonderService, ponderInstanceTypeConfig } from "./builder/Ponder";
  * @constructor
  */
 export function IndexerStack({ app, stack }: StackContext) {
-    // Create our VPC
-    const vpc = new Vpc(stack, "Vpc", {
-        natGateways: 1,
+    // Use the global nexus vpc
+    const vpc = Vpc.fromLookup(stack, "Vpc", {
+        vpcName: "nexus-vpc",
     });
 
     // Create the cluster for each services

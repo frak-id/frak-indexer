@@ -27,7 +27,7 @@ export function getImageFromName({
     );
 
     const imageTag = tag ?? "latest";
-    console.log(`Will use the image ${imageTag}`);
+    console.log(`Will use the image ${imageTag} for ${name}`);
     return ContainerImage.fromEcrRepository(containerRegistry, imageTag);
 }
 

@@ -1,4 +1,4 @@
-import type { Vpc } from "aws-cdk-lib/aws-ec2";
+import type { IVpc } from "aws-cdk-lib/aws-ec2";
 import type { ICluster } from "aws-cdk-lib/aws-ecs";
 import {
     ApplicationProtocol,
@@ -17,7 +17,7 @@ export function addErpcService({
     app,
     vpc,
     cluster,
-}: { stack: Stack; app: App; vpc: Vpc; cluster: ICluster }) {
+}: { stack: Stack; app: App; vpc: IVpc; cluster: ICluster }) {
     // All the secrets env variable we will be using (in local you can just use a .env file)
     const {
         rpcSecrets,

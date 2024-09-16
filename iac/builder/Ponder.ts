@@ -1,4 +1,4 @@
-import type { Vpc } from "aws-cdk-lib/aws-ec2";
+import type { IVpc } from "aws-cdk-lib/aws-ec2";
 import type { ICluster } from "aws-cdk-lib/aws-ecs";
 import {
     ApplicationProtocol,
@@ -82,7 +82,7 @@ export function addPonderService({
 }: {
     stack: Stack;
     app: App;
-    vpc: Vpc;
+    vpc: IVpc;
     cluster: ICluster;
     instanceType: PonderInstanceConfig;
 }) {

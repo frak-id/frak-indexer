@@ -7,8 +7,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# WebStorm ide settings
+# ide settings
 .idea/
+.zed/
 
 # Misc
 .DS_Store

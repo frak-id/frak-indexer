@@ -12,7 +12,6 @@ export default {
         };
     },
     async stacks(app) {
-        // Remove all resources when non-prod stages are removed
         app.setDefaultRemovalPolicy("destroy");
 
         // Global function properties
