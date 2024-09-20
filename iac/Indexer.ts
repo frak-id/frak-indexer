@@ -16,11 +16,7 @@ import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2"
 import { Duration } from "aws-cdk-lib/core";
 import type { StackContext } from "sst/constructs";
 import { Distribution } from "sst/constructs/Distribution.js";
-import {
-    addFullErpcExposure,
-    addFullPonderIndexerExposure,
-    addHttpListener,
-} from "./builder/Alb";
+import { addHttpListener } from "./builder/Alb";
 import { addErpcService } from "./builder/Erpc";
 import { addPonderService, ponderInstanceTypeConfig } from "./builder/Ponder";
 
@@ -42,7 +38,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     });
 
     // Then add the erpc service
-    const { erpcService, erpcMonitorTargetGroup, erpcTargetGroup } =
+    const { erpcTargetGroup, fargateService: erpcFargateService } =
         addErpcService({
             stack,
             app,
@@ -51,17 +47,14 @@ export function IndexerStack({ app, stack }: StackContext) {
         });
 
     // Add the indexer service
-    const {
-        service: indexerSstService,
-        fargateService: indexerService,
-        targetGroup: indexerTargetGroup,
-    } = addPonderService({
-        stack,
-        app,
-        vpc,
-        cluster,
-        instanceType: ponderInstanceTypeConfig.indexing,
-    });
+    const { service: indexerSstService, fargateService: indexerService } =
+        addPonderService({
+            stack,
+            app,
+            vpc,
+            cluster,
+            instanceType: ponderInstanceTypeConfig.indexing,
+        });
     const {
         service: readerSstService,
         fargateService: readerService,
@@ -73,14 +66,6 @@ export function IndexerStack({ app, stack }: StackContext) {
         cluster,
         instanceType: ponderInstanceTypeConfig.reading,
     });
-
-    // If we are missing the fargate services, early exit
-    const erpcFargateService = erpcService.cdk?.fargateService;
-    if (!erpcFargateService) {
-        throw new Error(
-            "Missing fargate service in the indexer or erpc service"
-        );
-    }
 
     // Add the erpc service as dependency to the indexer service, to ensure the deployment order
     indexerService.node.addDependency(erpcFargateService);
@@ -128,17 +113,6 @@ export function IndexerStack({ app, stack }: StackContext) {
         alb,
         erpcTargetGroup,
         readerTargetGroup,
-    });
-
-    // Create full exposure around erpc + ponder on secific ports
-    addFullErpcExposure({
-        alb,
-        erpcTargetGroup,
-        erpcMonitorTargetGroup,
-    });
-    addFullPonderIndexerExposure({
-        alb,
-        indexerTargetGroup,
     });
 
     // Create our CDN cache policy

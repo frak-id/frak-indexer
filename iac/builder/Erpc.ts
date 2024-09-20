@@ -121,30 +121,13 @@ export function addErpcService({
         }
     );
 
-    // Create the target group for a potential alb usage
-    const erpcMonitorTargetGroup = new ApplicationTargetGroup(
-        stack,
-        "ErpcMonitorTargetGroup",
-        {
-            vpc: vpc,
-            port: 4001,
-            protocol: ApplicationProtocol.HTTP,
-            targets: [erpcService.cdk.fargateService],
-            deregistrationDelay: Duration.seconds(10),
-            healthCheck: {
-                path: "/",
-                port: "4001",
-                interval: Duration.seconds(30),
-                healthyThresholdCount: 2,
-                unhealthyThresholdCount: 5,
-                healthyHttpCodes: "200",
-            },
-        }
-    );
-
     stack.addOutputs({
         erpcServiceId: erpcService.id,
     });
 
-    return { erpcService, erpcTargetGroup, erpcMonitorTargetGroup };
+    return {
+        erpcService,
+        erpcTargetGroup,
+        fargateService: erpcService.cdk.fargateService,
+    };
 }

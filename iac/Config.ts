@@ -23,6 +23,7 @@ export function ConfigStack({ stack }: StackContext) {
 
     // Databases
     const ponderDb = new Config.Secret(stack, "DATABASE_URL");
+    // const ponderDevDb = new Config.Secret(stack, "DATABASE_URL");
     const erpcDb = new Config.Secret(stack, "ERPC_DATABASE_URL");
 
     // Return all of that
@@ -35,3 +36,11 @@ export function ConfigStack({ stack }: StackContext) {
         nexusRpcSecret,
     };
 }
+
+/**
+ * TODO: How to have multi env around ponder?
+ *   - We want both dev and prod to have reader + indexer
+ *   - We want dev and prod to be in the same ecs cluster
+ *   - We want different db + different images for both
+ *   - So different ECR repository + different secrets to use? Or same db secrets we just suffix the db name at runtime?
+ */
