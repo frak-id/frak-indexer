@@ -48,9 +48,9 @@ export function ConfigStack({ stack }: StackContext) {
  *       - independant erpc
  *       - each indexing instances with no ALB
  *       - each reader instances with their own ALB
- * 
+ *
  *   - Single ALB gud for erpc
- *   - Now needing: 
+ *   - Now needing:
  *      - Different ALB ponder
  *      - Different db env (suffix at runtime?)
  *      - Different images (also during CI?)

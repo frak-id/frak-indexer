@@ -46,6 +46,17 @@ jobs:
               - 'packages/erpc/Dockerfile'
               - 'packages/ponder/**'
 
+      - name: "🔧 Set up environment variables"
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "IMAGE_REPO_PONDER=262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-prod" >> $GITHUB_ENV
+            echo "PONDER_PROD_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+            echo "PONDER_DEV_IMAGE_TAG=latest" >> $GITHUB_ENV
+          else
+            echo "IMAGE_REPO_PONDER=262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-dev" >> $GITHUB_ENV
+            echo "PONDER_PROD_IMAGE_TAG=latest" >> $GITHUB_ENV
+            echo "PONDER_DEV_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
@@ -93,8 +104,8 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: |
-            262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:latest
-            262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer:${{ github.sha }}
+            ${{ env.IMAGE_REPO_PONDER }}::latest
+            ${{ env.IMAGE_REPO_PONDER }}::${{ github.sha }}
           # Github actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=min
@@ -120,4 +131,5 @@ jobs:
           pnpm sst deploy --stage prod
         env:
           ERPC_IMAGE_TAG: ${{ steps.changes.outputs.erpc == 'true' && github.sha || 'latest' }}
-          PONDER_IMAGE_TAG: ${{ steps.changes.outputs.ponder == 'true' && github.sha || 'latest' }}
+          PONDER_DEV_IMAGE_TAG: ${{ steps.changes.outputs.ponder == 'true' && env.PONDER_DEV_IMAGE_TAG || 'latest' }}
+          PONDER_PROD_IMAGE_TAG: ${{ steps.changes.outputs.ponder == 'true' && env.PONDER_PROD_IMAGE_TAG || 'latest' }}
