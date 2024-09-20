@@ -680,6 +680,82 @@ export const productRegistryAbi = [
 ] as const;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PurchaseOracle
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const purchaseOracleAbi = [
+    {
+        type: "constructor",
+        inputs: [
+            {
+                name: "_adminRegistry",
+                internalType: "contract ProductAdministratorRegistry",
+                type: "address",
+            },
+        ],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_productId", internalType: "uint256", type: "uint256" },
+        ],
+        name: "getMerkleRoot",
+        outputs: [
+            { name: "merkleRoot", internalType: "bytes32", type: "bytes32" },
+        ],
+        stateMutability: "view",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_productId", internalType: "uint256", type: "uint256" },
+            { name: "_merkleRoot", internalType: "bytes32", type: "bytes32" },
+        ],
+        name: "updateMerkleRoot",
+        outputs: [],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_productId", internalType: "uint256", type: "uint256" },
+            { name: "_purchaseId", internalType: "uint256", type: "uint256" },
+            {
+                name: "_status",
+                internalType: "enum PurchaseStatus",
+                type: "uint8",
+            },
+            { name: "_proof", internalType: "bytes32[]", type: "bytes32[]" },
+        ],
+        name: "verifyPurchase",
+        outputs: [{ name: "isValid", internalType: "bool", type: "bool" }],
+        stateMutability: "view",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "productId",
+                internalType: "uint256",
+                type: "uint256",
+                indexed: true,
+            },
+            {
+                name: "newMerkleRoot",
+                internalType: "bytes32",
+                type: "bytes32",
+                indexed: false,
+            },
+        ],
+        name: "MerkleRootUpdated",
+    },
+    { type: "error", inputs: [], name: "MerkleRootNotSet" },
+    { type: "error", inputs: [], name: "Unauthorized" },
+] as const;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ReferralRegistry
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -956,19 +1032,19 @@ export const referralRegistryAbi = [
                 name: "tree",
                 internalType: "bytes32",
                 type: "bytes32",
-                indexed: true,
+                indexed: false,
             },
             {
                 name: "referer",
                 internalType: "address",
                 type: "address",
-                indexed: true,
+                indexed: false,
             },
             {
                 name: "referee",
                 internalType: "address",
                 type: "address",
-                indexed: true,
+                indexed: false,
             },
         ],
         name: "UserReferred",

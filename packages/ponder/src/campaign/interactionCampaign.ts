@@ -1,9 +1,10 @@
 import * as console from "node:console";
 import { ponder } from "@/generated";
-import { interactionCampaignAbi } from "../../abis/frak-campaign-abis";
+import { interactionCampaignAbi } from "../../abis/campaignAbis";
+import { emptyCampaignStats } from "../interactions/stats";
 
 ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
-    const { Campaign, ProductInteractionContract, PressCampaignStats } =
+    const { Campaign, ProductInteractionContract, ReferralCampaignStats } =
         context.db;
 
     // Find the interaction contract
@@ -35,16 +36,11 @@ ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
 
     // Upsert press campaign stats if it's the right type
     if (name === "frak.campaign.press") {
-        await PressCampaignStats.upsert({
+        await ReferralCampaignStats.upsert({
             id: event.args.campaign,
             create: {
                 campaignId: event.args.campaign,
-                totalInteractions: 0n,
-                openInteractions: 0n,
-                readInteractions: 0n,
-                referredInteractions: 0n,
-                createReferredLinkInteractions: 0n,
-                totalRewards: 0n,
+                ...emptyCampaignStats,
             },
             update: {},
         });

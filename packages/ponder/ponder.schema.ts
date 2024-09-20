@@ -80,6 +80,9 @@ export default createSchema((p) => ({
         // Press type
         "OPEN_ARTICLE",
         "READ_ARTICLE",
+        // Purchase type
+        "PURCHASE_STARTED",
+        "PURCHASE_COMPLETED",
     ]),
 
     /* -------------------------------------------------------------------------- */
@@ -102,13 +105,13 @@ export default createSchema((p) => ({
             detachTimestamp: p.bigint().optional(),
 
             capResets: p.many("CampaignCapReset.campaignId"),
-            stats: p.many("PressCampaignStats.campaignId"),
+            stats: p.many("ReferralCampaignStats.campaignId"),
         },
         {
             productIndex: p.index("productId"),
         }
     ),
-    PressCampaignStats: p.createTable(
+    ReferralCampaignStats: p.createTable(
         {
             id: p.hex(),
 
@@ -116,10 +119,18 @@ export default createSchema((p) => ({
             campaign: p.one("campaignId"),
 
             totalInteractions: p.bigint(),
+
+            // Press related interactions
             openInteractions: p.bigint(),
             readInteractions: p.bigint(),
+
+            // Referral related interactions
             referredInteractions: p.bigint(),
             createReferredLinkInteractions: p.bigint(),
+
+            // purchase related interactions
+            purchaseStartedInteractions: p.bigint(),
+            purchaseCompletedInteractions: p.bigint(),
 
             totalRewards: p.bigint(),
         },
@@ -155,7 +166,7 @@ export default createSchema((p) => ({
         name: p.string(),
         symbol: p.string(),
     }),
-    RewardingContract: p.createTable(
+    BankingContract: p.createTable(
         {
             // Address of the rewarding contract
             id: p.hex(),
@@ -179,7 +190,7 @@ export default createSchema((p) => ({
         {
             id: p.string(), // reward contract + user
 
-            contractId: p.hex().references("RewardingContract.id"),
+            contractId: p.hex().references("BankingContract.id"),
             contract: p.one("contractId"),
 
             user: p.hex(),
@@ -204,6 +215,9 @@ export default createSchema((p) => ({
 
             rewardId: p.string().references("Reward.id"),
             reward: p.one("rewardId"),
+
+            // Emitter of the reward (campaign sending it)
+            emitter: p.hex(),
 
             amount: p.bigint(),
 

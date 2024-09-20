@@ -1,20 +1,23 @@
 import { createConfig, mergeAbis } from "@ponder/core";
-import { http, parseAbiItem } from "viem";
+import { http, type Address, parseAbiItem } from "viem";
+import * as deployedAddresses from "./abis/addresses.json";
 import {
+    campaignBankAbi,
     interactionCampaignAbi,
     referralCampaignAbi,
-} from "./abis/frak-campaign-abis";
+} from "./abis/campaignAbis";
 import {
     dappInteractionFacetAbi,
     pressInteractionFacetAbi,
     productInteractionDiamondAbi,
     productInteractionManagerAbi,
+    purchaseFeatureFacetAbi,
     referralFeatureFacetAbi,
-} from "./abis/frak-interaction-abis";
+} from "./abis/interactionAbis";
 import {
     productAdministratorRegistryAbi,
     productRegistryAbi,
-} from "./abis/frak-registry-abis";
+} from "./abis/registryAbis";
 
 /**
  * Get an transport for the given chain id
@@ -25,11 +28,17 @@ function getTransport(chainId: number) {
     // Get our erpc instance transport
     const erpcUrl =
         process.env.ERPC_INTERNAL_URL ?? process.env.ERPC_EXTERNAL_URL;
-    const erpcTransport = http(
-        `${erpcUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
-    );
-    return erpcTransport;
+    return http(`${erpcUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`);
 }
+
+/**
+ * Shared network config
+ */
+const networkConfig = {
+    arbitrumSepolia: {
+        startBlock: 75793399,
+    },
+} as const;
 
 /**
  * Ponder configuration
@@ -51,67 +60,61 @@ export default createConfig({
         // The product registry
         ProductRegistry: {
             abi: productRegistryAbi,
-            address: "0xdA7fBD02eb048bDf6f1607122eEe071e44f0b9F2",
-            network: {
-                arbitrumSepolia: {
-                    startBlock: 75793399,
-                },
-            },
+            address: deployedAddresses.productRegistry as Address,
+            network: networkConfig,
         },
         // The product registry
         ProductAdministratorRegistry: {
             abi: productAdministratorRegistryAbi,
-            address: "0x62254d732C078BF0484EA7dBd61f7F620184F95e",
-            network: {
-                arbitrumSepolia: {
-                    startBlock: 75793399,
-                },
-            },
+            address: deployedAddresses.productAdministratorlRegistry as Address,
+            network: networkConfig,
         },
         // The interaction manager
         ProductInteractionManager: {
             abi: productInteractionManagerAbi,
-            address: "0xC9d1BAB1B9A07c11AB0C264B13AFfD500DD4c2ee",
-            network: {
-                arbitrumSepolia: {
-                    startBlock: 75793399,
-                },
-            },
+            address: deployedAddresses.productInteractionManager as Address,
+            network: networkConfig,
         },
         // Every product interactions
         ProductInteraction: {
             abi: mergeAbis([
                 productInteractionDiamondAbi,
+                // Each facets
                 pressInteractionFacetAbi,
                 dappInteractionFacetAbi,
                 referralFeatureFacetAbi,
+                purchaseFeatureFacetAbi,
             ]),
             factory: {
-                address: "0xC9d1BAB1B9A07c11AB0C264B13AFfD500DD4c2ee",
+                address: deployedAddresses.productInteractionManager as Address,
                 event: parseAbiItem(
                     "event InteractionContractDeployed(uint256 indexed productId, address interactionContract)"
                 ),
                 parameter: "interactionContract",
             },
-            network: {
-                arbitrumSepolia: {
-                    startBlock: 75793399,
-                },
-            },
+            network: networkConfig,
         },
         // Every campaigns
         Campaigns: {
             abi: mergeAbis([interactionCampaignAbi, referralCampaignAbi]),
             factory: {
-                address: "0xB375B53C13eE2664DD9bD16f5624fE5097870543",
+                address: deployedAddresses.campaignFactory as Address,
                 event: parseAbiItem("event CampaignCreated(address campaign)"),
                 parameter: "campaign",
             },
-            network: {
-                arbitrumSepolia: {
-                    startBlock: 75793399,
-                },
+            network: networkConfig,
+        },
+        // Every campaign banks
+        CampaignBanks: {
+            abi: mergeAbis([campaignBankAbi]),
+            factory: {
+                address: deployedAddresses.campaignBankFactory as Address,
+                event: parseAbiItem(
+                    "event CampaignBankCreated(address campaignBank)"
+                ),
+                parameter: "campaignBank",
             },
+            network: networkConfig,
         },
     },
 });

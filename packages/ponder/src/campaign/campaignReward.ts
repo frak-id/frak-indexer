@@ -1,23 +1,24 @@
 import { type Context, ponder } from "@/generated";
 import { type Address, erc20Abi } from "viem";
-import { referralCampaignAbi } from "../../abis/frak-campaign-abis";
+import { campaignBankAbi } from "../../abis/campaignAbis";
+import { emptyCampaignStats } from "../interactions/stats";
 
-ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
-    const { RewardingContract, Reward, RewardAddedEvent, PressCampaignStats } =
+ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
+    const { BankingContract, Reward, RewardAddedEvent, ReferralCampaignStats } =
         context.db;
 
     // Try to find a rewarding contract for the given event emitter
-    const rewardingContract = await getRewardingContract({
+    const bankingContract = await getBankingContract({
         contract: event.log.address,
         context,
     });
 
     // Update rewarding contract
-    await RewardingContract.update({
-        id: rewardingContract.id,
+    await BankingContract.update({
+        id: bankingContract.id,
         data: {
             totalDistributed:
-                rewardingContract.totalDistributed + event.args.amount,
+                bankingContract.totalDistributed + event.args.amount,
         },
     });
 
@@ -26,7 +27,7 @@ ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
     await Reward.upsert({
         id: rewardId,
         create: {
-            contractId: rewardingContract.id,
+            contractId: bankingContract.id,
             user: event.args.user,
             pendingAmount: event.args.amount,
             totalReceived: event.args.amount,
@@ -43,6 +44,7 @@ ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
         id: event.log.id,
         data: {
             rewardId,
+            emitter: event.args.emitter,
             amount: event.args.amount,
             txHash: event.log.transactionHash,
             timestamp: event.block.timestamp,
@@ -50,15 +52,11 @@ ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
     });
 
     // Update the current campaigns stats for the distributed amount
-    await PressCampaignStats.upsert({
+    await ReferralCampaignStats.upsert({
         id: event.log.address,
         create: {
+            ...emptyCampaignStats,
             campaignId: event.log.address,
-            totalInteractions: 0n,
-            openInteractions: 0n,
-            readInteractions: 0n,
-            referredInteractions: 0n,
-            createReferredLinkInteractions: 0n,
             totalRewards: event.args.amount,
         },
         // Update the given field by incrementing them
@@ -71,20 +69,20 @@ ponder.on("Campaigns:RewardAdded", async ({ event, context }) => {
     });
 });
 
-ponder.on("Campaigns:RewardClaimed", async ({ event, context }) => {
-    const { RewardingContract, Reward, RewardClaimedEvent } = context.db;
+ponder.on("CampaignBanks:RewardClaimed", async ({ event, context }) => {
+    const { BankingContract, Reward, RewardClaimedEvent } = context.db;
 
     // Try to find a rewarding contract for the given event emitter
-    const rewardingContract = await getRewardingContract({
+    const bankingContract = await getBankingContract({
         contract: event.log.address,
         context,
     });
 
     // Update rewarding contract
-    await RewardingContract.update({
-        id: rewardingContract.id,
+    await BankingContract.update({
+        id: bankingContract.id,
         data: {
-            totalClaimed: rewardingContract.totalClaimed + event.args.amount,
+            totalClaimed: bankingContract.totalClaimed + event.args.amount,
         },
     });
 
@@ -93,7 +91,7 @@ ponder.on("Campaigns:RewardClaimed", async ({ event, context }) => {
     await Reward.upsert({
         id: rewardId,
         create: {
-            contractId: rewardingContract.id,
+            contractId: bankingContract.id,
             user: event.args.user,
             totalClaimed: event.args.amount,
             totalReceived: 0n,
@@ -122,27 +120,27 @@ ponder.on("Campaigns:RewardClaimed", async ({ event, context }) => {
  * @param contract
  * @param context
  */
-async function getRewardingContract({
+async function getBankingContract({
     contract,
     context,
 }: {
     contract: Address;
     context: Context;
 }) {
-    const { RewardingContract, Token } = context.db;
+    const { BankingContract, Token } = context.db;
     // Try to find a rewarding contract for the given event emitter
-    let rewardingContract = await RewardingContract.findUnique({
+    let bankingContract = await BankingContract.findUnique({
         id: contract,
     });
-    if (!rewardingContract) {
+    if (!bankingContract) {
         // If not found, find the token of this campaign
-        const { token } = await context.client.readContract({
-            abi: referralCampaignAbi,
+        const token = await context.client.readContract({
+            abi: campaignBankAbi,
             address: contract,
-            functionName: "getConfig",
+            functionName: "getToken",
         });
 
-        rewardingContract = await RewardingContract.create({
+        bankingContract = await BankingContract.create({
             id: contract,
             data: {
                 tokenId: token,
@@ -153,7 +151,7 @@ async function getRewardingContract({
     }
 
     // Create the token if needed
-    const token = await Token.findUnique({ id: rewardingContract.tokenId });
+    const token = await Token.findUnique({ id: bankingContract.tokenId });
     if (!token) {
         try {
             // Fetch a few onchain data
@@ -162,17 +160,17 @@ async function getRewardingContract({
                     {
                         abi: erc20Abi,
                         functionName: "name",
-                        address: rewardingContract.tokenId,
+                        address: bankingContract.tokenId,
                     },
                     {
                         abi: erc20Abi,
                         functionName: "symbol",
-                        address: rewardingContract.tokenId,
+                        address: bankingContract.tokenId,
                     },
                     {
                         abi: erc20Abi,
                         functionName: "decimals",
-                        address: rewardingContract.tokenId,
+                        address: bankingContract.tokenId,
                     },
                 ] as const,
                 allowFailure: false,
@@ -180,7 +178,7 @@ async function getRewardingContract({
 
             // Create the token
             await Token.create({
-                id: rewardingContract.tokenId,
+                id: bankingContract.tokenId,
                 data: {
                     name,
                     symbol,
@@ -192,5 +190,5 @@ async function getRewardingContract({
         }
     }
 
-    return rewardingContract;
+    return bankingContract;
 }

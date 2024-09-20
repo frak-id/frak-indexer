@@ -1,0 +1,10 @@
+{
+    "campaignBankFactory": "0x0389A8bF219f73df3fEC17E6ed3735b0a73146Dd",
+    "campaignFactory": "0x23CbD3d1574c90012E69cbA01C8b6b6F6625ff39",
+    "facetFactory": "0xA886f7A9A8A2c7A1B3E52f321a01812B46cDBD82",
+    "mUSDToken": "0x56039fa1a804F614eBD714139F29a3ff4DB57ad6",
+    "productAdministratorlRegistry": "0x62254d732C078BF0484EA7dBd61f7F620184F95e",
+    "productInteractionManager": "0x7E328974649540BBB883bADC382d2476855C1180",
+    "productRegistry": "0xdA7fBD02eb048bDf6f1607122eEe071e44f0b9F2",
+    "referralRegistry": "0x80B0385e97263A60BafB554B0C4152261D45785A"
+}

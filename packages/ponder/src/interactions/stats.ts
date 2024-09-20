@@ -1,6 +1,24 @@
 import type { Context, Schema } from "@/generated";
 import type { Address } from "viem";
-import { interactionCampaignAbi } from "../../abis/frak-campaign-abis";
+import { interactionCampaignAbi } from "../../abis/campaignAbis";
+
+/**
+ * Default campaign stats
+ */
+export const emptyCampaignStats = {
+    totalInteractions: 0n,
+    openInteractions: 0n,
+    readInteractions: 0n,
+    referredInteractions: 0n,
+    createReferredLinkInteractions: 0n,
+    purchaseStartedInteractions: 0n,
+    purchaseCompletedInteractions: 0n,
+    totalRewards: 0n,
+};
+
+export type StatsIncrementsParams = Partial<
+    Omit<Schema["ReferralCampaignStats"], "id" | "campaignId" | "totalRewards">
+>;
 
 /**
  * Get the rewarding contract for the given event emitter
@@ -17,17 +35,9 @@ export async function increaseCampaignsInteractions({
     interactionEmitter: Address;
     context: Context;
     blockNumber: bigint;
-    increments: Partial<
-        Pick<
-            Schema["PressCampaignStats"],
-            | "openInteractions"
-            | "readInteractions"
-            | "referredInteractions"
-            | "createReferredLinkInteractions"
-        >
-    >;
+    increments: StatsIncrementsParams;
 }) {
-    const { ProductInteractionContract, Campaign, PressCampaignStats } =
+    const { ProductInteractionContract, Campaign, ReferralCampaignStats } =
         context.db;
 
     // Find the interaction contract
@@ -36,6 +46,9 @@ export async function increaseCampaignsInteractions({
     });
 
     if (!interactionContract) {
+        console.log("Interaction contract not found for stats update", {
+            interactionEmitter,
+        });
         return;
     }
 
@@ -90,37 +103,15 @@ export async function increaseCampaignsInteractions({
 
         try {
             // Create the stats if not found
-            await PressCampaignStats.upsert({
+            await ReferralCampaignStats.upsert({
                 id: campaign.id,
                 create: {
+                    ...emptyCampaignStats,
+                    ...increments,
                     campaignId: campaign.id,
-                    totalInteractions: 0n,
-                    openInteractions: increments.openInteractions ?? 0n,
-                    readInteractions: increments.readInteractions ?? 0n,
-                    referredInteractions: increments.referredInteractions ?? 0n,
-                    createReferredLinkInteractions:
-                        increments.createReferredLinkInteractions ?? 0n,
-                    totalRewards: 0n,
                 },
                 // Update the given field by incrementing them
-                update: ({ current }) => {
-                    return {
-                        ...current,
-                        totalInteractions: current.totalInteractions + 1n,
-                        openInteractions:
-                            current.openInteractions +
-                            (increments.openInteractions ?? 0n),
-                        readInteractions:
-                            current.readInteractions +
-                            (increments.readInteractions ?? 0n),
-                        referredInteractions:
-                            current.referredInteractions +
-                            (increments.referredInteractions ?? 0n),
-                        createReferredLinkInteractions:
-                            current.createReferredLinkInteractions +
-                            (increments.createReferredLinkInteractions ?? 0n),
-                    };
-                },
+                update: ({ current }) => updateStats(current, increments),
             });
         } catch (error) {
             console.error("Error while incrementing campaign stats", error, {
@@ -129,4 +120,22 @@ export async function increaseCampaignsInteractions({
             });
         }
     }
+}
+
+// Define a function to handle the update logic
+function updateStats(
+    current: Schema["ReferralCampaignStats"],
+    increments: StatsIncrementsParams
+) {
+    const updatedStats = {
+        ...current,
+        totalInteractions: current.totalInteractions + 1n,
+    };
+
+    for (const key of Object.keys(increments)) {
+        const tKey = key as keyof StatsIncrementsParams;
+        updatedStats[tKey] = (current[tKey] ?? 0n) + (increments[tKey] ?? 0n);
+    }
+
+    return updatedStats;
 }

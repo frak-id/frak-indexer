@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import { productInteractionDiamondAbi } from "../abis/frak-interaction-abis";
+import { productInteractionDiamondAbi } from "../abis/interactionAbis";
 
 ponder.on(
     "ProductInteractionManager:InteractionContractDeployed",
