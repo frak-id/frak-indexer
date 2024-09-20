@@ -109,8 +109,6 @@ export function addPonderService({
     // The service itself
     const service = new Service(stack, `${instanceType.suffix}Service`, {
         path: "packages/ponder",
-        // SST not happy, can't connect to ECR to fetch the instance during the build process
-        // file: "Dockerfile.prebuilt",
         port: 42069,
         // Setup some capacity options
         scaling: instanceType.scaling,

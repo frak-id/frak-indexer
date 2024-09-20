@@ -1,7 +1,6 @@
 import { Port } from "aws-cdk-lib/aws-ec2";
 import {
     type ApplicationLoadBalancer,
-    ApplicationProtocol,
     type ApplicationTargetGroup,
     ListenerAction,
     ListenerCondition,
@@ -57,48 +56,5 @@ export function addHttpListener({
         targetGroups: [readerTargetGroup],
         priority: 2,
         conditions: [ListenerCondition.pathPatterns(["/*"])],
-    });
-}
-
-/**
- * Add a full exposure around the ponder indexer instance
- *   todo: Should be protected endpoint
- */
-export function addFullPonderIndexerExposure({
-    alb,
-    indexerTargetGroup,
-}: {
-    alb: ApplicationLoadBalancer;
-    indexerTargetGroup: ApplicationTargetGroup;
-}) {
-    alb.addListener("PondexerIndexerListener", {
-        port: 8080,
-        protocol: ApplicationProtocol.HTTP,
-        defaultTargetGroups: [indexerTargetGroup],
-    });
-}
-
-/**
- * Add a full exposure around the ponder indexer instance
- *   todo: Should be protected endpoint
- */
-export function addFullErpcExposure({
-    alb,
-    erpcTargetGroup,
-    erpcMonitorTargetGroup,
-}: {
-    alb: ApplicationLoadBalancer;
-    erpcTargetGroup: ApplicationTargetGroup;
-    erpcMonitorTargetGroup: ApplicationTargetGroup;
-}) {
-    alb.addListener("ErpcListener", {
-        port: 8081,
-        protocol: ApplicationProtocol.HTTP,
-        defaultTargetGroups: [erpcTargetGroup],
-    });
-    alb.addListener("ErpcMonitorListener", {
-        port: 8082,
-        protocol: ApplicationProtocol.HTTP,
-        defaultTargetGroups: [erpcMonitorTargetGroup],
     });
 }

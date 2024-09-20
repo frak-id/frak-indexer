@@ -49,6 +49,11 @@ export function addErpcService({
     const erpcService = new Service(stack, "ErpcService", {
         path: "packages/erpc",
         port: 8080,
+        // The domain where it's hosted
+        customDomain: {
+            domainName: "rpc.frak.id",
+            hostedZone: "frak.id",
+        },
         // Setup some capacity options
         scaling: {
             minContainers: 1,
@@ -75,7 +80,21 @@ export function addErpcService({
             cluster,
             // Don't auto setup the ALB since we will be using the one from the indexer service
             // todo: setup the ALB after the indexer service is deployed
-            applicationLoadBalancer: false,
+            // Maybe a closed to the internet alb?
+            applicationLoadBalancer: {
+                internetFacing: true,
+            },
+            applicationLoadBalancerTargetGroup: {
+                deregistrationDelay: Duration.seconds(10),
+                healthCheck: {
+                    path: "/",
+                    port: "4001",
+                    interval: Duration.seconds(30),
+                    healthyThresholdCount: 2,
+                    unhealthyThresholdCount: 5,
+                    healthyHttpCodes: "200",
+                },
+            },
             // Customise fargate service to enable circuit breaker (if the new deployment is failing)
             fargateService: {
                 enableExecuteCommand: true,
