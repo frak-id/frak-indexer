@@ -18,6 +18,15 @@ export const campaignBankAbi = [
     },
     {
         type: "function",
+        inputs: [
+            { name: "_campaign", internalType: "address", type: "address" },
+        ],
+        name: "canDistributeToken",
+        outputs: [{ name: "", internalType: "bool", type: "bool" }],
+        stateMutability: "view",
+    },
+    {
+        type: "function",
         inputs: [],
         name: "getConfig",
         outputs: [
@@ -52,16 +61,7 @@ export const campaignBankAbi = [
         inputs: [
             { name: "_campaign", internalType: "address", type: "address" },
         ],
-        name: "isAbleToDistributeForCampaign",
-        outputs: [{ name: "", internalType: "bool", type: "bool" }],
-        stateMutability: "view",
-    },
-    {
-        type: "function",
-        inputs: [
-            { name: "_campaign", internalType: "address", type: "address" },
-        ],
-        name: "isCampaignAllowed",
+        name: "isCampaignAuthorised",
         outputs: [{ name: "", internalType: "bool", type: "bool" }],
         stateMutability: "view",
     },
@@ -123,6 +123,38 @@ export const campaignBankAbi = [
         name: "withdraw",
         outputs: [],
         stateMutability: "nonpayable",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "campaign",
+                internalType: "address",
+                type: "address",
+                indexed: false,
+            },
+            {
+                name: "isAllowed",
+                internalType: "bool",
+                type: "bool",
+                indexed: false,
+            },
+        ],
+        name: "CampaignAuthorisationUpdated",
+    },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "isDistributing",
+                internalType: "bool",
+                type: "bool",
+                indexed: false,
+            },
+        ],
+        name: "DistributionStateUpdated",
     },
     {
         type: "event",

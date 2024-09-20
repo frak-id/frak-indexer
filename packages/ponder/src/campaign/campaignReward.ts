@@ -134,10 +134,10 @@ async function getBankingContract({
     });
     if (!bankingContract) {
         // If not found, find the token of this campaign
-        const token = await context.client.readContract({
+        const [productId, token] = await context.client.readContract({
             abi: campaignBankAbi,
             address: contract,
-            functionName: "getToken",
+            functionName: "getConfig",
         });
 
         bankingContract = await BankingContract.create({
@@ -146,6 +146,7 @@ async function getBankingContract({
                 tokenId: token,
                 totalDistributed: 0n,
                 totalClaimed: 0n,
+                productId,
             },
         });
     }

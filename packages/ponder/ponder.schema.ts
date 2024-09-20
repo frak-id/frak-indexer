@@ -175,6 +175,10 @@ export default createSchema((p) => ({
             tokenId: p.hex().references("Token.id"),
             token: p.one("tokenId"),
 
+            // Address of the product linked to this contract
+            productId: p.bigint().references("Product.id"),
+            product: p.one("productId"),
+
             // The total amount distributed and claimed
             totalDistributed: p.bigint(),
             totalClaimed: p.bigint(),
@@ -184,6 +188,7 @@ export default createSchema((p) => ({
         },
         {
             tokenIndex: p.index("tokenId"),
+            productIndex: p.index("productId"),
         }
     ),
     Reward: p.createTable(
