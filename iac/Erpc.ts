@@ -1,23 +1,17 @@
-import type { IVpc } from "aws-cdk-lib/aws-ec2";
-import type { ICluster } from "aws-cdk-lib/aws-ecs";
-import {
-    ApplicationProtocol,
-    ApplicationTargetGroup,
-} from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Duration } from "aws-cdk-lib/core";
-import { type App, Service, type Stack, use } from "sst/constructs";
-import { ConfigStack } from "../Config";
-import { buildSecretsMap, getImageFromName } from "../utils";
+import { Service, type StackContext, use } from "sst/constructs";
+import { ClusterStack } from "./Cluster";
+import { ConfigStack } from "./Config";
+import { buildSecretsMap, getImageFromName } from "./utils";
 
 /**
- * Add the eRPC service to the stack
+ * The CDK stack that will deploy the indexer service
+ * @param stack
+ * @constructor
  */
-export function addErpcService({
-    stack,
-    app,
-    vpc,
-    cluster,
-}: { stack: Stack; app: App; vpc: IVpc; cluster: ICluster }) {
+export function ErpcStack({ app, stack }: StackContext) {
+    const { vpc, cluster } = use(ClusterStack);
+
     // All the secrets env variable we will be using (in local you can just use a .env file)
     const {
         rpcSecrets,
@@ -115,38 +109,11 @@ export function addErpcService({
         },
     });
 
-    if (!erpcService.cdk?.fargateService) {
-        throw new Error("Missing fargate service configuration");
-    }
-
-    // Create the target group for a potential alb usage
-    const erpcTargetGroup = new ApplicationTargetGroup(
-        stack,
-        "ErpcTargetGroup",
-        {
-            vpc: vpc,
-            port: 8080,
-            protocol: ApplicationProtocol.HTTP,
-            targets: [erpcService.cdk.fargateService],
-            deregistrationDelay: Duration.seconds(10),
-            healthCheck: {
-                path: "/",
-                port: "4001",
-                interval: Duration.seconds(30),
-                healthyThresholdCount: 2,
-                unhealthyThresholdCount: 5,
-                healthyHttpCodes: "200",
-            },
-        }
-    );
-
     stack.addOutputs({
         erpcServiceId: erpcService.id,
     });
 
     return {
         erpcService,
-        erpcTargetGroup,
-        fargateService: erpcService.cdk.fargateService,
     };
 }

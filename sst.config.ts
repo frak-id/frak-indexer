@@ -1,5 +1,7 @@
 import type { SSTConfig } from "sst";
+import { ClusterStack } from "./iac/Cluster";
 import { ConfigStack } from "./iac/Config";
+import { ErpcStack } from "./iac/Erpc";
 import { IndexerStack } from "./iac/Indexer";
 
 export default {
@@ -13,8 +15,6 @@ export default {
     },
     async stacks(app) {
         app.setDefaultRemovalPolicy("destroy");
-
-        // Global function properties
         app.setDefaultFunctionProps({
             // Log param's
             logRetention: "three_days",
@@ -26,7 +26,9 @@ export default {
             tracing: "disabled",
         });
 
-        app.stack(ConfigStack);
-        app.stack(IndexerStack);
+        app.stack(ConfigStack)
+            .stack(ClusterStack)
+            .stack(ErpcStack)
+            .stack(IndexerStack);
     },
 } satisfies SSTConfig;

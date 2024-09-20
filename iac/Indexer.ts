@@ -1,24 +1,8 @@
-import {
-    AllowedMethods,
-    CacheCookieBehavior,
-    CacheHeaderBehavior,
-    CachePolicy,
-    CacheQueryStringBehavior,
-    CachedMethods,
-    OriginProtocolPolicy,
-    OriginRequestPolicy,
-    ViewerProtocolPolicy,
-} from "aws-cdk-lib/aws-cloudfront";
-import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
-import { Port, Vpc } from "aws-cdk-lib/aws-ec2";
-import { Cluster } from "aws-cdk-lib/aws-ecs";
-import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import { Duration } from "aws-cdk-lib/core";
-import type { StackContext } from "sst/constructs";
-import { Distribution } from "sst/constructs/Distribution.js";
-import { addHttpListener } from "./builder/Alb";
-import { addErpcService } from "./builder/Erpc";
-import { addPonderService, ponderInstanceTypeConfig } from "./builder/Ponder";
+import { type StackContext, use } from "sst/constructs";
+import { ClusterStack } from "./Cluster";
+import { ConfigStack } from "./Config";
+import { ErpcStack } from "./Erpc";
+import { buildSecretsMap, getImageFromName } from "./utils";
 
 /**
  * The CDK stack that will deploy the indexer service
@@ -26,138 +10,33 @@ import { addPonderService, ponderInstanceTypeConfig } from "./builder/Ponder";
  * @constructor
  */
 export function IndexerStack({ app, stack }: StackContext) {
-    // Use the global nexus vpc
-    const vpc = Vpc.fromLookup(stack, "Vpc", {
-        vpcName: "nexus-vpc",
+    const { vpc, cluster } = use(ClusterStack);
+    const { erpcService } = use(ErpcStack);
+
+    // All the secrets env variable we will be using (in local you can just use a .env file)
+    const { ponderDb, ponderRpcSecret } = use(ConfigStack);
+    const secrets = [ponderDb, ponderRpcSecret];
+
+    // Get our CDK secrets map
+    const cdkSecretsMap = buildSecretsMap({
+        stack,
+        secrets,
+        name: "Ponder",
     });
 
-    // Create the cluster for each services
-    const cluster = new Cluster(stack, "EcsCluster", {
-        clusterName: `${stack.stage}-IndexingCluster`,
-        vpc,
-    });
-
-    // Then add the erpc service
-    const { erpcTargetGroup, fargateService: erpcFargateService } =
-        addErpcService({
-            stack,
-            app,
-            vpc,
-            cluster,
-        });
-
-    // Add the indexer service
-    const { service: indexerSstService, fargateService: indexerService } =
-        addPonderService({
-            stack,
-            app,
-            vpc,
-            cluster,
-            instanceType: ponderInstanceTypeConfig.indexing,
-        });
-    const {
-        service: readerSstService,
-        fargateService: readerService,
-        targetGroup: readerTargetGroup,
-    } = addPonderService({
+    // Get the container props of our prebuilt binaries
+    const indexerDevImage = getImageFromName({
         stack,
         app,
-        vpc,
-        cluster,
-        instanceType: ponderInstanceTypeConfig.reading,
+        name: "indexer-dev",
+        tag: process.env.PONDER_DEV_IMAGE_TAG,
+    });
+    const indexerProdImage = getImageFromName({
+        stack,
+        app,
+        name: "indexer-prod",
+        tag: process.env.PONDER_PROD_IMAGE_TAG,
     });
 
-    // Add the erpc service as dependency to the indexer service, to ensure the deployment order
-    indexerService.node.addDependency(erpcFargateService);
-
-    // Then create our application load balancer
-    const alb = new ApplicationLoadBalancer(stack, "Alb", {
-        vpc,
-        internetFacing: true,
-    });
-
-    // Add the internal erpc url to the ponder instance
-    indexerSstService.addEnvironment(
-        "ERPC_INTERNAL_URL",
-        `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
-    );
-    readerSstService.addEnvironment(
-        "ERPC_INTERNAL_URL",
-        `http://${alb.loadBalancerDnsName}/ponder-rpc/evm`
-    );
-
-    // Allow connections to the applications ports
-    alb.connections.allowTo(
-        indexerService,
-        Port.tcp(42069),
-        "Allow connection from ALB to public indexer indexing port"
-    );
-    alb.connections.allowTo(
-        readerService,
-        Port.tcp(42069),
-        "Allow connection from ALB to public indexer serving port"
-    );
-    alb.connections.allowTo(
-        erpcFargateService,
-        Port.tcp(8080),
-        "Allow connection from ALB to public erpc port"
-    );
-    alb.connections.allowTo(
-        erpcFargateService,
-        Port.tcp(4001),
-        "Allow connection from ALB to metrics erpc port"
-    );
-
-    // Create the listener on port 80
-    addHttpListener({
-        alb,
-        erpcTargetGroup,
-        readerTargetGroup,
-    });
-
-    // Create our CDN cache policy
-    const cachePolicy = new CachePolicy(this, "CachePolicy", {
-        queryStringBehavior: CacheQueryStringBehavior.all(),
-        headerBehavior: CacheHeaderBehavior.none(),
-        cookieBehavior: CacheCookieBehavior.none(),
-        defaultTtl: Duration.days(0),
-        maxTtl: Duration.days(365),
-        minTtl: Duration.days(0),
-        enableAcceptEncodingBrotli: true,
-        enableAcceptEncodingGzip: true,
-        comment: "Indexer/Rpc response cache policy",
-    });
-
-    // Add the cloudfront distribution
-    const distribution = new Distribution(this, "Distribution", {
-        customDomain: {
-            domainName: "indexer.frak.id",
-            hostedZone: "frak.id",
-        },
-        cdk: {
-            distribution: {
-                defaultRootObject: "",
-                defaultBehavior: {
-                    viewerProtocolPolicy:
-                        ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-                    origin: new HttpOrigin(alb.loadBalancerDnsName, {
-                        protocolPolicy: OriginProtocolPolicy.HTTP_ONLY,
-                        readTimeout: Duration.seconds(60),
-                    }),
-                    allowedMethods: AllowedMethods.ALLOW_ALL,
-                    cachedMethods: CachedMethods.CACHE_GET_HEAD_OPTIONS,
-                    compress: true,
-                    cachePolicy,
-                    originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
-                },
-            },
-        },
-    });
-
-    stack.addOutputs({
-        AlbArn: alb.loadBalancerArn,
-        DistributionId: distribution.cdk.distribution.distributionId,
-    });
-
-    return indexerService;
+    // todo: Build each services for each config and env
 }
