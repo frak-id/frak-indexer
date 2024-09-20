@@ -177,7 +177,7 @@ export function addPonderService({
             deregistrationDelay: Duration.seconds(10),
             healthCheck: {
                 // use status instead of health since health is failing during historical syncing
-                path: "/status",
+                path: "/health",
                 interval: Duration.seconds(30),
                 healthyThresholdCount: 2,
                 unhealthyThresholdCount: 5,

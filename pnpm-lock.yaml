@@ -22,7 +22,7 @@ importers:
         version: 2.142.1(constructs@10.3.0)
       sst:
         specifier: 2.43.6
-        version: 2.43.6(@aws-sdk/client-sso-oidc@3.637.0(@aws-sdk/client-sts@3.637.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.3.0)(pg@8.12.0)
+        version: 2.43.6(@aws-sdk/client-sso-oidc@3.650.0(@aws-sdk/client-sts@3.650.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.3.0)(pg@8.12.0)
       typescript:
         specifier: ^5.6.2
         version: 5.6.2
@@ -46,7 +46,7 @@ importers:
         version: 2.142.1(constructs@10.3.0)
       sst:
         specifier: 2.43.6
-        version: 2.43.6(@aws-sdk/client-sso-oidc@3.650.0(@aws-sdk/client-sts@3.650.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.3.0)(pg@8.12.0)
+        version: 2.43.6(@aws-sdk/client-sso-oidc@3.637.0(@aws-sdk/client-sts@3.637.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.3.0)(pg@8.12.0)
       typescript:
         specifier: ^5.3.2
         version: 5.6.2
@@ -57,8 +57,8 @@ importers:
   packages/ponder:
     dependencies:
       '@ponder/core':
-        specifier: ^0.5.23
-        version: 0.5.23(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.4)(hono@4.6.1)(typescript@5.6.2)(viem@2.21.6(typescript@5.6.2)(zod@3.23.8))(zod@3.23.8)
+        specifier: ^0.6.2
+        version: 0.6.2(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.4)(hono@4.6.1)(typescript@5.6.2)(viem@2.21.6(typescript@5.6.2)(zod@3.23.8))(zod@3.23.8)
       drizzle-orm:
         specifier: ^0.31.4
         version: 0.31.4(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.3.0)(kysely@0.26.3)(pg@8.12.0)(react@18.3.1)
@@ -1330,23 +1330,23 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@ponder/core@0.5.23':
-    resolution: {integrity: sha512-hRtPcNHgyJCLq2i8NQI9vDVIc0ip3w5kfh1+PXAuRkIzeIEV6DsYq0MiV3OYCiy9KYxrkC4sB96glrcSNKufrw==}
+  '@ponder/core@0.6.2':
+    resolution: {integrity: sha512-In1fd16A5GteQCGdUUgvqkfcwGSDBQbB7vvy4S09JCaq8uMxZ6ImM/puJEjXAJc8Th3KX3+mCPR2z2hezudH5Q==}
     engines: {node: '>=18.14'}
     hasBin: true
     peerDependencies:
       hono: '>=4.5'
       typescript: '>=5.0.4'
-      viem: '>=1.16'
+      viem: '>=2'
     peerDependenciesMeta:
       typescript:
         optional: true
 
-  '@ponder/utils@0.1.8':
-    resolution: {integrity: sha512-Ul5HkBAsyy/fJbE35H96NpiPKgA7v/7OJqyHB/08Oq7MilXvvs4ryk7wPXejB18wnwhfu7bfLTCKSvFOG/UEGA==}
+  '@ponder/utils@0.2.1':
+    resolution: {integrity: sha512-u6FvinDOMpJvQhpHnMi0PpbMVMSpHNpfhK4035gUoG4iJbcTCJR9rw4eXT0nQQrinqnZmQJhyoJYw7qIXX9cvQ==}
     peerDependencies:
       typescript: '>=5.0.4'
-      viem: '>=1.16'
+      viem: '>=2'
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -6934,7 +6934,7 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@ponder/core@0.5.23(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.4)(hono@4.6.1)(typescript@5.6.2)(viem@2.21.6(typescript@5.6.2)(zod@3.23.8))(zod@3.23.8)':
+  '@ponder/core@0.6.2(@aws-sdk/client-rds-data@3.637.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.4)(hono@4.6.1)(typescript@5.6.2)(viem@2.21.6(typescript@5.6.2)(zod@3.23.8))(zod@3.23.8)':
     dependencies:
       '@babel/code-frame': 7.24.7
       '@commander-js/extra-typings': 12.1.0(commander@12.1.0)
@@ -6942,7 +6942,7 @@ snapshots:
       '@escape.tech/graphql-armor-max-depth': 2.3.0
       '@escape.tech/graphql-armor-max-tokens': 2.4.0
       '@hono/node-server': 1.12.2(hono@4.6.1)
-      '@ponder/utils': 0.1.8(typescript@5.6.2)(viem@2.21.6(typescript@5.6.2)(zod@3.23.8))
+      '@ponder/utils': 0.2.1(typescript@5.6.2)(viem@2.21.6(typescript@5.6.2)(zod@3.23.8))
       abitype: 0.10.3(typescript@5.6.2)(zod@3.23.8)
       better-sqlite3: 11.3.0
       commander: 12.1.0
@@ -7011,7 +7011,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@ponder/utils@0.1.8(typescript@5.6.2)(viem@2.21.6(typescript@5.6.2)(zod@3.23.8))':
+  '@ponder/utils@0.2.1(typescript@5.6.2)(viem@2.21.6(typescript@5.6.2)(zod@3.23.8))':
     dependencies:
       viem: 2.21.6(typescript@5.6.2)(zod@3.23.8)
     optionalDependencies:

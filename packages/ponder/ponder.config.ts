@@ -38,7 +38,6 @@ export default createConfig({
     database: {
         kind: "postgres",
         connectionString: process.env.DATABASE_URL,
-        publishSchema: "publish",
     },
     networks: {
         // Testnets
