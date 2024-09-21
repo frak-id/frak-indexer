@@ -1,5 +1,6 @@
 {
   "name": "@frak-indexer/ponder",
+  "description": "Indexing via ponder stuff",
   "private": true,
   "type": "module",
   "scripts": {
@@ -26,6 +27,7 @@
     "sst": "2.43.6",
     "typescript": "^5.3.2"
   },
+  "trustedDependencies": ["better_sqlite3"],
   "engines": {
     "node": ">=18.14"
   },

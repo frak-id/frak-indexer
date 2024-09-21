@@ -95,39 +95,39 @@ export function IndexerStack({ app, stack }: StackContext) {
         secrets: cdkSecretsMap,
     });
 
-    // Build the prod indexer instance
-    const prodIndexer = createServiceConfig({
-        stack,
-        serviceName: "PonderIndexerProdService",
-        sharedConfig,
-        typeKey: "indexer",
-        image: indexerProdImage,
-        entryPoints: entryPoints.prod.indexer,
-        secrets: cdkSecretsMap,
-    });
+    // // Build the prod indexer instance
+    // const prodIndexer = createServiceConfig({
+    //     stack,
+    //     serviceName: "PonderIndexerProdService",
+    //     sharedConfig,
+    //     typeKey: "indexer",
+    //     image: indexerProdImage,
+    //     entryPoints: entryPoints.prod.indexer,
+    //     secrets: cdkSecretsMap,
+    // });
 
-    // Build the prod reader instance
-    const prodReader = createServiceConfig({
-        stack,
-        serviceName: "PonderReaderProdService",
-        sharedConfig,
-        typeKey: "reader",
-        domainKey: "prod",
-        image: indexerProdImage,
-        entryPoints: entryPoints.prod.reader,
-        secrets: cdkSecretsMap,
-    });
+    // // Build the prod reader instance
+    // const prodReader = createServiceConfig({
+    //     stack,
+    //     serviceName: "PonderReaderProdService",
+    //     sharedConfig,
+    //     typeKey: "reader",
+    //     domainKey: "prod",
+    //     image: indexerProdImage,
+    //     entryPoints: entryPoints.prod.reader,
+    //     secrets: cdkSecretsMap,
+    // });
 
     stack.addOutputs({
         DevIndexerServiceId: devIndexer.id,
         DevReaderServiceId: devReader.id,
-        ProdIndexerServiceId: prodIndexer.id,
-        ProdReaderServiceId: prodReader.id,
+        // ProdIndexerServiceId: prodIndexer.id,
+        // ProdReaderServiceId: prodReader.id,
     });
 
     // Tell that prod and dev indexer services depends on the erpc service
     devIndexer.node.addDependency(erpcService);
-    prodIndexer.node.addDependency(erpcService);
+    // prodIndexer.node.addDependency(erpcService);
 }
 
 /**

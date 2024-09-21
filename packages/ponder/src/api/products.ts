@@ -36,3 +36,30 @@ ponder.get("/products/:id/administrators", async (ctx) => {
     // Return the result as json
     return ctx.json(administrators);
 });
+
+/**
+ * Get all the product banks
+ */
+ponder.get("/products/:id/banks", async (ctx) => {
+    // Extract the id
+    const id = ctx.req.param("id") as Hex;
+    if (!isHex(id)) {
+        return ctx.text("Invalid product id", 400);
+    }
+
+    // Get the tables we will query
+    const { BankingContract } = ctx.tables;
+
+    // Perform the sql query
+    const administrators = await ctx.db
+        .select({
+            token: BankingContract.tokenId,
+            totalDistributed: BankingContract.totalDistributed,
+            totalClaimed: BankingContract.totalClaimed,
+            isDistributing: BankingContract.isDistributing,
+        })
+        .from(BankingContract);
+
+    // Return the result as json
+    return ctx.json(administrators);
+});

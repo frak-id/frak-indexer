@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - staging
+      - feat/contracts-review
 
 concurrency:
   group: ${{ github.ref }}-deploy
@@ -56,6 +57,7 @@ jobs:
             echo "IMAGE_REPO_PONDER=262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-dev" >> $GITHUB_ENV
             echo "PONDER_PROD_IMAGE_TAG=latest" >> $GITHUB_ENV
             echo "PONDER_DEV_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+          fi
 
       - uses: pnpm/action-setup@v4
         with:
@@ -104,8 +106,8 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: |
-            ${{ env.IMAGE_REPO_PONDER }}::latest
-            ${{ env.IMAGE_REPO_PONDER }}::${{ github.sha }}
+            ${{ env.IMAGE_REPO_PONDER }}:latest
+            ${{ env.IMAGE_REPO_PONDER }}:${{ github.sha }}
           # Github actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=min
