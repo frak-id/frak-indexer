@@ -49,28 +49,18 @@ export function createEnvConfig<NetworkKey extends string>({
     network,
     networkKey,
 }: { pgDatabase?: string; network: EnvNetworkConfig; networkKey: NetworkKey }) {
-    console.log("Creating config", {
-        network,
-        networkKey
-    });
     const contractNetworkConfig = {
         [networkKey]: {
             startBlock: network.deploymentBlock,
         },
     } as const;
 
-    if (pgDatabase) {
-        console.log("Using pg database", {
-            db: `${process.env.DATABASE_URL}?${pgDatabase}`
-        });
-    }
-
     return createConfig({
         // db config
         database: pgDatabase
             ? {
                   kind: "postgres",
-                  connectionString: `${process.env.DATABASE_URL}?${pgDatabase}`,
+                  connectionString: `${process.env.PONDER_DATABASE_URL}/${pgDatabase}`,
               }
             : {
                   kind: "sqlite",

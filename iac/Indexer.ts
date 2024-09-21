@@ -237,7 +237,7 @@ const entryPoints = {
             "--log-format",
             "json",
             "--log-level",
-            "warn",
+            "debug",
             "--config",
             "config/config-dev.ts",
             "start",
