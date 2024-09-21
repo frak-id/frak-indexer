@@ -79,7 +79,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         sharedConfig,
         typeKey: "indexer",
         image: indexerDevImage,
-        entryPoints: entryPoints.dev.indexer,
+        entryPoint: entryPoints.dev.indexer,
         secrets: cdkSecretsMap,
     });
 
@@ -91,7 +91,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         typeKey: "reader",
         // domainKey: "dev",
         image: indexerDevImage,
-        entryPoints: entryPoints.dev.reader,
+        entryPoint: entryPoints.dev.reader,
         secrets: cdkSecretsMap,
     });
 
@@ -102,7 +102,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     //     sharedConfig,
     //     typeKey: "indexer",
     //     image: indexerProdImage,
-    //     entryPoints: entryPoints.prod.indexer,
+    //     entryPoint: entryPoints.prod.indexer,
     //     secrets: cdkSecretsMap,
     // });
 
@@ -114,7 +114,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     //     typeKey: "reader",
     //     domainKey: "prod",
     //     image: indexerProdImage,
-    //     entryPoints: entryPoints.prod.reader,
+    //     entryPoint: entryPoints.prod.reader,
     //     secrets: cdkSecretsMap,
     // });
 
@@ -141,41 +141,29 @@ function createServiceConfig({
     domainKey,
     image,
     secrets,
+    entryPoint,
 }: {
     stack: Stack;
     serviceName: string;
     sharedConfig: Pick<ServiceProps, "port"> & Partial<ServiceProps>;
     typeKey: keyof typeof baseProps;
     domainKey?: keyof typeof domainProps;
-    entryPoints: string[];
+    entryPoint: string[];
     image: EcrImage;
     secrets: Record<string, Secret>;
 }) {
-    console.log("Building service with cdi props", {
-        serviceName,
-        cdk: {
-            ...sharedConfig.cdk,
-            ...baseProps[typeKey],
-            container: {
-                containerName: serviceName.toLowerCase(),
-                image,
-                secrets: secrets,
-                entryPoint: entryPoints[typeKey],
-            },
-        }
-    })
     return new Service(stack, serviceName, {
         ...sharedConfig,
         ...baseProps[typeKey],
         customDomain: domainKey ? domainKey[domainKey] : undefined,
         cdk: {
             ...sharedConfig.cdk,
-            ...baseProps[typeKey],
+            ...baseProps[typeKey].cdk,
             container: {
                 containerName: serviceName.toLowerCase(),
                 image,
                 secrets: secrets,
-                entryPoint: entryPoints[typeKey],
+                entryPoint,
             },
         },
     });
@@ -187,7 +175,7 @@ function createServiceConfig({
 const baseProps: Record<"indexer" | "reader", Partial<ServiceProps>> = {
     indexer: {
         cpu: "0.5 vCPU",
-        memory: "0.5 GB",
+        memory: "1 GB",
         storage: "20 GB",
         scaling: {
             minContainers: 1,

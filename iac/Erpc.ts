@@ -81,12 +81,11 @@ export function ErpcStack({ app, stack }: StackContext) {
             applicationLoadBalancerTargetGroup: {
                 deregistrationDelay: Duration.seconds(10),
                 healthCheck: {
-                    path: "/",
-                    port: "4001",
-                    interval: Duration.seconds(30),
+                    path: "/unknown-project",
+                    interval: Duration.seconds(10),
                     healthyThresholdCount: 2,
                     unhealthyThresholdCount: 5,
-                    healthyHttpCodes: "200",
+                    healthyHttpCodes: "200-499",
                 },
             },
             // Customise fargate service to enable circuit breaker (if the new deployment is failing)
@@ -94,6 +93,7 @@ export function ErpcStack({ app, stack }: StackContext) {
                 circuitBreaker: {
                     enable: true,
                 },
+                healthCheckGracePeriod: Duration.seconds(20),
             },
             // Directly specify the image position in the registry here
             container: {
