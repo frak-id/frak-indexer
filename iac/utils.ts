@@ -4,7 +4,7 @@ import { Secret } from "aws-cdk-lib/aws-ecs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import type { App, Config, Stack } from "sst/constructs";
 
-const specificSecretsList = ["ERPC_DATABASE_URL", "DATABASE_URL"];
+const specificSecretsList = ["ERPC_DATABASE_URL", "PONDER_DATABASE_URL"];
 
 /**
  * Get an ECS image from the given name

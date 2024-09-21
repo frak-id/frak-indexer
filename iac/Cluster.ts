@@ -7,7 +7,7 @@ import type { StackContext } from "sst/constructs";
  * @param stack
  * @constructor
  */
-export function ClusterStack({ app, stack }: StackContext) {
+export function ClusterStack({ stack }: StackContext) {
     // Use the global nexus vpc
     const vpc = Vpc.fromLookup(stack, "Vpc", {
         vpcName: "nexus-vpc",

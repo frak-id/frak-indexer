@@ -8,8 +8,8 @@
     "format": "biome check --write .",
     "format:check": "biome check .",
     "lint": "biome lint .",
-    "serve": "ponder serve",
-    "start": "ponder start",
+    "serve": "ponder --config config/config-local.ts serve",
+    "start": "ponder --config config/config-local.ts start",
     "typecheck": "tsc"
   },
   "dependencies": {

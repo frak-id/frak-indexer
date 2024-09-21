@@ -33,10 +33,6 @@ ENV NODE_ENV=production
 COPY . .
 COPY --from=install /temp/prod/node_modules node_modules
 
-# Allow node user to everything in the working directory, and switch to it
-#RUN chown node:node ./
-#USER node
-
 # run the app
 EXPOSE 42069/tcp
 ENTRYPOINT [ "pnpm", "ponder", "start"]

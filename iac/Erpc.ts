@@ -91,7 +91,6 @@ export function ErpcStack({ app, stack }: StackContext) {
             },
             // Customise fargate service to enable circuit breaker (if the new deployment is failing)
             fargateService: {
-                enableExecuteCommand: true,
                 circuitBreaker: {
                     enable: true,
                 },
