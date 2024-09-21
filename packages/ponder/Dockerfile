@@ -1,30 +1,38 @@
-# Only work for distant stage, not with sqlite since using sqlite3
-# Use a multi-stage build
-# FROM --platform=$BUILDPLATFORM node:lts AS builder
-FROM --platform=$BUILDPLATFORM oven/bun AS builder
+# Base image is node-22
+FROM node:22-slim AS base
+
+# Setup pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+RUN corepack install --global pnpm@9.1.3
 
 # Create app directory
-WORKDIR /building-app
+WORKDIR /usr/src/app
 
-# Copy the entire repo
-COPY . .
+# install dependencies into temp directory
+# this will cache them and speed up future builds
+FROM base AS install
+# install python and all the stuff required to build sqlite3
+RUN apt-get update
+RUN apt-get install -y \
+            python3 \
+            build-essential
 
-# Setup bun (since we are on a node image)
-# RUN npm i -g bun
+# Install dependencies
+RUN mkdir -p /temp/prod
+COPY package.json /temp/prod/
+RUN cd /temp/prod && pnpm --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
 
-# Run the installation
-RUN bun install
+FROM base AS release
 
-# Start a new stage for the final image
-FROM oven/bun
-
-WORKDIR /app
-
-# Copy the built application from the builder stage
-COPY . .
-COPY --from=builder /building-app/node_modules ./node_modules
-
+# Set env to production
 ENV NODE_ENV=production
-CMD ["bun", "ponder", "--config", "config/config-dev.ts", "start"]
 
+# copy production dependencies and source code into final image
+COPY . .
+COPY --from=install /temp/prod/node_modules node_modules
+
+# run the app
 EXPOSE 42069/tcp
+ENTRYPOINT [ "pnpm", "ponder", "start"]

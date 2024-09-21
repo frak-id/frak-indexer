@@ -89,7 +89,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         serviceName: "PonderReaderDevService",
         sharedConfig,
         typeKey: "reader",
-        domainKey: "dev",
+        // domainKey: "dev",
         image: indexerDevImage,
         entryPoints: entryPoints.dev.reader,
         secrets: cdkSecretsMap,
@@ -151,6 +151,19 @@ function createServiceConfig({
     image: EcrImage;
     secrets: Record<string, Secret>;
 }) {
+    console.log("Building service with cdi props", {
+        serviceName,
+        cdk: {
+            ...sharedConfig.cdk,
+            ...baseProps[typeKey],
+            container: {
+                containerName: serviceName.toLowerCase(),
+                image,
+                secrets: secrets,
+                entryPoint: entryPoints[typeKey],
+            },
+        }
+    })
     return new Service(stack, serviceName, {
         ...sharedConfig,
         ...baseProps[typeKey],
@@ -171,22 +184,22 @@ function createServiceConfig({
 /**
  * Base props for the different indexing services
  */
-const baseProps = {
+const baseProps: Record<"indexer" | "reader", Partial<ServiceProps>> = {
     indexer: {
+        cpu: "0.5 vCPU",
+        memory: "0.5 GB",
+        storage: "20 GB",
         scaling: {
             minContainers: 1,
             maxContainers: 1,
             cpuUtilization: 90,
             memoryUtilization: 90,
         },
-        hardware: {
-            cpu: "0.5 vCPU",
-            memory: "0,5 GB",
-            storage: "20 GB",
-        } as const,
         cdk: {
             // No ALB for the indexing instances
             applicationLoadBalancer: false,
+            // No cloudfront distribution for the indexing instances
+            cloudfrontDistribution: false,
             fargateService: {
                 circuitBreaker: { enable: true },
                 // Disable rollup update for the indexer
@@ -197,17 +210,15 @@ const baseProps = {
         },
     },
     reader: {
+        cpu: "0.25 vCPU",
+        memory: "0.5 GB",
+        storage: "20 GB",
         scaling: {
             minContainers: 1,
             maxContainers: 4,
             cpuUtilization: 90,
             memoryUtilization: 90,
         },
-        hardware: {
-            cpu: "0.25 vCPU",
-            memory: "0.5 GB",
-            storage: "20 GB",
-        } as const,
         cdk: {
             fargateService: {
                 circuitBreaker: { enable: true },
