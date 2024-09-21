@@ -64,7 +64,9 @@ export function IndexerStack({ app, stack }: StackContext) {
         // Set the right environment variables
         environment: {
             // Erpc endpoint
-            ERPC_URL: erpcInternalDns ?? "https://rpc.frak.id/ponder-rpc/evm",
+            ERPC_URL: erpcInternalDns
+                ? `http://${erpcInternalDns}/ponder-rpc/evm`
+                : "https://rpc.frak.id/ponder-rpc/evm",
         },
         cdk: {
             vpc,
