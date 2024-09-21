@@ -19,6 +19,7 @@ export default createSchema((p) => ({
 
         campaigns: p.many("Campaign.productId"),
         administrators: p.many("ProductAdministrator.productId"),
+        banks: p.many("BankingContract.productId"),
     }),
 
     // Product related stuff
@@ -99,16 +100,30 @@ export default createSchema((p) => ({
             productId: p.bigint().references("Product.id"),
             product: p.one("productId"),
 
+            interactionContractId: p
+                .hex()
+                .references("ProductInteractionContract.id"),
+            interactionContract: p.one("interactionContractId"),
+
             attached: p.boolean(),
 
             attachTimestamp: p.bigint(),
             detachTimestamp: p.bigint().optional(),
+
+            bankingContractId: p
+                .hex()
+                .references("BankingContract.id")
+                .optional(),
+            bankingContract: p.one("bankingContractId"),
+            isAuthorisedOnBanking: p.boolean(),
 
             capResets: p.many("CampaignCapReset.campaignId"),
             stats: p.many("ReferralCampaignStats.campaignId"),
         },
         {
             productIndex: p.index("productId"),
+            interactionContractIndex: p.index("interactionContractId"),
+            bankingContractIndex: p.index("bankingContractId"),
         }
     ),
     ReferralCampaignStats: p.createTable(
@@ -183,8 +198,14 @@ export default createSchema((p) => ({
             totalDistributed: p.bigint(),
             totalClaimed: p.bigint(),
 
+            // Is the bank still distributing?
+            isDistributing: p.boolean(),
+
             // All the rewards
             rewards: p.many("Reward.contractId"),
+
+            // All the attached cmapaigns
+            campaigns: p.many("Campaign.bankingContractId"),
         },
         {
             tokenIndex: p.index("tokenId"),

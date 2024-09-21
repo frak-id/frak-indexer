@@ -3,6 +3,8 @@ import { http, type Address, parseAbiItem } from "viem";
 import * as deployedAddresses from "../abis/addresses.json";
 import {
     campaignBankAbi,
+    campaignBankFactoryAbi,
+    campaignFactoryAbi,
     interactionCampaignAbi,
     referralCampaignAbi,
 } from "../abis/campaignAbis";
@@ -112,6 +114,12 @@ export function createEnvConfig<NetworkKey extends string>({
                 },
                 network: contractNetworkConfig,
             },
+            // The campaign factory
+            CampaignsFactory: {
+                abi: campaignFactoryAbi,
+                address: deployedAddresses.campaignFactory as Address,
+                network: contractNetworkConfig,
+            },
             // Every campaigns
             Campaigns: {
                 abi: mergeAbis([interactionCampaignAbi, referralCampaignAbi]),
@@ -124,9 +132,15 @@ export function createEnvConfig<NetworkKey extends string>({
                 },
                 network: contractNetworkConfig,
             },
+            // The campaign banks factory
+            CampaignBanksFactory: {
+                abi: campaignBankFactoryAbi,
+                address: deployedAddresses.campaignBankFactory as Address,
+                network: contractNetworkConfig,
+            },
             // Every campaign banks
             CampaignBanks: {
-                abi: mergeAbis([campaignBankAbi]),
+                abi: campaignBankAbi,
                 factory: {
                     address: deployedAddresses.campaignBankFactory as Address,
                     event: parseAbiItem(

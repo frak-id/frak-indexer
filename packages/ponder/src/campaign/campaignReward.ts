@@ -1,6 +1,4 @@
-import { type Context, ponder } from "@/generated";
-import { type Address, erc20Abi } from "viem";
-import { campaignBankAbi } from "../../abis/campaignAbis";
+import { ponder } from "@/generated";
 import { emptyCampaignStats } from "../interactions/stats";
 
 ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
@@ -8,18 +6,20 @@ ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
         context.db;
 
     // Try to find a rewarding contract for the given event emitter
-    const bankingContract = await getBankingContract({
-        contract: event.log.address,
-        context,
+    const bankingContract = await BankingContract.findUnique({
+        id: event.log.address,
     });
+    if (!bankingContract) {
+        console.error(`Banking contract not found: ${event.log.address}`);
+        return;
+    }
 
     // Update rewarding contract
     await BankingContract.update({
         id: bankingContract.id,
-        data: {
-            totalDistributed:
-                bankingContract.totalDistributed + event.args.amount,
-        },
+        data: ({ current }) => ({
+            totalDistributed: current.totalDistributed + event.args.amount,
+        }),
     });
 
     // Update the current user reward (insert it if not found)
@@ -73,10 +73,13 @@ ponder.on("CampaignBanks:RewardClaimed", async ({ event, context }) => {
     const { BankingContract, Reward, RewardClaimedEvent } = context.db;
 
     // Try to find a rewarding contract for the given event emitter
-    const bankingContract = await getBankingContract({
-        contract: event.log.address,
-        context,
+    const bankingContract = await BankingContract.findUnique({
+        id: event.log.address,
     });
+    if (!bankingContract) {
+        console.error(`Banking contract not found: ${event.log.address}`);
+        return;
+    }
 
     // Update rewarding contract
     await BankingContract.update({
@@ -114,82 +117,3 @@ ponder.on("CampaignBanks:RewardClaimed", async ({ event, context }) => {
         },
     });
 });
-
-/**
- * Get the rewarding contract for the given event emitter
- * @param contract
- * @param context
- */
-async function getBankingContract({
-    contract,
-    context,
-}: {
-    contract: Address;
-    context: Context;
-}) {
-    const { BankingContract, Token } = context.db;
-    // Try to find a rewarding contract for the given event emitter
-    let bankingContract = await BankingContract.findUnique({
-        id: contract,
-    });
-    if (!bankingContract) {
-        // If not found, find the token of this campaign
-        const [productId, token] = await context.client.readContract({
-            abi: campaignBankAbi,
-            address: contract,
-            functionName: "getConfig",
-        });
-
-        bankingContract = await BankingContract.create({
-            id: contract,
-            data: {
-                tokenId: token,
-                totalDistributed: 0n,
-                totalClaimed: 0n,
-                productId,
-            },
-        });
-    }
-
-    // Create the token if needed
-    const token = await Token.findUnique({ id: bankingContract.tokenId });
-    if (!token) {
-        try {
-            // Fetch a few onchain data
-            const [name, symbol, decimals] = await context.client.multicall({
-                contracts: [
-                    {
-                        abi: erc20Abi,
-                        functionName: "name",
-                        address: bankingContract.tokenId,
-                    },
-                    {
-                        abi: erc20Abi,
-                        functionName: "symbol",
-                        address: bankingContract.tokenId,
-                    },
-                    {
-                        abi: erc20Abi,
-                        functionName: "decimals",
-                        address: bankingContract.tokenId,
-                    },
-                ] as const,
-                allowFailure: false,
-            });
-
-            // Create the token
-            await Token.create({
-                id: bankingContract.tokenId,
-                data: {
-                    name,
-                    symbol,
-                    decimals,
-                },
-            });
-        } catch (e) {
-            console.error(e, "Unable to fetch token data");
-        }
-    }
-
-    return bankingContract;
-}

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "codegen": "ponder codegen",
+    "codegen": "ponder --config config/config-local.ts codegen",
     "dev": "ponder dev",
     "format": "biome check --write .",
     "format:check": "biome check .",

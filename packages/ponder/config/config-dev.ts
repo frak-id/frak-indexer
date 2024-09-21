@@ -1,5 +1,8 @@
 import { createEnvConfig } from "./configBuilder";
 
+/**
+ * Config for the dev env
+ */
 export default createEnvConfig({
     pgDatabase: "ponder_dev",
     network: {
