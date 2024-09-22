@@ -20,20 +20,17 @@ ponder.get("/rewards/:wallet", async (ctx) => {
     }
 
     // Get the tables we will query
-    const { Reward, RewardingContract } = ctx.tables;
+    const { Reward, BankingContract } = ctx.tables;
 
     // Perform the sql query
     const rewards = await ctx.db
         .select({
             amount: Reward.pendingAmount,
             address: Reward.contractId,
-            token: RewardingContract.tokenId,
+            token: BankingContract.tokenId,
         })
         .from(Reward)
-        .innerJoin(
-            RewardingContract,
-            eq(RewardingContract.id, Reward.contractId)
-        )
+        .innerJoin(BankingContract, eq(BankingContract.id, Reward.contractId))
         .where(and(eq(Reward.user, wallet), not(eq(Reward.pendingAmount, 0n))))
         .orderBy(desc(Reward.pendingAmount));
 
@@ -63,7 +60,7 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
     const walletfilter = `%${wallet}`;
 
     // Get the tables we will query
-    const { RewardAddedEvent, RewardClaimedEvent, RewardingContract, Reward } =
+    const { RewardAddedEvent, RewardClaimedEvent, BankingContract, Reward } =
         ctx.tables;
 
     // Perform the sql query
@@ -72,14 +69,11 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
             amount: RewardAddedEvent.amount,
             txHash: RewardAddedEvent.txHash,
             timestamp: RewardAddedEvent.timestamp,
-            token: RewardingContract.tokenId,
+            token: BankingContract.tokenId,
         })
         .from(RewardAddedEvent)
         .innerJoin(Reward, eq(Reward.id, RewardAddedEvent.rewardId))
-        .innerJoin(
-            RewardingContract,
-            eq(RewardingContract.id, Reward.contractId)
-        )
+        .innerJoin(BankingContract, eq(BankingContract.id, Reward.contractId))
         .where(like(RewardAddedEvent.rewardId, walletfilter))
         .limit(100)
         .orderBy(desc(RewardAddedEvent.timestamp));
@@ -90,14 +84,11 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
             amount: RewardClaimedEvent.amount,
             txHash: RewardClaimedEvent.txHash,
             timestamp: RewardClaimedEvent.timestamp,
-            token: RewardingContract.tokenId,
+            token: BankingContract.tokenId,
         })
         .from(RewardClaimedEvent)
         .innerJoin(Reward, eq(Reward.id, RewardClaimedEvent.rewardId))
-        .innerJoin(
-            RewardingContract,
-            eq(RewardingContract.id, Reward.contractId)
-        )
+        .innerJoin(BankingContract, eq(BankingContract.id, Reward.contractId))
         .where(like(RewardClaimedEvent.rewardId, walletfilter))
         .limit(100)
         .orderBy(desc(RewardClaimedEvent.timestamp));

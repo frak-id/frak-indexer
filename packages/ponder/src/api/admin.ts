@@ -85,7 +85,8 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
     }
 
     // Get the tables we will query
-    const { ProductAdministrator, Campaign, PressCampaignStats } = ctx.tables;
+    const { ProductAdministrator, Campaign, ReferralCampaignStats } =
+        ctx.tables;
 
     // Perform the sql query
     const campaignsStats = await ctx.db
@@ -94,13 +95,13 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
             isOwner: ProductAdministrator.isOwner,
             roles: ProductAdministrator.roles,
             id: Campaign.id,
-            totalInteractions: PressCampaignStats.totalInteractions,
-            openInteractions: PressCampaignStats.openInteractions,
-            readInteractions: PressCampaignStats.readInteractions,
-            referredInteractions: PressCampaignStats.referredInteractions,
+            totalInteractions: ReferralCampaignStats.totalInteractions,
+            openInteractions: ReferralCampaignStats.openInteractions,
+            readInteractions: ReferralCampaignStats.readInteractions,
+            referredInteractions: ReferralCampaignStats.referredInteractions,
             createReferredLinkInteractions:
-                PressCampaignStats.createReferredLinkInteractions,
-            totalRewards: PressCampaignStats.totalRewards,
+                ReferralCampaignStats.createReferredLinkInteractions,
+            totalRewards: ReferralCampaignStats.totalRewards,
         })
         .from(ProductAdministrator)
         .innerJoin(
@@ -108,8 +109,8 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
             eq(ProductAdministrator.productId, Campaign.productId)
         )
         .innerJoin(
-            PressCampaignStats,
-            eq(Campaign.id, PressCampaignStats.campaignId)
+            ReferralCampaignStats,
+            eq(Campaign.id, ReferralCampaignStats.campaignId)
         )
         .where(eq(ProductAdministrator.user, wallet));
 

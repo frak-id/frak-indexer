@@ -14,15 +14,12 @@ WORKDIR /usr/src/app
 # this will cache them and speed up future builds
 FROM base AS install
 # install python and all the stuff required to build sqlite3
-RUN apt-get update
-RUN apt-get install -y \
-            python3 \
-            build-essential
+RUN apt-get update && apt-get install -y python3 build-essential
 
 # Install dependencies
 RUN mkdir -p /temp/prod
 COPY package.json /temp/prod/
-RUN cd /temp/prod && pnpm --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store cd /temp/prod && pnpm install --prod
 
 FROM base AS release
 
@@ -32,10 +29,6 @@ ENV NODE_ENV=production
 # copy production dependencies and source code into final image
 COPY . .
 COPY --from=install /temp/prod/node_modules node_modules
-
-# Allow node user to everything in the working directory, and switch to it
-#RUN chown node:node ./
-#USER node
 
 # run the app
 EXPOSE 42069/tcp

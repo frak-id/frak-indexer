@@ -19,6 +19,7 @@ export default createSchema((p) => ({
 
         campaigns: p.many("Campaign.productId"),
         administrators: p.many("ProductAdministrator.productId"),
+        banks: p.many("BankingContract.productId"),
     }),
 
     // Product related stuff
@@ -80,6 +81,9 @@ export default createSchema((p) => ({
         // Press type
         "OPEN_ARTICLE",
         "READ_ARTICLE",
+        // Purchase type
+        "PURCHASE_STARTED",
+        "PURCHASE_COMPLETED",
     ]),
 
     /* -------------------------------------------------------------------------- */
@@ -96,19 +100,33 @@ export default createSchema((p) => ({
             productId: p.bigint().references("Product.id"),
             product: p.one("productId"),
 
+            interactionContractId: p
+                .hex()
+                .references("ProductInteractionContract.id"),
+            interactionContract: p.one("interactionContractId"),
+
             attached: p.boolean(),
 
             attachTimestamp: p.bigint(),
             detachTimestamp: p.bigint().optional(),
 
+            bankingContractId: p
+                .hex()
+                .references("BankingContract.id")
+                .optional(),
+            bankingContract: p.one("bankingContractId"),
+            isAuthorisedOnBanking: p.boolean(),
+
             capResets: p.many("CampaignCapReset.campaignId"),
-            stats: p.many("PressCampaignStats.campaignId"),
+            stats: p.many("ReferralCampaignStats.campaignId"),
         },
         {
             productIndex: p.index("productId"),
+            interactionContractIndex: p.index("interactionContractId"),
+            bankingContractIndex: p.index("bankingContractId"),
         }
     ),
-    PressCampaignStats: p.createTable(
+    ReferralCampaignStats: p.createTable(
         {
             id: p.hex(),
 
@@ -116,10 +134,18 @@ export default createSchema((p) => ({
             campaign: p.one("campaignId"),
 
             totalInteractions: p.bigint(),
+
+            // Press related interactions
             openInteractions: p.bigint(),
             readInteractions: p.bigint(),
+
+            // Referral related interactions
             referredInteractions: p.bigint(),
             createReferredLinkInteractions: p.bigint(),
+
+            // purchase related interactions
+            purchaseStartedInteractions: p.bigint(),
+            purchaseCompletedInteractions: p.bigint(),
 
             totalRewards: p.bigint(),
         },
@@ -155,7 +181,7 @@ export default createSchema((p) => ({
         name: p.string(),
         symbol: p.string(),
     }),
-    RewardingContract: p.createTable(
+    BankingContract: p.createTable(
         {
             // Address of the rewarding contract
             id: p.hex(),
@@ -164,22 +190,33 @@ export default createSchema((p) => ({
             tokenId: p.hex().references("Token.id"),
             token: p.one("tokenId"),
 
+            // Address of the product linked to this contract
+            productId: p.bigint().references("Product.id"),
+            product: p.one("productId"),
+
             // The total amount distributed and claimed
             totalDistributed: p.bigint(),
             totalClaimed: p.bigint(),
 
+            // Is the bank still distributing?
+            isDistributing: p.boolean(),
+
             // All the rewards
             rewards: p.many("Reward.contractId"),
+
+            // All the attached cmapaigns
+            campaigns: p.many("Campaign.bankingContractId"),
         },
         {
             tokenIndex: p.index("tokenId"),
+            productIndex: p.index("productId"),
         }
     ),
     Reward: p.createTable(
         {
             id: p.string(), // reward contract + user
 
-            contractId: p.hex().references("RewardingContract.id"),
+            contractId: p.hex().references("BankingContract.id"),
             contract: p.one("contractId"),
 
             user: p.hex(),
@@ -204,6 +241,9 @@ export default createSchema((p) => ({
 
             rewardId: p.string().references("Reward.id"),
             reward: p.one("rewardId"),
+
+            // Emitter of the reward (campaign sending it)
+            emitter: p.hex(),
 
             amount: p.bigint(),
 

@@ -1,5 +1,6 @@
 {
   "name": "@frak-indexer/erpc",
+  "description": "RPC load balancing stuff",
   "private": true,
   "scripts": {
     "format": "biome check --write .",
