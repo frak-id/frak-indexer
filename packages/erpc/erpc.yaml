@@ -150,6 +150,22 @@ projects:
           - "*"
         allowMethods: *var5
         autoIgnoreUnsupportedMethods: true
+      - id: blockpi-arbSepolia
+        endpoint: https://arbitrum-sepolia.blockpi.network/v1/rpc/${BLOCKPI_API_KEY_ARB_SEPOLIA}
+        rateLimitBudget: ""
+        type: evm
+        vendorName: Generic Evm
+        ignoreMethods: []
+        allowMethods: []
+        autoIgnoreUnsupportedMethods: true
+      - id: blockpi-arb
+        endpoint: https://arbitrum.blockpi.network/v1/rpc/${BLOCKPI_API_KEY_ARB}
+        rateLimitBudget: ""
+        type: evm
+        vendorName: Generic Evm
+        ignoreMethods: []
+        allowMethods: []
+        autoIgnoreUnsupportedMethods: true
     cors:
       allowedOrigins:
         - https://nexus.frak.id

@@ -10,6 +10,7 @@ export function ConfigStack({ stack }: StackContext) {
     const rpcSecrets = [
         // BlockPi rpcs
         new Config.Secret(stack, "BLOCKPI_API_KEY_ARB_SEPOLIA"),
+        new Config.Secret(stack, "BLOCKPI_API_KEY_ARB"),
         // Alchemy RPC
         new Config.Secret(stack, "ALCHEMY_API_KEY"),
     ];

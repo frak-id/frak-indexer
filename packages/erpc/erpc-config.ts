@@ -3,6 +3,7 @@ import {
     buildAlchemyUpstream,
     buildEnvioUpstream,
     buildEvmNetworks,
+    buildEvmUpstream,
     buildPimlicoUpstream,
     buildProject,
     buildRateLimit,
@@ -125,6 +126,14 @@ const alchemyUpstream = buildAlchemyUpstream({
     rateLimitBudget: alchemyRateLimits.id,
     ignoreMethods: pimlicoSpecificMethods,
 });
+const blockpiArbSepoliaUpstream = buildEvmUpstream({
+    id: "blockpi-arbSepolia",
+    endpoint: `https://arbitrum-sepolia.blockpi.network/v1/rpc/${envVariable("BLOCKPI_API_KEY_ARB_SEPOLIA")}`,
+});
+const blockpiArbUpstream = buildEvmUpstream({
+    id: "blockpi-arb",
+    endpoint: `https://arbitrum.blockpi.network/v1/rpc/${envVariable("BLOCKPI_API_KEY_ARB")}`,
+});
 const pimlicoUpstream = buildPimlicoUpstream({
     apiKey: envVariable("PIMLICO_API_KEY"),
     rateLimitBudget: pimlicoRateLimits.id,
@@ -153,7 +162,12 @@ const ponderProject: ProjectConfig = buildProject({
 const nexusProject: ProjectConfig = buildProject({
     id: "nexus-rpc",
     networks,
-    upstreams: [alchemyUpstream, pimlicoUpstream],
+    upstreams: [
+        alchemyUpstream,
+        pimlicoUpstream,
+        blockpiArbSepoliaUpstream,
+        blockpiArbUpstream,
+    ],
     cors: {
         allowedOrigins: [
             "https://nexus.frak.id",
