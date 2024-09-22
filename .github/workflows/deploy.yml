@@ -6,7 +6,6 @@ on:
     branches:
       - main
       - staging
-      - feat/contracts-review
 
 concurrency:
   group: ${{ github.ref }}-deploy
@@ -50,11 +49,9 @@ jobs:
       - name: "🔧 Set up environment variables"
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "IMAGE_REPO_PONDER=262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-prod" >> $GITHUB_ENV
             echo "PONDER_PROD_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
-            echo "PONDER_DEV_IMAGE_TAG=latest" >> $GITHUB_ENV
+            echo "PONDER_DEV_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
           else
-            echo "IMAGE_REPO_PONDER=262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-dev" >> $GITHUB_ENV
             echo "PONDER_PROD_IMAGE_TAG=latest" >> $GITHUB_ENV
             echo "PONDER_DEV_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
           fi
@@ -98,7 +95,7 @@ jobs:
         if: steps.changes.outputs.dockerRelated == 'true'
         uses: docker/setup-buildx-action@v3
 
-      - name: "🔨 Build Ponder docker dependencies"
+      - name: "🔨 Build Ponder dev docker dependencies"
         if: steps.changes.outputs.ponder == 'true'
         uses: docker/build-push-action@v6
         with:
@@ -106,8 +103,22 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: |
-            ${{ env.IMAGE_REPO_PONDER }}:latest
-            ${{ env.IMAGE_REPO_PONDER }}:${{ github.sha }}
+            262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-dev:latest
+            262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-dev:${{ github.sha }}
+          # Github actions cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
+
+      - name: "🔨 Build Ponder prod docker dependencies"
+        if: steps.changes.outputs.ponder == 'true' && env.PONDER_PROD_IMAGE_TAG != 'latest'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./packages/ponder
+          platforms: linux/arm64
+          push: true
+          tags: |
+            262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-prod:latest
+            262732185023.dkr.ecr.eu-west-1.amazonaws.com/indexer-prod:${{ github.sha }}
           # Github actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=min

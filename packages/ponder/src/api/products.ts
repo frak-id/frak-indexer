@@ -48,17 +48,25 @@ ponder.get("/products/:id/banks", async (ctx) => {
     }
 
     // Get the tables we will query
-    const { BankingContract } = ctx.tables;
+    const { BankingContract, Token } = ctx.tables;
 
     // Perform the sql query
     const administrators = await ctx.db
         .select({
-            token: BankingContract.tokenId,
+            address: BankingContract.id,
             totalDistributed: BankingContract.totalDistributed,
             totalClaimed: BankingContract.totalClaimed,
             isDistributing: BankingContract.isDistributing,
+            token: {
+                address: Token.id,
+                name: Token.name,
+                symbol: Token.symbol,
+                decimals: Token.decimals,
+            },
         })
-        .from(BankingContract);
+        .from(BankingContract)
+        .innerJoin(Token, eq(BankingContract.tokenId, Token.id))
+        .where(eq(BankingContract.productId, BigInt(id)));
 
     // Return the result as json
     return ctx.json(administrators);
