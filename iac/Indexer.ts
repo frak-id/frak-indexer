@@ -44,7 +44,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         name: "indexer-dev",
         tag: process.env.PONDER_DEV_IMAGE_TAG,
     });
-    const indexerProdImage = getImageFromName({
+    const _indexerProdImage = getImageFromName({
         stack,
         app,
         name: "indexer-prod",
@@ -77,7 +77,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     // Build the dev indexer instance
     const devIndexer = createServiceConfig({
         stack,
-        serviceName: "PonderIndexerDevService",
+        serviceName: "Ponder-IndexerDev",
         sharedConfig,
         typeKey: "indexer",
         image: indexerDevImage,
@@ -88,7 +88,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     // Build the dev reader instance
     const devReader = createServiceConfig({
         stack,
-        serviceName: "PonderReaderDevService",
+        serviceName: "Ponder-ReaderDev",
         sharedConfig,
         typeKey: "reader",
         domainKey: "dev",
@@ -100,7 +100,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     // // Build the prod indexer instance
     // const prodIndexer = createServiceConfig({
     //     stack,
-    //     serviceName: "PonderIndexerProdService",
+    //     serviceName: "Ponder-IndexerProd",
     //     sharedConfig,
     //     typeKey: "indexer",
     //     image: indexerProdImage,
@@ -111,7 +111,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     // // Build the prod reader instance
     // const prodReader = createServiceConfig({
     //     stack,
-    //     serviceName: "PonderReaderProdService",
+    //     serviceName: "Ponder-ReaderProd",
     //     sharedConfig,
     //     typeKey: "reader",
     //     domainKey: "prod",
@@ -157,7 +157,7 @@ function createServiceConfig({
     return new Service(stack, serviceName, {
         ...sharedConfig,
         ...baseProps[typeKey],
-        customDomain: domainKey ? domainKey[domainKey] : undefined,
+        customDomain: domainKey ? domainProps[domainKey] : undefined,
         cdk: {
             ...sharedConfig.cdk,
             ...baseProps[typeKey].cdk,
