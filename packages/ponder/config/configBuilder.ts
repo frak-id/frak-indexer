@@ -85,7 +85,7 @@ export function createEnvConfig<NetworkKey extends string>({
             ProductAdministratorRegistry: {
                 abi: productAdministratorRegistryAbi,
                 address:
-                    deployedAddresses.productAdministratorlRegistry as Address,
+                    deployedAddresses.productAdministratorRegistry as Address,
                 network: contractNetworkConfig,
             },
             // The interaction manager
