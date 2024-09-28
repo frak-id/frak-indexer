@@ -517,20 +517,6 @@ export const productInteractionDiamondAbi = [
     },
     {
         type: "function",
-        inputs: [
-            {
-                name: "_interactionData",
-                internalType: "bytes32",
-                type: "bytes32",
-            },
-            { name: "_user", internalType: "address", type: "address" },
-        ],
-        name: "getNonceForInteraction",
-        outputs: [{ name: "", internalType: "uint256", type: "uint256" }],
-        stateMutability: "view",
-    },
-    {
-        type: "function",
         inputs: [],
         name: "getProductId",
         outputs: [{ name: "", internalType: "uint256", type: "uint256" }],
@@ -950,16 +936,6 @@ export const productInteractionManagerAbi = [
         name: "init",
         outputs: [],
         stateMutability: "nonpayable",
-    },
-    {
-        type: "function",
-        inputs: [
-            { name: "_productId", internalType: "uint256", type: "uint256" },
-            { name: "_user", internalType: "address", type: "address" },
-        ],
-        name: "isAllowedOnProduct",
-        outputs: [{ name: "", internalType: "bool", type: "bool" }],
-        stateMutability: "view",
     },
     {
         type: "function",

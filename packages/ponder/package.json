@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "codegen": "ponder --config config/config-local.ts codegen",
-    "dev": "ponder dev",
+    "dev": "ponder --config config/config-dev.ts dev",
     "format": "biome check --write .",
     "format:check": "biome check .",
     "lint": "biome lint .",

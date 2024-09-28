@@ -39,11 +39,11 @@ export const productAdministratorRegistryAbi = [
     {
         type: "function",
         inputs: [
-            { name: "productId", internalType: "uint256", type: "uint256" },
-            { name: "user", internalType: "address", type: "address" },
-            { name: "roles", internalType: "uint256", type: "uint256" },
+            { name: "_productId", internalType: "uint256", type: "uint256" },
+            { name: "_user", internalType: "address", type: "address" },
+            { name: "_roles", internalType: "uint256", type: "uint256" },
         ],
-        name: "hasAllRolesOrAdmin",
+        name: "hasAllRolesOrOwner",
         outputs: [{ name: "", internalType: "bool", type: "bool" }],
         stateMutability: "view",
     },
@@ -62,10 +62,22 @@ export const productAdministratorRegistryAbi = [
         type: "function",
         inputs: [
             { name: "_productId", internalType: "uint256", type: "uint256" },
-            { name: "_caller", internalType: "address", type: "address" },
+            { name: "_user", internalType: "address", type: "address" },
+            { name: "_roles", internalType: "uint256", type: "uint256" },
         ],
-        name: "isAuthorizedAdmin",
-        outputs: [{ name: "", internalType: "bool", type: "bool" }],
+        name: "onlyAllRolesOrOwner",
+        outputs: [],
+        stateMutability: "view",
+    },
+    {
+        type: "function",
+        inputs: [
+            { name: "_productId", internalType: "uint256", type: "uint256" },
+            { name: "_user", internalType: "address", type: "address" },
+            { name: "_roles", internalType: "uint256", type: "uint256" },
+        ],
+        name: "onlyAnyRolesOrOwner",
+        outputs: [],
         stateMutability: "view",
     },
     {
@@ -267,16 +279,6 @@ export const productRegistryAbi = [
         ],
         name: "isApprovedForAll",
         outputs: [{ name: "result", internalType: "bool", type: "bool" }],
-        stateMutability: "view",
-    },
-    {
-        type: "function",
-        inputs: [
-            { name: "_productId", internalType: "uint256", type: "uint256" },
-            { name: "_caller", internalType: "address", type: "address" },
-        ],
-        name: "isAuthorized",
-        outputs: [{ name: "", internalType: "bool", type: "bool" }],
         stateMutability: "view",
     },
     {
@@ -752,7 +754,6 @@ export const purchaseOracleAbi = [
         name: "MerkleRootUpdated",
     },
     { type: "error", inputs: [], name: "MerkleRootNotSet" },
-    { type: "error", inputs: [], name: "Unauthorized" },
 ] as const;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
