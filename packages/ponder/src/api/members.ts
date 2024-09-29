@@ -26,7 +26,7 @@ type GetMembersParams = {
     onlyAddress?: boolean;
     // Some filters to apply to the query
     filter?: {
-        productIds?: string[];
+        productIds?: Hex[];
         interactions?: {
             min?: number;
             max?: number;
@@ -96,7 +96,7 @@ ponder.post("/members/:productAdmin", async (ctx) => {
     whereClauses.push(
         inArray(
             ProductInteractionContract.productId,
-            productIds.map((p) => p.id)
+            productIds.map((p) => BigInt(p.id))
         )
     );
 
