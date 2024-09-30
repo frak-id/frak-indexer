@@ -17,7 +17,7 @@ export const emptyCampaignStats = {
 };
 
 export type StatsIncrementsParams = Partial<
-    Omit<Schema["ReferralCampaignStats"], "id" | "campaignId" | "totalRewards">
+    Omit<Schema["ReferralCampaignStats"], "id" | "campaignId">
 >;
 
 /**
@@ -26,13 +26,15 @@ export type StatsIncrementsParams = Partial<
  * @param context
  * @param increments fields to increments
  */
-export async function increaseCampaignsInteractions({
+export async function increaseCampaignsStats({
     interactionEmitter,
+    productId,
     context,
     increments,
     blockNumber,
 }: {
-    interactionEmitter: Address;
+    interactionEmitter?: Address;
+    productId?: bigint;
     context: Context;
     blockNumber: bigint;
     increments: StatsIncrementsParams;
@@ -41,9 +43,25 @@ export async function increaseCampaignsInteractions({
         context.db;
 
     // Find the interaction contract
-    const interactionContract = await ProductInteractionContract.findUnique({
-        id: interactionEmitter,
-    });
+    let interactionContract: Schema["ProductInteractionContract"] | null = null;
+    if (interactionEmitter) {
+        interactionContract = await ProductInteractionContract.findUnique({
+            id: interactionEmitter,
+        });
+    } else if (productId) {
+        const interactions = await ProductInteractionContract.findMany({
+            where: { productId },
+        });
+        interactionContract = interactions?.items?.[0] ?? null;
+    }
+
+    if (!interactionContract) {
+        console.log("Interaction contract not found for stats update", {
+            interactionEmitter,
+            productId,
+        });
+        return;
+    }
 
     if (!interactionContract) {
         console.log("Interaction contract not found for stats update", {

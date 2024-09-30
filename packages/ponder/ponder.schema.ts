@@ -23,35 +23,46 @@ export default createSchema((p) => ({
     }),
 
     // Product related stuff
-    ProductAdministrator: p.createTable({
-        id: p.hex(),
+    ProductAdministrator: p.createTable(
+        {
+            id: p.hex(),
 
-        productId: p.bigint().references("Product.id"),
-        product: p.one("productId"),
+            productId: p.bigint().references("Product.id"),
+            product: p.one("productId"),
 
-        isOwner: p.boolean(),
-        roles: p.bigint(),
-        user: p.hex(),
+            isOwner: p.boolean(),
+            roles: p.bigint(),
+            user: p.hex(),
 
-        createdTimestamp: p.bigint(),
-    }),
+            createdTimestamp: p.bigint(),
+        },
+        {
+            productIndex: p.index("productId"),
+            userIndex: p.index("user"),
+        }
+    ),
 
     /* -------------------------------------------------------------------------- */
     /*                          Interaction related stuff                         */
     /* -------------------------------------------------------------------------- */
 
-    ProductInteractionContract: p.createTable({
-        id: p.hex(), // address
+    ProductInteractionContract: p.createTable(
+        {
+            id: p.hex(), // address
 
-        productId: p.bigint().references("Product.id"),
-        product: p.one("productId"),
+            productId: p.bigint().references("Product.id"),
+            product: p.one("productId"),
 
-        referralTree: p.hex(),
+            referralTree: p.hex(),
 
-        createdTimestamp: p.bigint(),
-        lastUpdateTimestamp: p.bigint().optional(),
-        removedTimestamp: p.bigint().optional(),
-    }),
+            createdTimestamp: p.bigint(),
+            lastUpdateTimestamp: p.bigint().optional(),
+            removedTimestamp: p.bigint().optional(),
+        },
+        {
+            productIndex: p.index("productId"),
+        }
+    ),
 
     InteractionEvent: p.createTable(
         {
@@ -252,6 +263,7 @@ export default createSchema((p) => ({
         },
         {
             rewardIndex: p.index("rewardId"),
+            emitterIndex: p.index("emitter"),
         }
     ),
     RewardClaimedEvent: p.createTable(

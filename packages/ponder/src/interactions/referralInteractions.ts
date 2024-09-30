@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import { increaseCampaignsInteractions } from "./stats";
+import { increaseCampaignsStats } from "./stats";
 
 ponder.on(
     "ProductInteraction:ReferralLinkCreation",
@@ -19,7 +19,7 @@ ponder.on(
         });
 
         // Update the current campaigns stats
-        await increaseCampaignsInteractions({
+        await increaseCampaignsStats({
             interactionEmitter: event.log.address,
             blockNumber: event.block.number,
             context,
@@ -46,7 +46,7 @@ ponder.on("ProductInteraction:UserReferred", async ({ event, context }) => {
     });
 
     // Update the current campaigns stats
-    await increaseCampaignsInteractions({
+    await increaseCampaignsStats({
         interactionEmitter: event.log.address,
         blockNumber: event.block.number,
         context,

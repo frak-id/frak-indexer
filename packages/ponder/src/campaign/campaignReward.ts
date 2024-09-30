@@ -1,9 +1,8 @@
 import { ponder } from "@/generated";
-import { emptyCampaignStats } from "../interactions/stats";
+import { increaseCampaignsStats } from "../interactions/stats";
 
 ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
-    const { BankingContract, Reward, RewardAddedEvent, ReferralCampaignStats } =
-        context.db;
+    const { BankingContract, Reward, RewardAddedEvent } = context.db;
 
     // Try to find a rewarding contract for the given event emitter
     const bankingContract = await BankingContract.findUnique({
@@ -52,19 +51,12 @@ ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
     });
 
     // Update the current campaigns stats for the distributed amount
-    await ReferralCampaignStats.upsert({
-        id: event.log.address,
-        create: {
-            ...emptyCampaignStats,
-            campaignId: event.log.address,
+    await increaseCampaignsStats({
+        productId: bankingContract.productId,
+        context,
+        blockNumber: event.block.number,
+        increments: {
             totalRewards: event.args.amount,
-        },
-        // Update the given field by incrementing them
-        update: ({ current }) => {
-            return {
-                ...current,
-                totalRewards: current.totalRewards + (event.args.amount ?? 0n),
-            };
         },
     });
 });

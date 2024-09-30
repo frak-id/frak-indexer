@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import { increaseCampaignsInteractions } from "./stats";
+import { increaseCampaignsStats } from "./stats";
 
 ponder.on("ProductInteraction:ArticleRead", async ({ event, context }) => {
     const { InteractionEvent } = context.db;
@@ -17,7 +17,7 @@ ponder.on("ProductInteraction:ArticleRead", async ({ event, context }) => {
     });
 
     // Update the current campaigns stats
-    await increaseCampaignsInteractions({
+    await increaseCampaignsStats({
         interactionEmitter: event.log.address,
         blockNumber: event.block.number,
         context,
@@ -42,7 +42,7 @@ ponder.on("ProductInteraction:ArticleOpened", async ({ event, context }) => {
     });
 
     // Update the current campaigns stats
-    await increaseCampaignsInteractions({
+    await increaseCampaignsStats({
         interactionEmitter: event.log.address,
         blockNumber: event.block.number,
         context,
