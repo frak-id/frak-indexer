@@ -170,8 +170,8 @@ const nexusProject: ProjectConfig = buildProject({
     ],
     cors: {
         allowedOrigins: [
-            "https://nexus.frak.id",
-            "https://nexus-dev.frak.id",
+            "https://wallet.frak.id",
+            "https://wallet-dev.frak.id",
             "https://business-dev.frak.id",
             "https://business.frak.id",
             "http://localhost:30*",
