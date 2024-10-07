@@ -85,19 +85,21 @@ function productAdministratorId(productId: bigint, user: Address): Hex {
 /**
  * Find every administrator where isOwner = false and roles = 0 and delete them
  */
-async function administratorCleanup(context: Context) {
-    const { ProductAdministrator } = context.db;
+async function administratorCleanup(_: Context) {
+    // todo: Disabled for now since fcked up on this ponder version
+    return;
+    // const { ProductAdministrator } = context.db;
 
-    // Get the administrators to delete
-    const administrators = await ProductAdministrator.findMany({
-        where: {
-            AND: [{ isOwner: false }, { roles: 0n }],
-        },
-    });
+    // // Get the administrators to delete
+    // const administrators = await ProductAdministrator.findMany({
+    //     where: {
+    //         AND: [{ isOwner: false }, { roles: 0n }],
+    //     },
+    // });
 
-    // Delete them
-    for (const admin of administrators.items) {
-        console.log(`Will delete administrator ${admin.id}`);
-        await ProductAdministrator.delete({ id: admin.id });
-    }
+    // // Delete them
+    // for (const admin of administrators.items) {
+    //     console.log(`Will delete administrator ${admin.id}`);
+    //     await ProductAdministrator.delete({ id: admin.id });
+    // }
 }

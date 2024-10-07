@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import { hexToString, isHex } from "viem";
+import { type Hex, hexToString, isHex } from "viem";
 import { productRegistryAbi } from "../abis/registryAbis";
 
 ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
@@ -17,9 +17,7 @@ ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
     await Product.create({
         id: event.args.productId,
         data: {
-            name: isHex(event.args.name)
-                ? hexToString(event.args.name)
-                : event.args.name,
+            name: bytesToString(event.args.name),
             domain: event.args.domain,
             productTypes: event.args.productTypes,
             createTimestamp: event.block.timestamp,
@@ -42,10 +40,19 @@ ponder.on("ProductRegistry:ProductUpdated", async ({ event, context }) => {
     await Product.update({
         id: event.args.productId,
         data: ({ current }) => ({
-            name: event.args.name,
+            name: bytesToString(event.args.name),
             productTypes: event.args.productTypes,
             lastUpdateTimestamp: event.block.timestamp,
             metadataUrl: metadataUrl ?? current.metadataUrl,
         }),
     });
 });
+
+function bytesToString(bytes: Hex) {
+    if (!isHex(bytes)) {
+        return bytes;
+    }
+    return hexToString(bytes)
+        .replace(/[^\x20-\x7F]/g, "")
+        .trim();
+}
