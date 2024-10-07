@@ -225,8 +225,13 @@ export const productRegistryAbi = [
                         internalType: "ProductTypes",
                         type: "uint256",
                     },
-                    { name: "name", internalType: "string", type: "string" },
+                    { name: "name", internalType: "bytes32", type: "bytes32" },
                     { name: "domain", internalType: "string", type: "string" },
+                    {
+                        name: "customMetadataUrl",
+                        internalType: "string",
+                        type: "string",
+                    },
                 ],
             },
         ],
@@ -284,21 +289,12 @@ export const productRegistryAbi = [
     {
         type: "function",
         inputs: [
-            { name: "_productId", internalType: "uint256", type: "uint256" },
-        ],
-        name: "isExistingProduct",
-        outputs: [{ name: "", internalType: "bool", type: "bool" }],
-        stateMutability: "view",
-    },
-    {
-        type: "function",
-        inputs: [
             {
                 name: "_productTypes",
                 internalType: "ProductTypes",
                 type: "uint256",
             },
-            { name: "_name", internalType: "string", type: "string" },
+            { name: "_name", internalType: "bytes32", type: "bytes32" },
             { name: "_domain", internalType: "string", type: "string" },
             { name: "_owner", internalType: "address", type: "address" },
         ],
@@ -410,6 +406,19 @@ export const productRegistryAbi = [
     {
         type: "function",
         inputs: [
+            {
+                name: "_baseMetadataUrl",
+                internalType: "string",
+                type: "string",
+            },
+        ],
+        name: "setMetadataUrl",
+        outputs: [],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        inputs: [
             { name: "interfaceId", internalType: "bytes4", type: "bytes4" },
         ],
         name: "supportsInterface",
@@ -428,7 +437,7 @@ export const productRegistryAbi = [
         inputs: [{ name: "tokenId", internalType: "uint256", type: "uint256" }],
         name: "tokenURI",
         outputs: [{ name: "", internalType: "string", type: "string" }],
-        stateMutability: "pure",
+        stateMutability: "view",
     },
     {
         type: "function",
@@ -459,7 +468,12 @@ export const productRegistryAbi = [
                 internalType: "ProductTypes",
                 type: "uint256",
             },
-            { name: "_name", internalType: "string", type: "string" },
+            { name: "_name", internalType: "bytes32", type: "bytes32" },
+            {
+                name: "_customMetadataUrl",
+                internalType: "string",
+                type: "string",
+            },
         ],
         name: "updateMetadata",
         outputs: [],
@@ -584,8 +598,8 @@ export const productRegistryAbi = [
             },
             {
                 name: "name",
-                internalType: "string",
-                type: "string",
+                internalType: "bytes32",
+                type: "bytes32",
                 indexed: false,
             },
         ],
@@ -609,6 +623,12 @@ export const productRegistryAbi = [
             },
             {
                 name: "name",
+                internalType: "bytes32",
+                type: "bytes32",
+                indexed: false,
+            },
+            {
+                name: "customMetadataUrl",
                 internalType: "string",
                 type: "string",
                 indexed: false,
