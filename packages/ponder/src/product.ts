@@ -1,4 +1,5 @@
 import { ponder } from "@/generated";
+import { hexToString, isHex } from "viem";
 import { productRegistryAbi } from "../abis/registryAbis";
 
 ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
@@ -17,6 +18,9 @@ ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
         id: event.args.productId,
         data: {
             name: event.args.name,
+            formattedName: isHex(event.args.name)
+                ? hexToString(event.args.name)
+                : undefined,
             domain: event.args.domain,
             productTypes: event.args.productTypes,
             createTimestamp: event.block.timestamp,
@@ -40,6 +44,9 @@ ponder.on("ProductRegistry:ProductUpdated", async ({ event, context }) => {
         id: event.args.productId,
         data: ({ current }) => ({
             name: event.args.name,
+            formattedName: isHex(event.args.name)
+                ? hexToString(event.args.name)
+                : undefined,
             productTypes: event.args.productTypes,
             lastUpdateTimestamp: event.block.timestamp,
             metadataUrl: metadataUrl ?? current.metadataUrl,
