@@ -15,6 +15,8 @@ export default createSchema((p) => ({
         createTimestamp: p.bigint(),
         lastUpdateTimestamp: p.bigint().optional(),
 
+        metadataUrl: p.string().optional(),
+
         interactionContracts: p.many("ProductInteractionContract.productId"),
 
         campaigns: p.many("Campaign.productId"),

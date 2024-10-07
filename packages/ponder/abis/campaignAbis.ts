@@ -272,11 +272,6 @@ export const campaignFactoryAbi = [
                 internalType: "contract ProductAdministratorRegistry",
                 type: "address",
             },
-            {
-                name: "_frakCampaignWallet",
-                internalType: "address",
-                type: "address",
-            },
         ],
         stateMutability: "nonpayable",
     },
@@ -489,11 +484,6 @@ export const referralCampaignAbi = [
             {
                 name: "_productAdministratorRegistry",
                 internalType: "contract ProductAdministratorRegistry",
-                type: "address",
-            },
-            {
-                name: "_frakCampaignWallet",
-                internalType: "address",
                 type: "address",
             },
             {
