@@ -7,7 +7,7 @@ export default createEnvConfig({
     pgDatabase: "ponder_prod",
     network: {
         chainId: 42161,
-        deploymentBlock: undefined,
+        deploymentBlock: 261367992,
     },
     networkKey: "arbitrum",
 });

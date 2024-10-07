@@ -10,9 +10,11 @@
     "format:check": "biome check .",
     "lint": "biome lint .",
     "serve": "ponder --config config/config-local.ts serve",
+    "serve:prod": "ponder --config config/config-prod.ts serve",
     "serve:dev": "ponder --config config/config-dev.ts serve",
     "start": "ponder --config config/config-local.ts start",
     "start:dev": "ponder --config config/config-dev.ts start",
+    "start:prod": "ponder --config config/config-prod.ts start",
     "typecheck": "tsc"
   },
   "dependencies": {

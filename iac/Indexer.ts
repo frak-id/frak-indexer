@@ -44,7 +44,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         name: "indexer-dev",
         tag: process.env.PONDER_DEV_IMAGE_TAG,
     });
-    const _indexerProdImage = getImageFromName({
+    const indexerProdImage = getImageFromName({
         stack,
         app,
         name: "indexer-prod",
@@ -97,39 +97,39 @@ export function IndexerStack({ app, stack }: StackContext) {
         secrets: cdkSecretsMap,
     });
 
-    // // Build the prod indexer instance
-    // const prodIndexer = createServiceConfig({
-    //     stack,
-    //     serviceName: "Ponder-IndexerProd",
-    //     sharedConfig,
-    //     typeKey: "indexer",
-    //     image: indexerProdImage,
-    //     entryPoint: entryPoints.prod.indexer,
-    //     secrets: cdkSecretsMap,
-    // });
+    // Build the prod indexer instance
+    const prodIndexer = createServiceConfig({
+        stack,
+        serviceName: "Ponder-IndexerProd",
+        sharedConfig,
+        typeKey: "indexer",
+        image: indexerProdImage,
+        entryPoint: entryPoints.prod.indexer,
+        secrets: cdkSecretsMap,
+    });
 
-    // // Build the prod reader instance
-    // const prodReader = createServiceConfig({
-    //     stack,
-    //     serviceName: "Ponder-ReaderProd",
-    //     sharedConfig,
-    //     typeKey: "reader",
-    //     domainKey: "prod",
-    //     image: indexerProdImage,
-    //     entryPoint: entryPoints.prod.reader,
-    //     secrets: cdkSecretsMap,
-    // });
+    // Build the prod reader instance
+    const prodReader = createServiceConfig({
+        stack,
+        serviceName: "Ponder-ReaderProd",
+        sharedConfig,
+        typeKey: "reader",
+        domainKey: "prod",
+        image: indexerProdImage,
+        entryPoint: entryPoints.prod.reader,
+        secrets: cdkSecretsMap,
+    });
 
     stack.addOutputs({
         DevIndexerServiceId: devIndexer.id,
         DevReaderServiceId: devReader.id,
-        // ProdIndexerServiceId: prodIndexer.id,
-        // ProdReaderServiceId: prodReader.id,
+        ProdIndexerServiceId: prodIndexer.id,
+        ProdReaderServiceId: prodReader.id,
     });
 
     // Tell that prod and dev indexer services depends on the erpc service
     devIndexer.node.addDependency(erpcService);
-    // prodIndexer.node.addDependency(erpcService);
+    prodIndexer.node.addDependency(erpcService);
 }
 
 /**
