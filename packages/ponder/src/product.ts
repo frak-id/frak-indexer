@@ -17,10 +17,9 @@ ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
     await Product.create({
         id: event.args.productId,
         data: {
-            name: event.args.name,
-            formattedName: isHex(event.args.name)
+            name: isHex(event.args.name)
                 ? hexToString(event.args.name)
-                : undefined,
+                : event.args.name,
             domain: event.args.domain,
             productTypes: event.args.productTypes,
             createTimestamp: event.block.timestamp,
@@ -44,9 +43,6 @@ ponder.on("ProductRegistry:ProductUpdated", async ({ event, context }) => {
         id: event.args.productId,
         data: ({ current }) => ({
             name: event.args.name,
-            formattedName: isHex(event.args.name)
-                ? hexToString(event.args.name)
-                : undefined,
             productTypes: event.args.productTypes,
             lastUpdateTimestamp: event.block.timestamp,
             metadataUrl: metadataUrl ?? current.metadataUrl,
