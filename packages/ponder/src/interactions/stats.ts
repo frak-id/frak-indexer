@@ -13,6 +13,7 @@ export const emptyCampaignStats = {
     createReferredLinkInteractions: 0n,
     purchaseStartedInteractions: 0n,
     purchaseCompletedInteractions: 0n,
+    webshopOpenned: 0n,
     totalRewards: 0n,
 };
 

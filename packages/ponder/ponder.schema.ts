@@ -97,6 +97,8 @@ export default createSchema((p) => ({
         // Purchase type
         "PURCHASE_STARTED",
         "PURCHASE_COMPLETED",
+        // Webshop type
+        "WEBSHOP_OPENNED",
     ]),
 
     /* -------------------------------------------------------------------------- */
@@ -159,6 +161,9 @@ export default createSchema((p) => ({
             // purchase related interactions
             purchaseStartedInteractions: p.bigint(),
             purchaseCompletedInteractions: p.bigint(),
+
+            // webshop related interactions
+            webshopOpenned: p.bigint(),
 
             totalRewards: p.bigint(),
         },

@@ -1356,5 +1356,18 @@ export const webShopInteractionFacetAbi = [
         outputs: [{ name: "", internalType: "uint8", type: "uint8" }],
         stateMutability: "pure",
     },
+    {
+        type: "event",
+        anonymous: false,
+        inputs: [
+            {
+                name: "user",
+                internalType: "address",
+                type: "address",
+                indexed: false,
+            },
+        ],
+        name: "WebShopOpenned",
+    },
     { type: "error", inputs: [], name: "UnknownInteraction" },
 ] as const;
