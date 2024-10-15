@@ -25,6 +25,7 @@ ponder.on(
                     } as const,
                 ],
                 allowFailure: false,
+                blockNumber: event.block.number,
             });
 
         await BankingContract.create({

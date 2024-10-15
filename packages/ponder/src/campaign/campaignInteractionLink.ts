@@ -21,6 +21,7 @@ ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
         abi: interactionCampaignAbi,
         address: event.args.campaign,
         functionName: "getMetadata",
+        blockNumber: event.block.number,
     });
     const currentCampaign = Campaign.findUnique({ id: event.args.campaign });
     if (!currentCampaign) {

@@ -34,6 +34,7 @@ ponder.on("CampaignsFactory:CampaignCreated", async ({ event, context }) => {
                 } as const,
             ],
             allowFailure: true,
+            blockNumber: event.block.number,
         });
 
     if (

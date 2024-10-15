@@ -11,6 +11,7 @@ ponder.on(
             abi: productInteractionDiamondAbi,
             address: event.args.interactionContract,
             functionName: "getReferralTree",
+            blockNumber: event.block.number,
         });
 
         // Create the interaction contract

@@ -11,6 +11,7 @@ ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
         functionName: "tokenURI",
         address: context.contracts.ProductRegistry.address,
         args: [event.args.productId],
+        blockNumber: event.block.number,
     });
 
     // Create the product
