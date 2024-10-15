@@ -109,6 +109,7 @@ export default createSchema((p) => ({
         {
             id: p.hex(),
 
+            type: p.string(),
             name: p.string(),
             version: p.string(),
 

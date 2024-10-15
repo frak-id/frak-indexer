@@ -52,6 +52,7 @@ ponder.on("CampaignsFactory:CampaignCreated", async ({ event, context }) => {
     await Campaign.create({
         id: event.args.campaign,
         data: {
+            type,
             name: bytesToString(name),
             version,
             productId,
