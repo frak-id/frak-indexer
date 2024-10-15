@@ -1,6 +1,6 @@
 import { ponder } from "@/generated";
-import { type Hex, hexToString, isHex } from "viem";
 import { productRegistryAbi } from "../abis/registryAbis";
+import { bytesToString } from "./utils/format";
 
 ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
     const { Product } = context.db;
@@ -47,12 +47,3 @@ ponder.on("ProductRegistry:ProductUpdated", async ({ event, context }) => {
         }),
     });
 });
-
-function bytesToString(bytes: Hex) {
-    if (!isHex(bytes)) {
-        return bytes;
-    }
-    return hexToString(bytes)
-        .replace(/[^\x20-\x7F]/g, "")
-        .trim();
-}

@@ -5,6 +5,7 @@ import {
     referralCampaignAbi,
 } from "../../abis/campaignAbis";
 import { emptyCampaignStats } from "../interactions/stats";
+import { bytesToString } from "../utils/format";
 
 /**
  * On new campaign creation
@@ -44,14 +45,14 @@ ponder.on("CampaignsFactory:CampaignCreated", async ({ event, context }) => {
         );
         return;
     }
-    const [name, version] = metadataResult.result;
+    const [type, version, name] = metadataResult.result;
     const [productId, interactionContract] = linkResult.result;
 
     // Create the campaign
     await Campaign.create({
         id: event.args.campaign,
         data: {
-            name,
+            name: bytesToString(name),
             version,
             productId,
             interactionContractId: interactionContract,
@@ -66,7 +67,7 @@ ponder.on("CampaignsFactory:CampaignCreated", async ({ event, context }) => {
     });
 
     // Upsert press campaign stats if it's the right type
-    if (name === "frak.campaign.press") {
+    if (type === "frak.campaign.referral") {
         await ReferralCampaignStats.upsert({
             id: event.args.campaign,
             create: {
