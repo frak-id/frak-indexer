@@ -20,7 +20,7 @@
   "dependencies": {
     "@ponder/core": "0.6.11",
     "drizzle-orm": "^0.31.4",
-    "hono": "^4.6.4",
+    "hono": "^4.6.5",
     "viem": "^2.21.25"
   },
   "devDependencies": {
