@@ -18,7 +18,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@ponder/core": "^0.6.15",
+    "@ponder/core": "0.6.11",
     "drizzle-orm": "^0.31.4",
     "hono": "^4.6.4",
     "viem": "^2.21.25"
