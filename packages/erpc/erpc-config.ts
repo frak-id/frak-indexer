@@ -46,7 +46,7 @@ const alchemyRateLimits = buildRateLimit({
     rules: [
         {
             method: "*",
-            maxCount: 250,
+            maxCount: 400,
             period: "1s",
         },
     ],
@@ -120,6 +120,7 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 ];
 
 // Build each upstream we will use
+// Envio only op for arbitrum sepolia, it's fcked up on arbitrum
 const envioUpstream = buildEnvioUpstream({
     rateLimitBudget: envioRateLimits.id,
     ignoreMethods: ["*"],
@@ -166,7 +167,23 @@ const pimlicoUpstream = buildPimlicoUpstream({
 const ponderProject: ProjectConfig = buildProject({
     id: "ponder-rpc",
     networks,
-    upstreams: [envioUpstream, alchemyUpstream, blockpiArbUpstream],
+    upstreams: [alchemyUpstream, blockpiArbUpstream],
+    auth: {
+        strategies: [
+            buildSecretAuthStrategy({
+                secret: {
+                    value: envVariable("PONDER_RPC_SECRET"),
+                },
+            }),
+        ],
+    },
+});
+
+// Build the ponder indexing project
+const ponderDevProject: ProjectConfig = buildProject({
+    id: "ponder-dev-rpc",
+    networks,
+    upstreams: [envioUpstream, alchemyUpstream, blockpiArbSepoliaUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
@@ -237,7 +254,7 @@ export default buildErpcConfig({
             enabled: true,
             listenV6: false,
         },
-        projects: [ponderProject, nexusProject],
+        projects: [ponderProject, ponderDevProject, nexusProject],
         rateLimiters: {
             budgets: [
                 envioRateLimits,

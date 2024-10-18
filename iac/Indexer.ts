@@ -51,6 +51,13 @@ export function IndexerStack({ app, stack }: StackContext) {
         tag: process.env.PONDER_PROD_IMAGE_TAG,
     });
 
+    const ponderDevRpc = erpcInternalDns
+        ? `http://${erpcInternalDns}/ponder-dev-rpc/evm`
+        : "https://rpc.frak.id/ponder-dev-rpc/evm";
+    const ponderProdRpc = erpcInternalDns
+        ? `http://${erpcInternalDns}/ponder-rpc/evm`
+        : "https://rpc.frak.id/ponder-rpc/evm";
+
     // Some global config that will be shared accross all the instances
     const sharedConfig = {
         path: "packages/ponder",
@@ -64,9 +71,7 @@ export function IndexerStack({ app, stack }: StackContext) {
         // Set the right environment variables
         environment: {
             // Erpc endpoint
-            ERPC_URL: erpcInternalDns
-                ? `http://${erpcInternalDns}/ponder-rpc/evm`
-                : "https://rpc.frak.id/ponder-rpc/evm",
+            ERPC_URL: ponderProdRpc,
         },
         cdk: {
             vpc,
@@ -74,11 +79,28 @@ export function IndexerStack({ app, stack }: StackContext) {
         },
     } as const;
 
+    const devConfig = {
+        ...sharedConfig,
+        environment: {
+            ...sharedConfig.environment,
+            // Erpc endpoint
+            ERPC_URL: ponderDevRpc,
+        },
+    };
+    const prodConfig = {
+        ...sharedConfig,
+        environment: {
+            ...sharedConfig.environment,
+            // Erpc endpoint
+            ERPC_URL: ponderProdRpc,
+        },
+    };
+
     // Build the dev indexer instance
     const devIndexer = createServiceConfig({
         stack,
         serviceName: "Ponder-IndexerDev",
-        sharedConfig,
+        sharedConfig: devConfig,
         typeKey: "indexer",
         image: indexerDevImage,
         entryPoint: entryPoints.dev.indexer,
@@ -89,7 +111,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     const devReader = createServiceConfig({
         stack,
         serviceName: "Ponder-ReaderDev",
-        sharedConfig,
+        sharedConfig: devConfig,
         typeKey: "reader",
         domainKey: "dev",
         image: indexerDevImage,
@@ -101,7 +123,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     const prodIndexer = createServiceConfig({
         stack,
         serviceName: "Ponder-IndexerProd",
-        sharedConfig,
+        sharedConfig: prodConfig,
         typeKey: "indexer",
         image: indexerProdImage,
         entryPoint: entryPoints.prod.indexer,
@@ -112,7 +134,7 @@ export function IndexerStack({ app, stack }: StackContext) {
     const prodReader = createServiceConfig({
         stack,
         serviceName: "Ponder-ReaderProd",
-        sharedConfig,
+        sharedConfig: prodConfig,
         typeKey: "reader",
         domainKey: "prod",
         image: indexerProdImage,
