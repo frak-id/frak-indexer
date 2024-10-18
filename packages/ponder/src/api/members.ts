@@ -107,7 +107,7 @@ ponder.post("/members/:productAdmin", async (ctx) => {
         .select({
             user: InteractionEvent.user,
             totalInteractions: count(InteractionEvent.id),
-            rewards: sum(Reward.totalReceived),
+            rewards: sql<bigint>`coalesce(sum(${Reward.totalReceived}), 0)`,
             productIds: sql<
                 string[]
             >`array_agg(distinct ${ProductInteractionContract.productId}::text)`,
@@ -155,7 +155,7 @@ ponder.post("/members/:productAdmin", async (ctx) => {
         const sortFieldMap = {
             user: InteractionEvent.user,
             totalInteractions: count(InteractionEvent.id),
-            rewards: sum(Reward.totalReceived),
+            rewards: sql<bigint>`coalesce(sum(${Reward.totalReceived}), 0)`,
             firstInteractionTimestamp: min(InteractionEvent.timestamp),
         };
         const orderByField = sortFieldMap[sort.by as keyof typeof sortFieldMap];
@@ -186,9 +186,6 @@ ponder.post("/members/:productAdmin", async (ctx) => {
             .filter((p) => member.productIds.includes(p.id.toString()))
             .map((p) => p.name);
         return { ...member, productNames };
-    }).map((member) => {
-        const rewards = member.rewards ? BigInt(member.rewards) : BigInt(0);
-        return { ...member, rewards };
     });
 
     return ctx.json({
