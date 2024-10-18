@@ -36,7 +36,17 @@ const alchemyRateLimits = buildRateLimit({
     rules: [
         {
             method: "*",
-            maxCount: 200,
+            maxCount: 400,
+            period: "1s",
+        },
+    ],
+});
+const blockPiRateLimits = buildRateLimit({
+    id: "block-pi-rate-limit",
+    rules: [
+        {
+            method: "*",
+            maxCount: 400,
             period: "1s",
         },
     ],
@@ -129,10 +139,16 @@ const alchemyUpstream = buildAlchemyUpstream({
 const blockpiArbSepoliaUpstream = buildEvmUpstream({
     id: "blockpi-arbSepolia",
     endpoint: `https://arbitrum-sepolia.blockpi.network/v1/rpc/${envVariable("BLOCKPI_API_KEY_ARB_SEPOLIA")}`,
+    allowMethods: ["*"],
+    rateLimitBudget: blockPiRateLimits.id,
+    ignoreMethods: pimlicoSpecificMethods,
 });
 const blockpiArbUpstream = buildEvmUpstream({
     id: "blockpi-arb",
     endpoint: `https://arbitrum.blockpi.network/v1/rpc/${envVariable("BLOCKPI_API_KEY_ARB")}`,
+    allowMethods: ["*"],
+    rateLimitBudget: blockPiRateLimits.id,
+    ignoreMethods: pimlicoSpecificMethods,
 });
 const pimlicoUpstream = buildPimlicoUpstream({
     apiKey: envVariable("PIMLICO_API_KEY"),
@@ -145,7 +161,7 @@ const pimlicoUpstream = buildPimlicoUpstream({
 const ponderProject: ProjectConfig = buildProject({
     id: "ponder-rpc",
     networks,
-    upstreams: [envioUpstream, alchemyUpstream],
+    upstreams: [envioUpstream, alchemyUpstream, blockpiArbUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
@@ -218,7 +234,7 @@ export default buildErpcConfig({
         },
         projects: [ponderProject, nexusProject],
         rateLimiters: {
-            budgets: [alchemyRateLimits, pimlicoRateLimits],
+            budgets: [alchemyRateLimits, pimlicoRateLimits, blockPiRateLimits],
         },
     },
 });
