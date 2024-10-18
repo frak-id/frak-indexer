@@ -31,12 +31,22 @@ import {
 /* -------------------------------------------------------------------------- */
 
 // Build every rate limits
+const envioRateLimits = buildRateLimit({
+    id: "envion-rate-limit",
+    rules: [
+        {
+            method: "*",
+            maxCount: 600,
+            period: "1s",
+        },
+    ],
+});
 const alchemyRateLimits = buildRateLimit({
     id: "alchemy-rate-limit",
     rules: [
         {
             method: "*",
-            maxCount: 400,
+            maxCount: 250,
             period: "1s",
         },
     ],
@@ -46,7 +56,7 @@ const blockPiRateLimits = buildRateLimit({
     rules: [
         {
             method: "*",
-            maxCount: 400,
+            maxCount: 250,
             period: "1s",
         },
     ],
@@ -56,7 +66,7 @@ const pimlicoRateLimits = buildRateLimit({
     rules: [
         {
             method: "*",
-            maxCount: 500,
+            maxCount: 400,
             period: "1s",
         },
     ],
@@ -111,6 +121,7 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 
 // Build each upstream we will use
 const envioUpstream = buildEnvioUpstream({
+    rateLimitBudget: envioRateLimits.id,
     ignoreMethods: ["*"],
     // todo: simple port of the vendors/evio.go stuff hereh
     //  since ts sdk doesn't support null value if ts definition doesn't give optional stuff
@@ -125,10 +136,6 @@ const envioUpstream = buildEnvioUpstream({
         "eth_getTransactionReceipt",
         "eth_getBlockReceipts",
         "eth_getLogs",
-        "eth_getFilterLogs",
-        "eth_getFilterChanges",
-        "eth_uninstallFilter",
-        "eth_newFilter",
     ],
 });
 const alchemyUpstream = buildAlchemyUpstream({
@@ -139,14 +146,12 @@ const alchemyUpstream = buildAlchemyUpstream({
 const blockpiArbSepoliaUpstream = buildEvmUpstream({
     id: "blockpi-arbSepolia",
     endpoint: `https://arbitrum-sepolia.blockpi.network/v1/rpc/${envVariable("BLOCKPI_API_KEY_ARB_SEPOLIA")}`,
-    allowMethods: ["*"],
     rateLimitBudget: blockPiRateLimits.id,
     ignoreMethods: pimlicoSpecificMethods,
 });
 const blockpiArbUpstream = buildEvmUpstream({
     id: "blockpi-arb",
     endpoint: `https://arbitrum.blockpi.network/v1/rpc/${envVariable("BLOCKPI_API_KEY_ARB")}`,
-    allowMethods: ["*"],
     rateLimitBudget: blockPiRateLimits.id,
     ignoreMethods: pimlicoSpecificMethods,
 });
@@ -161,7 +166,7 @@ const pimlicoUpstream = buildPimlicoUpstream({
 const ponderProject: ProjectConfig = buildProject({
     id: "ponder-rpc",
     networks,
-    upstreams: [alchemyUpstream, blockpiArbUpstream],
+    upstreams: [envioUpstream, alchemyUpstream, blockpiArbUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
@@ -234,7 +239,12 @@ export default buildErpcConfig({
         },
         projects: [ponderProject, nexusProject],
         rateLimiters: {
-            budgets: [alchemyRateLimits, pimlicoRateLimits, blockPiRateLimits],
+            budgets: [
+                envioRateLimits,
+                alchemyRateLimits,
+                pimlicoRateLimits,
+                blockPiRateLimits,
+            ],
         },
     },
 });

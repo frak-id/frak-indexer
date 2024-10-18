@@ -88,6 +88,25 @@ projects:
         architecture: evm
         rateLimitBudget: ""
     upstreams:
+      - id: envio
+        endpoint: evm+envio://rpc.hypersync.xyz
+        rateLimitBudget: envion-rate-limit
+        type: evm+envio
+        vendorName: Envio
+        ignoreMethods:
+          - "*"
+        allowMethods:
+          - eth_chainId
+          - eth_blockNumber
+          - eth_getBlockByNumber
+          - eth_getBlockByHash
+          - eth_getTransactionByHash
+          - eth_getTransactionByBlockHashAndIndex
+          - eth_getTransactionByBlockNumberAndIndex
+          - eth_getTransactionReceipt
+          - eth_getBlockReceipts
+          - eth_getLogs
+        autoIgnoreUnsupportedMethods: true
       - &var5
         id: alchemy
         endpoint: evm+alchemy://${ALCHEMY_API_KEY}
@@ -111,8 +130,7 @@ projects:
         type: evm
         vendorName: Generic Evm
         ignoreMethods: *var3
-        allowMethods:
-          - "*"
+        allowMethods: []
         autoIgnoreUnsupportedMethods: true
     auth:
       strategies:
@@ -143,8 +161,7 @@ projects:
         type: evm
         vendorName: Generic Evm
         ignoreMethods: *var3
-        allowMethods:
-          - "*"
+        allowMethods: []
         autoIgnoreUnsupportedMethods: true
       - *var6
     cors:
@@ -177,21 +194,27 @@ projects:
             value: ${NEXUS_RPC_SECRET}
 rateLimiters:
   budgets:
+    - id: envion-rate-limit
+      rules:
+        - method: "*"
+          maxCount: 600
+          period: 1s
+          waitTime: ""
     - id: alchemy-rate-limit
       rules:
         - method: "*"
-          maxCount: 400
+          maxCount: 250
           period: 1s
           waitTime: ""
     - id: pimlico-rate-limit
       rules:
         - method: "*"
-          maxCount: 500
+          maxCount: 400
           period: 1s
           waitTime: ""
     - id: block-pi-rate-limit
       rules:
         - method: "*"
-          maxCount: 400
+          maxCount: 250
           period: 1s
           waitTime: ""
