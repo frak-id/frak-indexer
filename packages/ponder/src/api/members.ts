@@ -118,7 +118,7 @@ ponder.post("/members/:productAdmin", async (ctx) => {
             ProductInteractionContract,
             eq(InteractionEvent.interactionId, ProductInteractionContract.id)
         )
-        .innerJoin(Reward, eq(Reward.user, InteractionEvent.user))
+        .leftJoin(Reward, eq(Reward.user, InteractionEvent.user))
         .where(
             whereClauses.length === 1 ? whereClauses[0] : and(...whereClauses)
         )
@@ -180,12 +180,15 @@ ponder.post("/members/:productAdmin", async (ctx) => {
 
     const members = await membersQuery;
 
-    // Add product names
+    // Add product names + format rewards cleanly
     const membersWithPName = members.map((member) => {
         const productNames = productIds
             .filter((p) => member.productIds.includes(p.id.toString()))
             .map((p) => p.name);
         return { ...member, productNames };
+    }).map((member) => {
+        const rewards = member.rewards ? BigInt(member.rewards) : BigInt(0);
+        return { ...member, rewards };
     });
 
     return ctx.json({
