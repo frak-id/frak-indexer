@@ -54,6 +54,8 @@ export function ErpcStack({ app, stack }: StackContext) {
             maxContainers: 4,
             cpuUtilization: 80,
             memoryUtilization: 80,
+            // Max throughput per container (10k requests per container)
+            requestsPerContainer: 10_000,
         },
         // Bind the secret we will be using
         bind: secrets,

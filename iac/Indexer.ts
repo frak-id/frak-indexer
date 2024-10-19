@@ -230,6 +230,8 @@ const baseProps: Record<"indexer" | "reader", Partial<ServiceProps>> = {
             maxContainers: 4,
             cpuUtilization: 90,
             memoryUtilization: 90,
+            // Max throughput per container (5k requests per container)
+            requestsPerContainer: 5_000,
         },
         cdk: {
             fargateService: {
