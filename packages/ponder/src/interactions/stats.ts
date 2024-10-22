@@ -75,7 +75,7 @@ export async function increaseCampaignsStats({
     const campaigns = await Campaign.findMany({
         where: {
             productId: interactionContract.productId,
-            name: "frak.campaign.referral",
+            type: "frak.campaign.referral",
             attached: true,
         },
     });
