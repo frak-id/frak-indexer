@@ -42,19 +42,21 @@ ponder.on("CampaignsFactory:CampaignCreated", async ({ event, context }) => {
         linkResult.status !== "success"
     ) {
         console.error(
-            `Failed to get metadata/linkResult for campaign ${event.args.campaign}`
+            `Failed to get metadata/linkResult for campaign ${event.args.campaign}`,
+            { event }
         );
         return;
     }
     const [type, version, name] = metadataResult.result;
     const [productId, interactionContract] = linkResult.result;
+    const formattedName = bytesToString(name);
 
     // Create the campaign
     await Campaign.create({
         id: event.args.campaign,
         data: {
             type,
-            name: bytesToString(name),
+            name: formattedName,
             version,
             productId,
             interactionContractId: interactionContract,

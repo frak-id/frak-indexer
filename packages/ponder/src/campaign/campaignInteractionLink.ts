@@ -2,6 +2,7 @@ import * as console from "node:console";
 import { ponder } from "@/generated";
 import { interactionCampaignAbi } from "../../abis/campaignAbis";
 import { emptyCampaignStats } from "../interactions/stats";
+import { bytesToString } from "../utils/format";
 
 ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
     const { Campaign, ProductInteractionContract, ReferralCampaignStats } =
@@ -17,7 +18,7 @@ ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
     }
 
     // Get the metadata and create it
-    const [name, version] = await context.client.readContract({
+    const [, version, name] = await context.client.readContract({
         abi: interactionCampaignAbi,
         address: event.args.campaign,
         functionName: "getMetadata",
@@ -32,7 +33,7 @@ ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
     await Campaign.update({
         id: event.args.campaign,
         data: {
-            name,
+            name: bytesToString(name),
             version,
             attached: true,
             attachTimestamp: event.block.timestamp,

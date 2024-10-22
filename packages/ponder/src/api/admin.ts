@@ -59,6 +59,7 @@ ponder.get("/admin/:wallet/campaigns", async (ctx) => {
             isOwner: ProductAdministrator.isOwner,
             roles: ProductAdministrator.roles,
             id: Campaign.id,
+            type: Campaign.type,
             name: Campaign.name,
             version: Campaign.version,
             attached: Campaign.attached,

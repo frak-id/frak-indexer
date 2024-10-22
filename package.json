@@ -10,7 +10,7 @@
     "typecheck": "tsc"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.3",
+    "@biomejs/biome": "1.9.4",
     "@types/aws-lambda": "8.10.138",
     "@types/node": "^22.5.4",
     "aws-cdk-lib": "2.142.1",

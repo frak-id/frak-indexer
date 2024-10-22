@@ -18,13 +18,13 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@ponder/core": "0.6.11",
+    "@ponder/core": "0.6.17",
     "drizzle-orm": "^0.31.4",
-    "hono": "^4.6.4",
-    "viem": "^2.21.25"
+    "hono": "^4.6.6",
+    "viem": "^2.21.32"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.3",
+    "@biomejs/biome": "1.9.4",
     "@types/aws-lambda": "8.10.138",
     "@types/node": "^22.4.0",
     "aws-cdk-lib": "2.142.1",

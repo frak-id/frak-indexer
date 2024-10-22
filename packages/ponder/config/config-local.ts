@@ -5,8 +5,8 @@ import { createEnvConfig } from "./configBuilder";
  */
 export default createEnvConfig({
     network: {
-        chainId: 421614,
-        deploymentBlock: 86607902,
+        chainId: 42161,
+        deploymentBlock: 261367992,
     },
-    networkKey: "arbitrumSepolia",
+    networkKey: "arbitrum",
 });
