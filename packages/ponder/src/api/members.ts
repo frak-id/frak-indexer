@@ -87,6 +87,11 @@ ponder.post("/members/:productAdmin", async (ctx) => {
         .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
         .where(eq(ProductAdministrator.user, wallet));
 
+    // If no product found, early exit
+    if (!productIds.length) {
+        return ctx.json({ totalResult: 0, members: [], users: [] });
+    }
+
     const { whereClauses, havingClauses } = getFilterClauses({
         tables: ctx.tables,
         filter,

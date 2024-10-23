@@ -1,6 +1,6 @@
 import { ponder } from "@/generated";
-import { eq } from "@ponder/core";
-import { type Hex, isHex } from "viem";
+import { eq, inArray } from "@ponder/core";
+import { type Hex, isHex, keccak256, toHex } from "viem";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error
@@ -70,4 +70,83 @@ ponder.get("/products/:id/banks", async (ctx) => {
 
     // Return the result as json
     return ctx.json(administrators);
+});
+
+/**
+ * Get the overall product info
+ */
+ponder.get("/products/info", async ({ req, db, tables, json }) => {
+    // Extract the product id
+    const domain = req.query("domain");
+    let productId = req.query("id") as Hex | undefined;
+
+    // If no id provided, recompute it from the domain
+    if (!productId && domain) {
+        productId = keccak256(toHex(domain));
+    }
+
+    if (!productId || !isHex(productId)) {
+        return json({ msg: "Invalid product id", productId, domain });
+    }
+
+    // Get the product from the db
+    const products = await db
+        .select()
+        .from(tables.Product)
+        .where(eq(tables.Product.id, BigInt(productId)));
+    const product = products?.[0];
+
+    // If not found, early exit
+    if (!product) {
+        return json({ msg: "Product not found", productId, domain });
+    }
+
+    // Get all the admninistrators
+    const administrators = await db
+        .select()
+        .from(tables.ProductAdministrator)
+        .where(eq(tables.ProductAdministrator.productId, BigInt(productId)));
+
+    // Get all the banks
+    const banks = await db
+        .select()
+        .from(tables.BankingContract)
+        .where(eq(tables.BankingContract.productId, BigInt(productId)));
+
+    // Get the interaction contracts
+    const interactionContracts = await db
+        .select()
+        .from(tables.ProductInteractionContract)
+        .where(
+            eq(tables.ProductInteractionContract.productId, BigInt(productId))
+        );
+
+    // Get the campaigns
+    const campaigns = await db
+        .select()
+        .from(tables.Campaign)
+        .where(eq(tables.Campaign.productId, BigInt(productId)));
+
+    // Get the campaigns tats
+    const campaignStats = campaigns.length
+        ? await db
+              .select()
+              .from(tables.ReferralCampaignStats)
+              .where(
+                  inArray(
+                      tables.ReferralCampaignStats.campaignId,
+                      campaigns.map((c) => c.id)
+                  )
+              )
+        : [];
+
+    // Return all the data related to the product
+    return json({
+        product,
+        banks,
+        interactionContracts,
+        administrators,
+        campaigns,
+        campaignStats,
+    });
 });
