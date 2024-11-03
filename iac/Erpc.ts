@@ -83,7 +83,7 @@ export function ErpcStack({ app, stack }: StackContext) {
             applicationLoadBalancerTargetGroup: {
                 deregistrationDelay: Duration.seconds(10),
                 healthCheck: {
-                    path: "/unknown-project",
+                    path: "/healthcheck",
                     interval: Duration.seconds(10),
                     healthyThresholdCount: 2,
                     unhealthyThresholdCount: 5,
