@@ -126,25 +126,6 @@ projects:
     id: ponder-dev-rpc
     networks: *var4
     upstreams:
-      - id: envio
-        endpoint: evm+envio://rpc.hypersync.xyz
-        rateLimitBudget: envion-rate-limit
-        type: evm+envio
-        vendorName: Envio
-        ignoreMethods:
-          - "*"
-        allowMethods:
-          - eth_chainId
-          - eth_blockNumber
-          - eth_getBlockByNumber
-          - eth_getBlockByHash
-          - eth_getTransactionByHash
-          - eth_getTransactionByBlockHashAndIndex
-          - eth_getTransactionByBlockNumberAndIndex
-          - eth_getTransactionReceipt
-          - eth_getBlockReceipts
-          - eth_getLogs
-        autoIgnoreUnsupportedMethods: true
       - *var5
       - &var6
         id: blockpi-arbSepolia

@@ -121,7 +121,8 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 
 // Build each upstream we will use
 // Envio only op for arbitrum sepolia, it's fcked up on arbitrum
-const envioUpstream = buildEnvioUpstream({
+// Disabled for now since it's returning incosistant data
+const _envioUpstream = buildEnvioUpstream({
     rateLimitBudget: envioRateLimits.id,
     ignoreMethods: ["*"],
     // todo: simple port of the vendors/evio.go stuff hereh
@@ -183,7 +184,7 @@ const ponderProject: ProjectConfig = buildProject({
 const ponderDevProject: ProjectConfig = buildProject({
     id: "ponder-dev-rpc",
     networks,
-    upstreams: [envioUpstream, alchemyUpstream, blockpiArbSepoliaUpstream],
+    upstreams: [alchemyUpstream, blockpiArbSepoliaUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
