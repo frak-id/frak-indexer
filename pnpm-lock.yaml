@@ -22,7 +22,7 @@ importers:
         version: 2.142.1(constructs@10.3.0)
       sst:
         specifier: 2.43.6
-        version: 2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.654.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.0)
+        version: 2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.654.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.1)
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -46,7 +46,7 @@ importers:
         version: 2.142.1(constructs@10.3.0)
       sst:
         specifier: 2.43.6
-        version: 2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.665.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.0)
+        version: 2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.665.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.1)
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -57,14 +57,14 @@ importers:
   packages/ponder:
     dependencies:
       '@ponder/core':
-        specifier: 0.6.17
-        version: 0.6.17(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.5)(hono@4.6.6)(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))(zod@3.23.8)
+        specifier: 0.6.25
+        version: 0.6.25(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.5)(hono@4.6.9)(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))(zod@3.23.8)
       drizzle-orm:
         specifier: ^0.31.4
-        version: 0.31.4(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.0)(react@18.3.1)
+        version: 0.31.4(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.1)(react@18.3.1)
       hono:
-        specifier: ^4.6.6
-        version: 4.6.6
+        specifier: ^4.6.9
+        version: 4.6.9
       viem:
         specifier: ^2.21.40
         version: 2.21.40(typescript@5.6.3)(zod@3.23.8)
@@ -83,7 +83,7 @@ importers:
         version: 2.142.1(constructs@10.3.0)
       sst:
         specifier: 2.43.6
-        version: 2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.665.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.0)
+        version: 2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.665.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.1)
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1234,8 +1234,8 @@ packages:
     resolution: {integrity: sha512-w+liuBySifrstuHbFrHoHAEyVnDFVib+073q8AeAJ/qqJfvFvAwUPLLtNohR/WDVRgSasfXtl3dcNuVJWN+rjg==}
     engines: {node: '>=18.0.0'}
 
-  '@hono/node-server@1.13.2':
-    resolution: {integrity: sha512-0w8nEmAyx0Ul0CQp8BL2VtAG4YVdpzXd/mvvM+l0G5Oq22pUyHS+KeFFPSY+czLOF5NAiV3MUNPD1n14Ol5svg==}
+  '@hono/node-server@1.13.3':
+    resolution: {integrity: sha512-tEo3hcyQ6chvSnJ3tKzfX4z2sd7Q+ZkBwwBdW1Ya8Mz29dukxC2xcWiB/lAMwGJrYMW8QTgknIsLu1AsnMBe7A==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -1307,8 +1307,8 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@ponder/core@0.6.17':
-    resolution: {integrity: sha512-/l7Pf9l8fc/gWYKOSXKrxETYvoj/vek+FgbaFV2kaq7P8DMexiQX5ja7osfJiOjiQorIby80D/LjhqabgTZi+g==}
+  '@ponder/core@0.6.25':
+    resolution: {integrity: sha512-GwyonvFtno9IxyZvH1TzQTMAeuGHo5V3eFKWE24Ni/AOIBz5S/qHfXnRFfBhrxHgaW6O4yTNluaWJPXV010Aqg==}
     engines: {node: '>=18.14'}
     hasBin: true
     peerDependencies:
@@ -1319,8 +1319,8 @@ packages:
       typescript:
         optional: true
 
-  '@ponder/utils@0.2.1':
-    resolution: {integrity: sha512-u6FvinDOMpJvQhpHnMi0PpbMVMSpHNpfhK4035gUoG4iJbcTCJR9rw4eXT0nQQrinqnZmQJhyoJYw7qIXX9cvQ==}
+  '@ponder/utils@0.2.2':
+    resolution: {integrity: sha512-8+JsJNGIf5FFwZlC02zP6kHtbAs7BUYluSx0GDhK8b2VDRmA4y9AJU7VoBIc0mnwKdBUOVLi9yQ6iDZBR4NLoQ==}
     peerDependencies:
       typescript: '>=5.0.4'
       viem: '>=2'
@@ -1334,83 +1334,93 @@ packages:
   '@repeaterjs/repeater@3.0.6':
     resolution: {integrity: sha512-Javneu5lsuhwNCryN+pXH93VPQ8g0dBX7wItHFgYiwQmzE1sVdg5tWHiOgHywzL2W21XQopa7IwIEnNbmeUJYA==}
 
-  '@rollup/rollup-android-arm-eabi@4.24.0':
-    resolution: {integrity: sha512-Q6HJd7Y6xdB48x8ZNVDOqsbh2uByBhgK8PiQgPhwkIw/HC/YX5Ghq2mQY5sRMZWHb3VsFkWooUVOZHKr7DmDIA==}
+  '@rollup/rollup-android-arm-eabi@4.24.4':
+    resolution: {integrity: sha512-jfUJrFct/hTA0XDM5p/htWKoNNTbDLY0KRwEt6pyOA6k2fmk0WVwl65PdUdJZgzGEHWx+49LilkcSaumQRyNQw==}
     cpu: [arm]
     os: [android]
 
-  '@rollup/rollup-android-arm64@4.24.0':
-    resolution: {integrity: sha512-ijLnS1qFId8xhKjT81uBHuuJp2lU4x2yxa4ctFPtG+MqEE6+C5f/+X/bStmxapgmwLwiL3ih122xv8kVARNAZA==}
+  '@rollup/rollup-android-arm64@4.24.4':
+    resolution: {integrity: sha512-j4nrEO6nHU1nZUuCfRKoCcvh7PIywQPUCBa2UsootTHvTHIoIu2BzueInGJhhvQO/2FTRdNYpf63xsgEqH9IhA==}
     cpu: [arm64]
     os: [android]
 
-  '@rollup/rollup-darwin-arm64@4.24.0':
-    resolution: {integrity: sha512-bIv+X9xeSs1XCk6DVvkO+S/z8/2AMt/2lMqdQbMrmVpgFvXlmde9mLcbQpztXm1tajC3raFDqegsH18HQPMYtA==}
+  '@rollup/rollup-darwin-arm64@4.24.4':
+    resolution: {integrity: sha512-GmU/QgGtBTeraKyldC7cDVVvAJEOr3dFLKneez/n7BvX57UdhOqDsVwzU7UOnYA7AAOt+Xb26lk79PldDHgMIQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@rollup/rollup-darwin-x64@4.24.0':
-    resolution: {integrity: sha512-X6/nOwoFN7RT2svEQWUsW/5C/fYMBe4fnLK9DQk4SX4mgVBiTA9h64kjUYPvGQ0F/9xwJ5U5UfTbl6BEjaQdBQ==}
+  '@rollup/rollup-darwin-x64@4.24.4':
+    resolution: {integrity: sha512-N6oDBiZCBKlwYcsEPXGDE4g9RoxZLK6vT98M8111cW7VsVJFpNEqvJeIPfsCzbf0XEakPslh72X0gnlMi4Ddgg==}
     cpu: [x64]
     os: [darwin]
 
-  '@rollup/rollup-linux-arm-gnueabihf@4.24.0':
-    resolution: {integrity: sha512-0KXvIJQMOImLCVCz9uvvdPgfyWo93aHHp8ui3FrtOP57svqrF/roSSR5pjqL2hcMp0ljeGlU4q9o/rQaAQ3AYA==}
+  '@rollup/rollup-freebsd-arm64@4.24.4':
+    resolution: {integrity: sha512-py5oNShCCjCyjWXCZNrRGRpjWsF0ic8f4ieBNra5buQz0O/U6mMXCpC1LvrHuhJsNPgRt36tSYMidGzZiJF6mw==}
+    cpu: [arm64]
+    os: [freebsd]
+
+  '@rollup/rollup-freebsd-x64@4.24.4':
+    resolution: {integrity: sha512-L7VVVW9FCnTTp4i7KrmHeDsDvjB4++KOBENYtNYAiYl96jeBThFfhP6HVxL74v4SiZEVDH/1ILscR5U9S4ms4g==}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@rollup/rollup-linux-arm-gnueabihf@4.24.4':
+    resolution: {integrity: sha512-10ICosOwYChROdQoQo589N5idQIisxjaFE/PAnX2i0Zr84mY0k9zul1ArH0rnJ/fpgiqfu13TFZR5A5YJLOYZA==}
     cpu: [arm]
     os: [linux]
 
-  '@rollup/rollup-linux-arm-musleabihf@4.24.0':
-    resolution: {integrity: sha512-it2BW6kKFVh8xk/BnHfakEeoLPv8STIISekpoF+nBgWM4d55CZKc7T4Dx1pEbTnYm/xEKMgy1MNtYuoA8RFIWw==}
+  '@rollup/rollup-linux-arm-musleabihf@4.24.4':
+    resolution: {integrity: sha512-ySAfWs69LYC7QhRDZNKqNhz2UKN8LDfbKSMAEtoEI0jitwfAG2iZwVqGACJT+kfYvvz3/JgsLlcBP+WWoKCLcw==}
     cpu: [arm]
     os: [linux]
 
-  '@rollup/rollup-linux-arm64-gnu@4.24.0':
-    resolution: {integrity: sha512-i0xTLXjqap2eRfulFVlSnM5dEbTVque/3Pi4g2y7cxrs7+a9De42z4XxKLYJ7+OhE3IgxvfQM7vQc43bwTgPwA==}
+  '@rollup/rollup-linux-arm64-gnu@4.24.4':
+    resolution: {integrity: sha512-uHYJ0HNOI6pGEeZ/5mgm5arNVTI0nLlmrbdph+pGXpC9tFHFDQmDMOEqkmUObRfosJqpU8RliYoGz06qSdtcjg==}
     cpu: [arm64]
     os: [linux]
 
-  '@rollup/rollup-linux-arm64-musl@4.24.0':
-    resolution: {integrity: sha512-9E6MKUJhDuDh604Qco5yP/3qn3y7SLXYuiC0Rpr89aMScS2UAmK1wHP2b7KAa1nSjWJc/f/Lc0Wl1L47qjiyQw==}
+  '@rollup/rollup-linux-arm64-musl@4.24.4':
+    resolution: {integrity: sha512-38yiWLemQf7aLHDgTg85fh3hW9stJ0Muk7+s6tIkSUOMmi4Xbv5pH/5Bofnsb6spIwD5FJiR+jg71f0CH5OzoA==}
     cpu: [arm64]
     os: [linux]
 
-  '@rollup/rollup-linux-powerpc64le-gnu@4.24.0':
-    resolution: {integrity: sha512-2XFFPJ2XMEiF5Zi2EBf4h73oR1V/lycirxZxHZNc93SqDN/IWhYYSYj8I9381ikUFXZrz2v7r2tOVk2NBwxrWw==}
+  '@rollup/rollup-linux-powerpc64le-gnu@4.24.4':
+    resolution: {integrity: sha512-q73XUPnkwt9ZNF2xRS4fvneSuaHw2BXuV5rI4cw0fWYVIWIBeDZX7c7FWhFQPNTnE24172K30I+dViWRVD9TwA==}
     cpu: [ppc64]
     os: [linux]
 
-  '@rollup/rollup-linux-riscv64-gnu@4.24.0':
-    resolution: {integrity: sha512-M3Dg4hlwuntUCdzU7KjYqbbd+BLq3JMAOhCKdBE3TcMGMZbKkDdJ5ivNdehOssMCIokNHFOsv7DO4rlEOfyKpg==}
+  '@rollup/rollup-linux-riscv64-gnu@4.24.4':
+    resolution: {integrity: sha512-Aie/TbmQi6UXokJqDZdmTJuZBCU3QBDA8oTKRGtd4ABi/nHgXICulfg1KI6n9/koDsiDbvHAiQO3YAUNa/7BCw==}
     cpu: [riscv64]
     os: [linux]
 
-  '@rollup/rollup-linux-s390x-gnu@4.24.0':
-    resolution: {integrity: sha512-mjBaoo4ocxJppTorZVKWFpy1bfFj9FeCMJqzlMQGjpNPY9JwQi7OuS1axzNIk0nMX6jSgy6ZURDZ2w0QW6D56g==}
+  '@rollup/rollup-linux-s390x-gnu@4.24.4':
+    resolution: {integrity: sha512-P8MPErVO/y8ohWSP9JY7lLQ8+YMHfTI4bAdtCi3pC2hTeqFJco2jYspzOzTUB8hwUWIIu1xwOrJE11nP+0JFAQ==}
     cpu: [s390x]
     os: [linux]
 
-  '@rollup/rollup-linux-x64-gnu@4.24.0':
-    resolution: {integrity: sha512-ZXFk7M72R0YYFN5q13niV0B7G8/5dcQ9JDp8keJSfr3GoZeXEoMHP/HlvqROA3OMbMdfr19IjCeNAnPUG93b6A==}
+  '@rollup/rollup-linux-x64-gnu@4.24.4':
+    resolution: {integrity: sha512-K03TljaaoPK5FOyNMZAAEmhlyO49LaE4qCsr0lYHUKyb6QacTNF9pnfPpXnFlFD3TXuFbFbz7tJ51FujUXkXYA==}
     cpu: [x64]
     os: [linux]
 
-  '@rollup/rollup-linux-x64-musl@4.24.0':
-    resolution: {integrity: sha512-w1i+L7kAXZNdYl+vFvzSZy8Y1arS7vMgIy8wusXJzRrPyof5LAb02KGr1PD2EkRcl73kHulIID0M501lN+vobQ==}
+  '@rollup/rollup-linux-x64-musl@4.24.4':
+    resolution: {integrity: sha512-VJYl4xSl/wqG2D5xTYncVWW+26ICV4wubwN9Gs5NrqhJtayikwCXzPL8GDsLnaLU3WwhQ8W02IinYSFJfyo34Q==}
     cpu: [x64]
     os: [linux]
 
-  '@rollup/rollup-win32-arm64-msvc@4.24.0':
-    resolution: {integrity: sha512-VXBrnPWgBpVDCVY6XF3LEW0pOU51KbaHhccHw6AS6vBWIC60eqsH19DAeeObl+g8nKAz04QFdl/Cefta0xQtUQ==}
+  '@rollup/rollup-win32-arm64-msvc@4.24.4':
+    resolution: {integrity: sha512-ku2GvtPwQfCqoPFIJCqZ8o7bJcj+Y54cZSr43hHca6jLwAiCbZdBUOrqE6y29QFajNAzzpIOwsckaTFmN6/8TA==}
     cpu: [arm64]
     os: [win32]
 
-  '@rollup/rollup-win32-ia32-msvc@4.24.0':
-    resolution: {integrity: sha512-xrNcGDU0OxVcPTH/8n/ShH4UevZxKIO6HJFK0e15XItZP2UcaiLFd5kiX7hJnqCbSztUF8Qot+JWBC/QXRPYWQ==}
+  '@rollup/rollup-win32-ia32-msvc@4.24.4':
+    resolution: {integrity: sha512-V3nCe+eTt/W6UYNr/wGvO1fLpHUrnlirlypZfKCT1fG6hWfqhPgQV/K/mRBXBpxc0eKLIF18pIOFVPh0mqHjlg==}
     cpu: [ia32]
     os: [win32]
 
-  '@rollup/rollup-win32-x64-msvc@4.24.0':
-    resolution: {integrity: sha512-fbMkAF7fufku0N2dE5TBXcNlg0pt0cJue4xBRE2Qc5Vqikxr4VCgKj/ht6SMdFcOacVA9rqF70APJ8RN/4vMJw==}
+  '@rollup/rollup-win32-x64-msvc@4.24.4':
+    resolution: {integrity: sha512-LTw1Dfd0mBIEqUVCxbvTE/LLo+9ZxVC9k99v1v4ahg9Aak6FpqOfNu5kRkeTAn0wphoC4JU7No1/rL+bBCEwhg==}
     cpu: [x64]
     os: [win32]
 
@@ -1887,22 +1897,22 @@ packages:
   '@whatwg-node/fetch@0.8.8':
     resolution: {integrity: sha512-CdcjGC2vdKhc13KKxgsc6/616BQ7ooDIgPeTuAiE8qfCnS0mGzcfCOoZXypQSz73nxI+GWc7ZReIAVhxoE1KCg==}
 
-  '@whatwg-node/fetch@0.9.22':
-    resolution: {integrity: sha512-+RIBffgoaRlWV9cKV6wAX71sbeoU2APOI3G13ZRMkabYHwkvDMeZDTyxJcsMXA5CpieJ7NFXF9Xyu72jwvdzqA==}
+  '@whatwg-node/fetch@0.9.23':
+    resolution: {integrity: sha512-7xlqWel9JsmxahJnYVUj/LLxWcnA93DR4c9xlw3U814jWTiYalryiH1qToik1hOxweKKRLi4haXHM5ycRksPBA==}
     engines: {node: '>=18.0.0'}
 
   '@whatwg-node/node-fetch@0.3.6':
     resolution: {integrity: sha512-w9wKgDO4C95qnXZRwZTfCmLWqyRnooGjcIwG0wADWjw9/HN0p7dtvtgSvItZtUyNteEvgTrd8QojNEqV6DAGTA==}
 
-  '@whatwg-node/node-fetch@0.5.27':
-    resolution: {integrity: sha512-0OaMj5W4fzWimRSFq07qFiWfquaUMNB+695GwE76LYKVuah+jwCdzSgsIOtwPkiyJ35w0XGhXmJPiIJCdLwopg==}
+  '@whatwg-node/node-fetch@0.6.0':
+    resolution: {integrity: sha512-tcZAhrpx6oVlkEsRngeTEEE7I5/QdLjeEz4IlekabGaESP7+Dkm/6a9KcF1KdCBB7mO9PXtBkwCuTCt8+UPg8Q==}
     engines: {node: '>=18.0.0'}
 
   '@whatwg-node/server@0.7.7':
     resolution: {integrity: sha512-aHURgNDFm/48WVV3vhTMfnEKCYwYgdaRdRhZsQZx4UVFjGGkGay7Ys0+AYu9QT/jpoImv2oONkstoTMUprDofg==}
 
-  '@whatwg-node/server@0.9.50':
-    resolution: {integrity: sha512-7Vd8k6iu+ps8bkZT+Y/wPm42EDh8KojAL+APKa79mntgkyPtdq0r1//CO+0eYqQBz6HGrDxHRT4KChSOy4jGIw==}
+  '@whatwg-node/server@0.9.52':
+    resolution: {integrity: sha512-RSX9FcoXrjmMu7dkBWbd5bNE7qsVSHCupk5A5iuZkoF+XWDvnp1TDbSGLARnsKKwln1Sem4koLkz/tj5b8Q7bg==}
     engines: {node: '>=18.0.0'}
 
   abitype@0.10.3:
@@ -2851,8 +2861,8 @@ packages:
     peerDependencies:
       graphql: ^15.2.0 || ^16.0.0
 
-  graphql-yoga@5.7.0:
-    resolution: {integrity: sha512-QyGVvFAvGhMrzjJvhjsxsyoE+e4lNrj5f5qOsRYJuWIjyw7tHfbBvybZIwzNOGY0aB5sgA8BlVvu5hxjdKJ5tQ==}
+  graphql-yoga@5.8.0:
+    resolution: {integrity: sha512-pGoeTv7Om9aNGkDIFecz3tv0rZKWV2T2K8522/tymS+qixPIq5upSaMY5nLXzpWD40R10mcw0nBwBZg6j0F7Iw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       graphql: ^15.2.0 || ^16.0.0
@@ -2903,8 +2913,8 @@ packages:
   hmac-drbg@1.0.1:
     resolution: {integrity: sha512-Tti3gMqLdZfhOQY1Mzf/AanLiqh1WTiJgEj26ZuYQ9fbkLomzGchCws4FyrSd4VkpBfiNhaE1On+lOz894jvXg==}
 
-  hono@4.6.6:
-    resolution: {integrity: sha512-euUj5qwvtkG+p38GFs0LYacwaoS2hYRAGn9ysAggiwT2QBcPnT1XYUCW3hatW4C1KzAXTYuQ08BlVDJtAGuhlg==}
+  hono@4.6.9:
+    resolution: {integrity: sha512-p/pN5yZLuZaHzyAOT2nw2/Ud6HhJHYmDNGH6Ck1OWBhPMVeM1r74jbCRwNi0gyFRjjbsGgoHbOyj7mT1PDNbTw==}
     engines: {node: '>=16.9.0'}
 
   http-errors@2.0.0:
@@ -3541,8 +3551,8 @@ packages:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
-  pg@8.13.0:
-    resolution: {integrity: sha512-34wkUTh3SxTClfoHB3pQ7bIMvw9dpFU1audQQeZG837fmHfHpr14n/AELVDoOYVDW2h5RDWU78tFjkD+erSBsw==}
+  pg@8.13.1:
+    resolution: {integrity: sha512-OUir1A0rPNZlX//c7ksiu7crsGZTKSOXJPgtNiHGIlC9H0lO+NC6ZDYksSgBYY/thSWhnSRBv8w1lieNNGATNQ==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -3748,8 +3758,8 @@ packages:
     resolution: {integrity: sha512-3niqt5bXFY1InKU8HKWqqYTYjtrBaxBMnXELXCXUYgtNYGUtZM5rB46HIC430AyacL95iEniGf7RgqsesykLmQ==}
     engines: {node: '>=18.0'}
 
-  rollup@4.24.0:
-    resolution: {integrity: sha512-DOmrlGSXNk1DM0ljiQA+i+o0rSLhtii1je5wgk60j49d1jHT5YYttBv1iWOnYSTG+fZZESUOSNiAl89SIet+Cg==}
+  rollup@4.24.4:
+    resolution: {integrity: sha512-vGorVWIsWfX3xbcyAS+I047kFKapHYivmkaT63Smj77XwvLSJos6M1xGqZnBPFQFBRZDOcG1QnYEIxAvTr/HjA==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
@@ -3985,9 +3995,6 @@ packages:
 
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
-
-  tslib@2.8.0:
-    resolution: {integrity: sha512-jWVzBLplnCmoaTr13V9dYbiQ99wvZRd0vNWaDRg+aVYRcjDF3nDksxFDE/+fkXnKhpnUUkmx5pK/v8mCtLVqZA==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -6183,7 +6190,7 @@ snapshots:
   '@envelop/core@5.0.2':
     dependencies:
       '@envelop/types': 5.0.0
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   '@envelop/types@3.0.2':
     dependencies:
@@ -6191,7 +6198,7 @@ snapshots:
 
   '@envelop/types@5.0.0':
     dependencies:
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   '@envelop/validation-cache@5.1.3(@envelop/core@3.0.6)(graphql@16.9.0)':
     dependencies:
@@ -6604,7 +6611,7 @@ snapshots:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.9.0)
       '@repeaterjs/repeater': 3.0.6
       graphql: 16.9.0
-      tslib: 2.8.0
+      tslib: 2.8.1
       value-or-promise: 1.0.12
 
   '@graphql-tools/merge@8.4.2(graphql@16.9.0)':
@@ -6617,14 +6624,14 @@ snapshots:
     dependencies:
       '@graphql-tools/utils': 10.5.5(graphql@16.9.0)
       graphql: 16.9.0
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   '@graphql-tools/schema@10.0.7(graphql@16.9.0)':
     dependencies:
       '@graphql-tools/merge': 9.0.8(graphql@16.9.0)
       '@graphql-tools/utils': 10.5.5(graphql@16.9.0)
       graphql: 16.9.0
-      tslib: 2.8.0
+      tslib: 2.8.1
       value-or-promise: 1.0.12
 
   '@graphql-tools/schema@9.0.19(graphql@16.9.0)':
@@ -6641,7 +6648,7 @@ snapshots:
       cross-inspect: 1.0.1
       dset: 3.1.4
       graphql: 16.9.0
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   '@graphql-tools/utils@9.2.1(graphql@16.9.0)':
     dependencies:
@@ -6659,7 +6666,7 @@ snapshots:
 
   '@graphql-yoga/logger@2.0.0':
     dependencies:
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   '@graphql-yoga/subscription@3.1.0':
     dependencies:
@@ -6673,7 +6680,7 @@ snapshots:
       '@graphql-yoga/typed-event-target': 3.0.0
       '@repeaterjs/repeater': 3.0.6
       '@whatwg-node/events': 0.1.2
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   '@graphql-yoga/typed-event-target@1.0.0':
     dependencies:
@@ -6683,11 +6690,11 @@ snapshots:
   '@graphql-yoga/typed-event-target@3.0.0':
     dependencies:
       '@repeaterjs/repeater': 3.0.6
-      tslib: 2.8.0
+      tslib: 2.8.1
 
-  '@hono/node-server@1.13.2(hono@4.6.6)':
+  '@hono/node-server@1.13.3(hono@4.6.9)':
     dependencies:
-      hono: 4.6.6
+      hono: 4.6.9
 
   '@httptoolkit/websocket-stream@6.0.1':
     dependencies:
@@ -6774,15 +6781,15 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@ponder/core@0.6.17(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.5)(hono@4.6.6)(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))(zod@3.23.8)':
+  '@ponder/core@0.6.25(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.5)(hono@4.6.9)(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))(zod@3.23.8)':
     dependencies:
-      '@babel/code-frame': 7.25.7
+      '@babel/code-frame': 7.26.2
       '@commander-js/extra-typings': 12.1.0(commander@12.1.0)
       '@escape.tech/graphql-armor-max-aliases': 2.6.0
       '@escape.tech/graphql-armor-max-depth': 2.4.0
       '@escape.tech/graphql-armor-max-tokens': 2.5.0
-      '@hono/node-server': 1.13.2(hono@4.6.6)
-      '@ponder/utils': 0.2.1(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))
+      '@hono/node-server': 1.13.3(hono@4.6.9)
+      '@ponder/utils': 0.2.2(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))
       abitype: 0.10.3(typescript@5.6.3)(zod@3.23.8)
       better-sqlite3: 11.5.0
       commander: 12.1.0
@@ -6790,15 +6797,15 @@ snapshots:
       dataloader: 2.2.2
       detect-package-manager: 3.0.2
       dotenv: 16.4.5
-      drizzle-orm: 0.31.4(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.0)(react@18.3.1)
+      drizzle-orm: 0.31.4(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.1)(react@18.3.1)
       glob: 10.4.5
       graphql: 16.9.0
-      graphql-yoga: 5.7.0(graphql@16.9.0)
-      hono: 4.6.6
+      graphql-yoga: 5.8.0(graphql@16.9.0)
+      hono: 4.6.9
       http-terminator: 3.2.0
       ink: 4.4.1(react@18.3.1)
       kysely: 0.26.3
-      pg: 8.13.0
+      pg: 8.13.1
       pg-connection-string: 2.7.0
       picocolors: 1.1.1
       pino: 8.21.0
@@ -6850,7 +6857,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@ponder/utils@0.2.1(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))':
+  '@ponder/utils@0.2.2(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))':
     dependencies:
       viem: 2.21.40(typescript@5.6.3)(zod@3.23.8)
     optionalDependencies:
@@ -6860,52 +6867,58 @@ snapshots:
 
   '@repeaterjs/repeater@3.0.6': {}
 
-  '@rollup/rollup-android-arm-eabi@4.24.0':
+  '@rollup/rollup-android-arm-eabi@4.24.4':
     optional: true
 
-  '@rollup/rollup-android-arm64@4.24.0':
+  '@rollup/rollup-android-arm64@4.24.4':
     optional: true
 
-  '@rollup/rollup-darwin-arm64@4.24.0':
+  '@rollup/rollup-darwin-arm64@4.24.4':
     optional: true
 
-  '@rollup/rollup-darwin-x64@4.24.0':
+  '@rollup/rollup-darwin-x64@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-arm-gnueabihf@4.24.0':
+  '@rollup/rollup-freebsd-arm64@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-arm-musleabihf@4.24.0':
+  '@rollup/rollup-freebsd-x64@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-arm64-gnu@4.24.0':
+  '@rollup/rollup-linux-arm-gnueabihf@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-arm64-musl@4.24.0':
+  '@rollup/rollup-linux-arm-musleabihf@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-powerpc64le-gnu@4.24.0':
+  '@rollup/rollup-linux-arm64-gnu@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-riscv64-gnu@4.24.0':
+  '@rollup/rollup-linux-arm64-musl@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-s390x-gnu@4.24.0':
+  '@rollup/rollup-linux-powerpc64le-gnu@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-x64-gnu@4.24.0':
+  '@rollup/rollup-linux-riscv64-gnu@4.24.4':
     optional: true
 
-  '@rollup/rollup-linux-x64-musl@4.24.0':
+  '@rollup/rollup-linux-s390x-gnu@4.24.4':
     optional: true
 
-  '@rollup/rollup-win32-arm64-msvc@4.24.0':
+  '@rollup/rollup-linux-x64-gnu@4.24.4':
     optional: true
 
-  '@rollup/rollup-win32-ia32-msvc@4.24.0':
+  '@rollup/rollup-linux-x64-musl@4.24.4':
     optional: true
 
-  '@rollup/rollup-win32-x64-msvc@4.24.0':
+  '@rollup/rollup-win32-arm64-msvc@4.24.4':
+    optional: true
+
+  '@rollup/rollup-win32-ia32-msvc@4.24.4':
+    optional: true
+
+  '@rollup/rollup-win32-x64-msvc@4.24.4':
     optional: true
 
   '@scure/base@1.1.9': {}
@@ -7656,7 +7669,7 @@ snapshots:
 
   '@whatwg-node/events@0.1.2':
     dependencies:
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   '@whatwg-node/fetch@0.8.8':
     dependencies:
@@ -7666,9 +7679,9 @@ snapshots:
       urlpattern-polyfill: 8.0.2
       web-streams-polyfill: 3.3.3
 
-  '@whatwg-node/fetch@0.9.22':
+  '@whatwg-node/fetch@0.9.23':
     dependencies:
-      '@whatwg-node/node-fetch': 0.5.27
+      '@whatwg-node/node-fetch': 0.6.0
       urlpattern-polyfill: 10.0.0
 
   '@whatwg-node/node-fetch@0.3.6':
@@ -7679,22 +7692,22 @@ snapshots:
       fast-url-parser: 1.1.3
       tslib: 2.7.0
 
-  '@whatwg-node/node-fetch@0.5.27':
+  '@whatwg-node/node-fetch@0.6.0':
     dependencies:
       '@kamilkisiela/fast-url-parser': 1.1.4
       busboy: 1.6.0
       fast-querystring: 1.1.2
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   '@whatwg-node/server@0.7.7':
     dependencies:
       '@whatwg-node/fetch': 0.8.8
       tslib: 2.7.0
 
-  '@whatwg-node/server@0.9.50':
+  '@whatwg-node/server@0.9.52':
     dependencies:
-      '@whatwg-node/fetch': 0.9.22
-      tslib: 2.8.0
+      '@whatwg-node/fetch': 0.9.23
+      tslib: 2.8.1
 
   abitype@0.10.3(typescript@5.6.3)(zod@3.23.8):
     optionalDependencies:
@@ -8213,7 +8226,7 @@ snapshots:
 
   cross-inspect@1.0.1:
     dependencies:
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   cross-spawn@7.0.3:
     dependencies:
@@ -8289,13 +8302,13 @@ snapshots:
 
   dotenv@16.4.5: {}
 
-  drizzle-orm@0.31.4(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.0)(react@18.3.1):
+  drizzle-orm@0.31.4(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.1)(react@18.3.1):
     optionalDependencies:
       '@aws-sdk/client-rds-data': 3.665.0(aws-crt@1.22.0)
       '@opentelemetry/api': 1.9.0
       better-sqlite3: 11.5.0
       kysely: 0.26.3
-      pg: 8.13.0
+      pg: 8.13.1
       react: 18.3.1
 
   dset@3.1.4: {}
@@ -8729,7 +8742,7 @@ snapshots:
       lru-cache: 7.18.3
       tslib: 2.7.0
 
-  graphql-yoga@5.7.0(graphql@16.9.0):
+  graphql-yoga@5.8.0(graphql@16.9.0):
     dependencies:
       '@envelop/core': 5.0.2
       '@graphql-tools/executor': 1.3.2(graphql@16.9.0)
@@ -8737,12 +8750,12 @@ snapshots:
       '@graphql-tools/utils': 10.5.5(graphql@16.9.0)
       '@graphql-yoga/logger': 2.0.0
       '@graphql-yoga/subscription': 5.0.1
-      '@whatwg-node/fetch': 0.9.22
-      '@whatwg-node/server': 0.9.50
+      '@whatwg-node/fetch': 0.9.23
+      '@whatwg-node/server': 0.9.52
       dset: 3.1.4
       graphql: 16.9.0
       lru-cache: 10.4.3
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   graphql@16.9.0: {}
 
@@ -8786,7 +8799,7 @@ snapshots:
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
 
-  hono@4.6.6: {}
+  hono@4.6.9: {}
 
   http-errors@2.0.0:
     dependencies:
@@ -8908,7 +8921,7 @@ snapshots:
 
   is-lower-case@2.0.2:
     dependencies:
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   is-number@7.0.0: {}
 
@@ -8924,7 +8937,7 @@ snapshots:
 
   is-upper-case@2.0.2:
     dependencies:
-      tslib: 2.8.0
+      tslib: 2.8.1
 
   isarray@1.0.0: {}
 
@@ -8979,7 +8992,7 @@ snapshots:
     optionalDependencies:
       graceful-fs: 4.2.11
 
-  kysely-codegen@0.10.1(better-sqlite3@11.5.0)(kysely@0.25.0)(pg@8.13.0):
+  kysely-codegen@0.10.1(better-sqlite3@11.5.0)(kysely@0.25.0)(pg@8.13.1):
     dependencies:
       chalk: 4.1.2
       dotenv: 16.4.5
@@ -8988,7 +9001,7 @@ snapshots:
       minimist: 1.2.8
     optionalDependencies:
       better-sqlite3: 11.5.0
-      pg: 8.13.0
+      pg: 8.13.1
 
   kysely-data-api@0.2.1(@aws-sdk/client-rds-data@3.654.0(aws-crt@1.22.0))(kysely@0.25.0):
     dependencies:
@@ -9359,9 +9372,9 @@ snapshots:
 
   pg-int8@1.0.1: {}
 
-  pg-pool@3.7.0(pg@8.13.0):
+  pg-pool@3.7.0(pg@8.13.1):
     dependencies:
-      pg: 8.13.0
+      pg: 8.13.1
 
   pg-protocol@1.7.0: {}
 
@@ -9373,10 +9386,10 @@ snapshots:
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
 
-  pg@8.13.0:
+  pg@8.13.1:
     dependencies:
       pg-connection-string: 2.7.0
-      pg-pool: 3.7.0(pg@8.13.0)
+      pg-pool: 3.7.0(pg@8.13.1)
       pg-protocol: 1.7.0
       pg-types: 2.2.0
       pgpass: 1.0.5
@@ -9594,26 +9607,28 @@ snapshots:
       safe-stable-stringify: 2.5.0
       semver-compare: 1.0.0
 
-  rollup@4.24.0:
+  rollup@4.24.4:
     dependencies:
       '@types/estree': 1.0.6
     optionalDependencies:
-      '@rollup/rollup-android-arm-eabi': 4.24.0
-      '@rollup/rollup-android-arm64': 4.24.0
-      '@rollup/rollup-darwin-arm64': 4.24.0
-      '@rollup/rollup-darwin-x64': 4.24.0
-      '@rollup/rollup-linux-arm-gnueabihf': 4.24.0
-      '@rollup/rollup-linux-arm-musleabihf': 4.24.0
-      '@rollup/rollup-linux-arm64-gnu': 4.24.0
-      '@rollup/rollup-linux-arm64-musl': 4.24.0
-      '@rollup/rollup-linux-powerpc64le-gnu': 4.24.0
-      '@rollup/rollup-linux-riscv64-gnu': 4.24.0
-      '@rollup/rollup-linux-s390x-gnu': 4.24.0
-      '@rollup/rollup-linux-x64-gnu': 4.24.0
-      '@rollup/rollup-linux-x64-musl': 4.24.0
-      '@rollup/rollup-win32-arm64-msvc': 4.24.0
-      '@rollup/rollup-win32-ia32-msvc': 4.24.0
-      '@rollup/rollup-win32-x64-msvc': 4.24.0
+      '@rollup/rollup-android-arm-eabi': 4.24.4
+      '@rollup/rollup-android-arm64': 4.24.4
+      '@rollup/rollup-darwin-arm64': 4.24.4
+      '@rollup/rollup-darwin-x64': 4.24.4
+      '@rollup/rollup-freebsd-arm64': 4.24.4
+      '@rollup/rollup-freebsd-x64': 4.24.4
+      '@rollup/rollup-linux-arm-gnueabihf': 4.24.4
+      '@rollup/rollup-linux-arm-musleabihf': 4.24.4
+      '@rollup/rollup-linux-arm64-gnu': 4.24.4
+      '@rollup/rollup-linux-arm64-musl': 4.24.4
+      '@rollup/rollup-linux-powerpc64le-gnu': 4.24.4
+      '@rollup/rollup-linux-riscv64-gnu': 4.24.4
+      '@rollup/rollup-linux-s390x-gnu': 4.24.4
+      '@rollup/rollup-linux-x64-gnu': 4.24.4
+      '@rollup/rollup-linux-x64-musl': 4.24.4
+      '@rollup/rollup-win32-arm64-msvc': 4.24.4
+      '@rollup/rollup-win32-ia32-msvc': 4.24.4
+      '@rollup/rollup-win32-x64-msvc': 4.24.4
       fsevents: 2.3.3
 
   safe-buffer@5.1.2: {}
@@ -9741,7 +9756,7 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.2
 
-  sst@2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.654.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.0):
+  sst@2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.654.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.1):
     dependencies:
       '@aws-cdk/aws-lambda-python-alpha': 2.142.1-alpha.0(aws-cdk-lib@2.142.1(constructs@10.3.0))(constructs@10.3.0)
       '@aws-cdk/cloud-assembly-schema': 2.142.1
@@ -9796,7 +9811,7 @@ snapshots:
       ink: 4.4.1(react@18.3.1)
       ink-spinner: 5.0.0(ink@4.4.1(react@18.3.1))(react@18.3.1)
       kysely: 0.25.0
-      kysely-codegen: 0.10.1(better-sqlite3@11.5.0)(kysely@0.25.0)(pg@8.13.0)
+      kysely-codegen: 0.10.1(better-sqlite3@11.5.0)(kysely@0.25.0)(pg@8.13.1)
       kysely-data-api: 0.2.1(@aws-sdk/client-rds-data@3.654.0(aws-crt@1.22.0))(kysely@0.25.0)
       minimatch: 6.2.0
       openid-client: 5.7.0
@@ -9823,7 +9838,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  sst@2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.665.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.0):
+  sst@2.43.6(@aws-sdk/client-sso-oidc@3.665.0(@aws-sdk/client-sts@3.665.0(aws-crt@1.22.0))(aws-crt@1.22.0))(aws-crt@1.22.0)(better-sqlite3@11.5.0)(pg@8.13.1):
     dependencies:
       '@aws-cdk/aws-lambda-python-alpha': 2.142.1-alpha.0(aws-cdk-lib@2.142.1(constructs@10.3.0))(constructs@10.3.0)
       '@aws-cdk/cloud-assembly-schema': 2.142.1
@@ -9878,7 +9893,7 @@ snapshots:
       ink: 4.4.1(react@18.3.1)
       ink-spinner: 5.0.0(ink@4.4.1(react@18.3.1))(react@18.3.1)
       kysely: 0.25.0
-      kysely-codegen: 0.10.1(better-sqlite3@11.5.0)(kysely@0.25.0)(pg@8.13.0)
+      kysely-codegen: 0.10.1(better-sqlite3@11.5.0)(kysely@0.25.0)(pg@8.13.1)
       kysely-data-api: 0.2.1(@aws-sdk/client-rds-data@3.654.0(aws-crt@1.22.0))(kysely@0.25.0)
       minimatch: 6.2.0
       openid-client: 5.7.0
@@ -10018,8 +10033,6 @@ snapshots:
 
   tslib@2.7.0: {}
 
-  tslib@2.8.0: {}
-
   tslib@2.8.1: {}
 
   tunnel-agent@0.6.0:
@@ -10142,7 +10155,7 @@ snapshots:
     dependencies:
       esbuild: 0.19.12
       postcss: 8.4.47
-      rollup: 4.24.0
+      rollup: 4.24.4
     optionalDependencies:
       '@types/node': 22.5.5
       fsevents: 2.3.3
