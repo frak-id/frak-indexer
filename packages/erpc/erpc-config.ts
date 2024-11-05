@@ -207,22 +207,14 @@ const nexusProject: ProjectConfig = buildProject({
         blockpiArbSepoliaUpstream,
         blockpiArbUpstream,
     ],
-    // disable cors for now
-    // cors: {
-    //     allowedOrigins: [
-    //         "https://wallet.frak.id",
-    //         "https://wallet-dev.frak.id",
-    //         "https://business-dev.frak.id",
-    //         "https://business.frak.id",
-    //         "http://localhost:30*",
-    //         "https://localhost:30*",
-    //     ],
-    //     allowedMethods: ["GET", "POST", "OPTIONS"],
-    //     allowedHeaders: ["Content-Type", "Authorization"],
-    //     exposedHeaders: ["X-Request-ID"],
-    //     allowCredentials: true,
-    //     maxAge: 3600,
-    // },
+    cors: {
+        allowedOrigins: ["*"],
+        allowedMethods: ["GET", "POST", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        exposedHeaders: ["X-Request-ID"],
+        allowCredentials: true,
+        maxAge: 3600,
+    },
     auth: {
         strategies: [
             buildSecretAuthStrategy({
