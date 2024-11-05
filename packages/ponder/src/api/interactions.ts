@@ -19,7 +19,8 @@ ponder.get("/interactions/:wallet", async (ctx) => {
     }
 
     // Get the tables we will query
-    const { InteractionEvent, ProductInteractionContract } = ctx.tables;
+    const { InteractionEvent, ProductInteractionContract, Product } =
+        ctx.tables;
 
     // Perform the sql query
     const interactions = await ctx.db
@@ -28,11 +29,16 @@ ponder.get("/interactions/:wallet", async (ctx) => {
             type: InteractionEvent.type,
             timestamp: InteractionEvent.timestamp,
             productId: ProductInteractionContract.productId,
+            productName: Product.name,
         })
         .from(InteractionEvent)
         .innerJoin(
             ProductInteractionContract,
             eq(ProductInteractionContract.id, InteractionEvent.interactionId)
+        )
+        .innerJoin(
+            Product,
+            eq(Product.id, ProductInteractionContract.productId)
         )
         .where(eq(InteractionEvent.user, wallet))
         .limit(100)
