@@ -96,6 +96,7 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
             isOwner: ProductAdministrator.isOwner,
             roles: ProductAdministrator.roles,
             id: Campaign.id,
+            bank: Campaign.bankingContractId,
             totalInteractions: ReferralCampaignStats.totalInteractions,
             openInteractions: ReferralCampaignStats.openInteractions,
             readInteractions: ReferralCampaignStats.readInteractions,
