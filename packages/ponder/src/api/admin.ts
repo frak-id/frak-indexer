@@ -103,6 +103,8 @@ ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
             referredInteractions: ReferralCampaignStats.referredInteractions,
             createReferredLinkInteractions:
                 ReferralCampaignStats.createReferredLinkInteractions,
+                purchaseStartedInteractions: ReferralCampaignStats.purchaseStartedInteractions,
+                purchaseCompletedInteractions: ReferralCampaignStats.purchaseCompletedInteractions,
             totalRewards: ReferralCampaignStats.totalRewards,
         })
         .from(ProductAdministrator)
