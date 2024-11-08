@@ -91,7 +91,6 @@ ponder.get("/admin/:wallet/campaignsStats", async (ctx) => {
         Campaign,
         ReferralCampaignStats,
         InteractionEvent,
-        Product,
         ProductInteractionContract,
     } = ctx.tables;
 
@@ -139,7 +138,7 @@ ponder.get("/admin/:wallet/campaignsStats", async (ctx) => {
     // Get the total number of unique users per product
     const totalPerProducts = await ctx.db
         .select({
-            productId: Product.id,
+            productId: ProductInteractionContract.productId,
             wallets: countDistinct(InteractionEvent.user),
         })
         .from(InteractionEvent)
@@ -147,12 +146,8 @@ ponder.get("/admin/:wallet/campaignsStats", async (ctx) => {
             ProductInteractionContract,
             eq(InteractionEvent.interactionId, ProductInteractionContract.id)
         )
-        .innerJoin(
-            Product,
-            eq(ProductInteractionContract.productId, Product.id)
-        )
-        .where(inArray(Product.id, uniqueProductIds))
-        .groupBy(Product.id);
+        .where(inArray(ProductInteractionContract.productId, uniqueProductIds))
+        .groupBy(ProductInteractionContract.productId);
 
     // Return the result as json
     return ctx.json({
