@@ -151,7 +151,7 @@ const blockpiArbSepoliaUpstream = buildEvmUpstream({
     rateLimitBudget: blockPiRateLimits.id,
     ignoreMethods: pimlicoSpecificMethods,
 });
-const blockpiArbUpstream = buildEvmUpstream({
+const _blockpiArbUpstream = buildEvmUpstream({
     id: "blockpi-arb",
     endpoint: `https://arbitrum.blockpi.network/v1/rpc/${envVariable("BLOCKPI_API_KEY_ARB")}`,
     rateLimitBudget: blockPiRateLimits.id,
@@ -168,7 +168,7 @@ const pimlicoUpstream = buildPimlicoUpstream({
 const ponderProject: ProjectConfig = buildProject({
     id: "ponder-rpc",
     networks,
-    upstreams: [alchemyUpstream, blockpiArbUpstream],
+    upstreams: [alchemyUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
@@ -184,7 +184,7 @@ const ponderProject: ProjectConfig = buildProject({
 const ponderDevProject: ProjectConfig = buildProject({
     id: "ponder-dev-rpc",
     networks,
-    upstreams: [alchemyUpstream, blockpiArbSepoliaUpstream],
+    upstreams: [alchemyUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
@@ -201,12 +201,7 @@ const ponderDevProject: ProjectConfig = buildProject({
 const nexusProject: ProjectConfig = buildProject({
     id: "nexus-rpc",
     networks,
-    upstreams: [
-        alchemyUpstream,
-        pimlicoUpstream,
-        blockpiArbSepoliaUpstream,
-        blockpiArbUpstream,
-    ],
+    upstreams: [alchemyUpstream, pimlicoUpstream],
     cors: {
         allowedOrigins: ["*"],
         allowedMethods: ["GET", "POST", "OPTIONS"],

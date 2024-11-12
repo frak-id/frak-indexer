@@ -23,7 +23,7 @@ database:
 projects:
   - rateLimitBudget: ""
     id: ponder-rpc
-    networks: &var4
+    networks: &var3
       - failsafe: &var1
           timeout:
             duration: 30s
@@ -88,13 +88,13 @@ projects:
         architecture: evm
         rateLimitBudget: ""
     upstreams:
-      - &var5
+      - &var4
         id: alchemy
         endpoint: evm+alchemy://${ALCHEMY_API_KEY}
         type: evm+alchemy
         rateLimitBudget: alchemy-rate-limit
         vendorName: Alchemy
-        ignoreMethods: &var3
+        ignoreMethods: &var5
           - eth_estimateUserOperationGas
           - eth_getUserOperationByHash
           - eth_getUserOperationReceipt
@@ -102,15 +102,6 @@ projects:
           - eth_supportedEntryPoints
           - pm_*
           - pimlico_*
-        allowMethods: []
-        autoIgnoreUnsupportedMethods: true
-      - &var7
-        id: blockpi-arb
-        endpoint: https://arbitrum.blockpi.network/v1/rpc/${BLOCKPI_API_KEY_ARB}
-        rateLimitBudget: block-pi-rate-limit
-        type: evm
-        vendorName: Generic Evm
-        ignoreMethods: *var3
         allowMethods: []
         autoIgnoreUnsupportedMethods: true
     auth:
@@ -124,18 +115,9 @@ projects:
             value: ${PONDER_RPC_SECRET}
   - rateLimitBudget: ""
     id: ponder-dev-rpc
-    networks: *var4
+    networks: *var3
     upstreams:
-      - *var5
-      - &var6
-        id: blockpi-arbSepolia
-        endpoint: https://arbitrum-sepolia.blockpi.network/v1/rpc/${BLOCKPI_API_KEY_ARB_SEPOLIA}
-        rateLimitBudget: block-pi-rate-limit
-        type: evm
-        vendorName: Generic Evm
-        ignoreMethods: *var3
-        allowMethods: []
-        autoIgnoreUnsupportedMethods: true
+      - *var4
     auth:
       strategies:
         - allowMethods:
@@ -147,9 +129,9 @@ projects:
             value: ${PONDER_RPC_SECRET}
   - rateLimitBudget: ""
     id: nexus-rpc
-    networks: *var4
+    networks: *var3
     upstreams:
-      - *var5
+      - *var4
       - id: pimlico
         endpoint: evm+pimlico://${PIMLICO_API_KEY}
         rateLimitBudget: pimlico-rate-limit
@@ -157,10 +139,8 @@ projects:
         vendorName: Pimlico
         ignoreMethods:
           - "*"
-        allowMethods: *var3
+        allowMethods: *var5
         autoIgnoreUnsupportedMethods: true
-      - *var6
-      - *var7
     cors:
       allowedOrigins:
         - "*"
