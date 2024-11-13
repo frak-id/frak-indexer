@@ -122,7 +122,7 @@ const pimlicoSpecificMethods: RpcMethodWithRegex<EIP1474Methods>[] = [
 // Build each upstream we will use
 // Envio only op for arbitrum sepolia, it's fcked up on arbitrum
 // Disabled for now since it's returning incosistant data
-const _envioUpstream = buildEnvioUpstream({
+const envioUpstream = buildEnvioUpstream({
     rateLimitBudget: envioRateLimits.id,
     ignoreMethods: ["*"],
     // todo: simple port of the vendors/evio.go stuff hereh
@@ -145,7 +145,7 @@ const alchemyUpstream = buildAlchemyUpstream({
     rateLimitBudget: alchemyRateLimits.id,
     ignoreMethods: pimlicoSpecificMethods,
 });
-const blockpiArbSepoliaUpstream = buildEvmUpstream({
+const _blockpiArbSepoliaUpstream = buildEvmUpstream({
     id: "blockpi-arbSepolia",
     endpoint: `https://arbitrum-sepolia.blockpi.network/v1/rpc/${envVariable("BLOCKPI_API_KEY_ARB_SEPOLIA")}`,
     rateLimitBudget: blockPiRateLimits.id,
@@ -184,7 +184,7 @@ const ponderProject: ProjectConfig = buildProject({
 const ponderDevProject: ProjectConfig = buildProject({
     id: "ponder-dev-rpc",
     networks,
-    upstreams: [alchemyUpstream],
+    upstreams: [alchemyUpstream, envioUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
