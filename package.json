@@ -15,8 +15,9 @@
     "@pulumi/awsx": "^2.18.0",
     "@pulumi/eks": "^3.0.2",
     "@pulumi/kubernetes": "^4.18.3",
+    "@pulumi/kubernetes-cert-manager": "^0.0.7",
     "@pulumi/pulumi": "^3.138.0",
-    "@types/aws-lambda": "8.10.138",
+    "@types/aws-lambda": "8.10.145",
     "@types/node": "^22.5.4",
     "aws-cdk-lib": "2.142.1",
     "sst": "3.3.21",
@@ -25,5 +26,8 @@
   "engines": {
     "node": ">=18.14"
   },
-  "packageManager": "pnpm@9.1.3"
+  "packageManager": "pnpm@9.1.3",
+  "dependencies": {
+    "sst": "3.3.21"
+  }
 }

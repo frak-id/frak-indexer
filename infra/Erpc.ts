@@ -1,5 +1,5 @@
-import type { Cluster } from "@pulumi/eks";
 import * as aws from "@pulumi/aws";
+import type { Cluster } from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 
 const subdomain = "rpc.frak-labs.com";
@@ -11,7 +11,9 @@ export function buildErpc({ cluster }: { cluster: Cluster }) {
 
     // Get the ECR repository and build the image URI
     const repo = aws.ecr.getRepositoryOutput({ name: "erpc" });
-    const imageUri = repo.apply((result) => `${result.repositoryUrl}:${imageTag}`);
+    const imageUri = repo.apply(
+        (result) => `${result.repositoryUrl}:${imageTag}`
+    );
 
     // Define app labels and deployment
     const deployment = new k8s.apps.v1.Deployment(
