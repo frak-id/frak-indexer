@@ -61,8 +61,8 @@ importers:
         specifier: 0.6.24
         version: 0.6.24(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(@types/node@22.5.5)(hono@4.6.8)(typescript@5.6.3)(viem@2.21.40(typescript@5.6.3)(zod@3.23.8))(zod@3.23.8)
       drizzle-orm:
-        specifier: ^0.31.4
-        version: 0.31.4(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.1)(react@18.3.1)
+        specifier: 0.34.1
+        version: 0.34.1(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.1)(react@18.3.1)
       hono:
         specifier: 4.6.8
         version: 4.6.8
@@ -1759,6 +1759,95 @@ packages:
       '@cloudflare/workers-types': '>=3'
       '@electric-sql/pglite': '>=0.1.1'
       '@libsql/client': '*'
+      '@neondatabase/serverless': '>=0.1'
+      '@op-engineering/op-sqlite': '>=2'
+      '@opentelemetry/api': ^1.4.1
+      '@planetscale/database': '>=1'
+      '@prisma/client': '*'
+      '@tidbcloud/serverless': '*'
+      '@types/better-sqlite3': '*'
+      '@types/pg': '*'
+      '@types/react': '>=18'
+      '@types/sql.js': '*'
+      '@vercel/postgres': '>=0.8.0'
+      '@xata.io/client': '*'
+      better-sqlite3: '>=7'
+      bun-types: '*'
+      expo-sqlite: '>=13.2.0'
+      knex: '*'
+      kysely: '*'
+      mysql2: '>=2'
+      pg: '>=8'
+      postgres: '>=3'
+      prisma: '*'
+      react: '>=18'
+      sql.js: '>=1'
+      sqlite3: '>=5'
+    peerDependenciesMeta:
+      '@aws-sdk/client-rds-data':
+        optional: true
+      '@cloudflare/workers-types':
+        optional: true
+      '@electric-sql/pglite':
+        optional: true
+      '@libsql/client':
+        optional: true
+      '@neondatabase/serverless':
+        optional: true
+      '@op-engineering/op-sqlite':
+        optional: true
+      '@opentelemetry/api':
+        optional: true
+      '@planetscale/database':
+        optional: true
+      '@prisma/client':
+        optional: true
+      '@tidbcloud/serverless':
+        optional: true
+      '@types/better-sqlite3':
+        optional: true
+      '@types/pg':
+        optional: true
+      '@types/react':
+        optional: true
+      '@types/sql.js':
+        optional: true
+      '@vercel/postgres':
+        optional: true
+      '@xata.io/client':
+        optional: true
+      better-sqlite3:
+        optional: true
+      bun-types:
+        optional: true
+      expo-sqlite:
+        optional: true
+      knex:
+        optional: true
+      kysely:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      postgres:
+        optional: true
+      prisma:
+        optional: true
+      react:
+        optional: true
+      sql.js:
+        optional: true
+      sqlite3:
+        optional: true
+
+  drizzle-orm@0.34.1:
+    resolution: {integrity: sha512-t+zCwyWWt8xTqtYV4doE/xYmT7hpv1L8pQ66zddEz+3VWyedBBtctjMAp22mAJPfyWurRQXUJ1nrTtqLq+DqNA==}
+    peerDependencies:
+      '@aws-sdk/client-rds-data': '>=3'
+      '@cloudflare/workers-types': '>=3'
+      '@electric-sql/pglite': '>=0.1.1'
+      '@libsql/client': '>=0.10.0'
       '@neondatabase/serverless': '>=0.1'
       '@op-engineering/op-sqlite': '>=2'
       '@opentelemetry/api': ^1.4.1
@@ -5660,6 +5749,15 @@ snapshots:
   dotenv@16.4.5: {}
 
   drizzle-orm@0.31.4(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.1)(react@18.3.1):
+    optionalDependencies:
+      '@aws-sdk/client-rds-data': 3.665.0(aws-crt@1.22.0)
+      '@opentelemetry/api': 1.9.0
+      better-sqlite3: 11.5.0
+      kysely: 0.26.3
+      pg: 8.13.1
+      react: 18.3.1
+
+  drizzle-orm@0.34.1(@aws-sdk/client-rds-data@3.665.0(aws-crt@1.22.0))(@opentelemetry/api@1.9.0)(better-sqlite3@11.5.0)(kysely@0.26.3)(pg@8.13.1)(react@18.3.1):
     optionalDependencies:
       '@aws-sdk/client-rds-data': 3.665.0(aws-crt@1.22.0)
       '@opentelemetry/api': 1.9.0
