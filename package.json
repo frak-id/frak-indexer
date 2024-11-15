@@ -11,14 +11,18 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@types/aws-lambda": "8.10.138",
+    "@pulumi/aws": "^6.59.1",
+    "@types/aws-lambda": "8.10.145",
     "@types/node": "^22.5.4",
     "aws-cdk-lib": "2.142.1",
-    "sst": "2.43.6",
+    "sst": "3.3.22",
     "typescript": "^5.6.3"
   },
   "engines": {
     "node": ">=18.14"
   },
-  "packageManager": "pnpm@9.1.3"
+  "packageManager": "pnpm@9.1.3",
+  "dependencies": {
+    "sst": "3.3.22"
+  }
 }
