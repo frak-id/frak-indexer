@@ -14,7 +14,7 @@ import {
 
 type Port = `${number}/${"http" | "https" | "tcp" | "udp" | "tcp_udp" | "tls"}`;
 
-type ServiceDomainArgs = {
+type ServiceTargetArgs = {
     vpcId: Output<string>;
     // The domain on which it will be linked
     domain: string;
@@ -35,6 +35,8 @@ type ServiceDomainArgs = {
 };
 
 export class ServiceTargets extends Component {
+    private readonly dns = awsDns();
+
     private readonly certificate: DnsValidatedCertificate;
     private readonly lb: Promise<aws.lb.GetLoadBalancerResult>;
 
@@ -43,10 +45,10 @@ export class ServiceTargets extends Component {
 
     constructor(
         private name: string,
-        private args: ServiceDomainArgs,
+        private args: ServiceTargetArgs,
         opts?: ComponentResourceOptions
     ) {
-        super("sst:frak:ServiceDomain", name, args, opts);
+        super("sst:frak:ServiceTarget", name, args, opts);
 
         // Get the master load balancer
         this.lb = this.getMasterLoadBalancer();
@@ -76,7 +78,7 @@ export class ServiceTargets extends Component {
             `${this.name}Ssl`,
             {
                 domainName: this.args.domain,
-                dns: awsDns(),
+                dns: this.dns,
             },
             { parent: this }
         );
@@ -182,9 +184,8 @@ export class ServiceTargets extends Component {
 
     // Register the service dns alias
     private registerDnsAlias() {
-        const dns = awsDns();
         all([this.lb]).apply(([lb]) => {
-            dns.createAlias(
+            this.dns.createAlias(
                 this.name,
                 {
                     name: this.args.domain,
