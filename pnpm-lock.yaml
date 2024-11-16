@@ -18,6 +18,9 @@ importers:
       '@pulumi/aws':
         specifier: ^6.59.1
         version: 6.59.1(typescript@5.6.3)
+      '@pulumi/pulumi':
+        specifier: ^3.139.0
+        version: 3.139.0(typescript@5.6.3)
       '@types/aws-lambda':
         specifier: 8.10.145
         version: 8.10.145

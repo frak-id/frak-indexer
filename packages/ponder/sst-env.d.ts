@@ -6,10 +6,9 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "ErpcService": {
+    "Erpc": {
       "service": string
       "type": "sst.aws.Service"
-      "url": string
     }
     "MasterVpc": {
       "type": "sst.aws.Vpc"

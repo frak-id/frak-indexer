@@ -14,6 +14,8 @@ export default $config({
         };
     },
     async run() {
+        await import("./infra/common.ts");
+
         // ERPC deployment on prod
         if ($app.stage === "production") {
             await import("./infra/erpc.ts");
