@@ -35,6 +35,8 @@ const externalErpcUrl = "https://rpc.frak-labs.com/ponder-dev-rpc/evm";
 
 export const ponderEnv = {
     environment: {
+        // For legacy images
+        ERPC_URL: cloudmapErpcUrl,
         INTERNAL_RPC_URL: cloudmapErpcUrl,
         EXTERNAL_RPC_URL: externalErpcUrl,
     },

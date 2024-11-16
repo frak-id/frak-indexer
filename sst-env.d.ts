@@ -2,7 +2,24 @@
 /* tslint:disable */
 /* eslint-disable */
 /* deno-fmt-ignore-file */
-import "sst";
+import "sst"
+export {}
 declare module "sst" {
-    export interface Resource {}
+  export interface Resource {
+    "Erpc": {
+      "service": string
+      "type": "sst.aws.Service"
+    }
+    "MasterVpc": {
+      "type": "sst.aws.Vpc"
+    }
+    "PonderProdIndexer": {
+      "service": string
+      "type": "sst.aws.Service"
+    }
+    "PonderProdReader": {
+      "service": string
+      "type": "sst.aws.Service"
+    }
+  }
 }

@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "deploy": "sst deploy --stage prod",
+    "deploy:prod": "sst deploy --stage production",
+    "deploy:dev": "sst deploy --stage dev",
     "format": "biome check --write .",
     "format:check": "biome check .",
     "lint": "biome lint .",

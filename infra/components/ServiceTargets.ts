@@ -1,8 +1,8 @@
 import * as aws from "@pulumi/aws";
 import {
     type ComponentResourceOptions,
-    type Output,
-    all,
+    Output,
+    all, output,
 } from "@pulumi/pulumi";
 import { DnsValidatedCertificate } from "../../.sst/platform/src/components/aws/dns-validated-certificate.js";
 import { dns as awsDns } from "../../.sst/platform/src/components/aws/dns.js";
@@ -134,9 +134,16 @@ export class ServiceTargets extends Component {
                     );
                 targets[targetId] = target;
 
+                // Try to find an existing listener
+                const existingListener = Output.create(aws.lb.getListener({
+                    loadBalancerArn: lb.arn,
+                    port: listenPort,
+                }).catch(() => null));
+
                 const listenerId = `${listenProtocol}${listenPort}`;
                 const listener =
                     listeners[listenerId] ??
+                    existingListener ??
                     new aws.lb.Listener(
                         `${this.name}Listener${listenerId}`,
                         {
