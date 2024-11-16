@@ -34,7 +34,7 @@ const erpcServiceTargets = new ServiceTargets("ErpcServiceDomain", {
 });
 
 // Create the erpc service (only on prod stage)
-new Service("Erpc", {
+export const erpcService = new Service("Erpc", {
     vpc,
     cluster: {
         name: cluster.clusterName,
@@ -53,6 +53,10 @@ new Service("Erpc", {
         max: 4,
         cpuUtilization: 80,
         memoryUtilization: 80,
+    },
+    // Logging options
+    logging: {
+        retention: "3 days",
     },
     // Env
     environment: {
@@ -78,9 +82,9 @@ new Service("Erpc", {
         ERPC_DATABASE_URL:
             "arn:aws:ssm:eu-west-1:262732185023:parameter/indexer/sst/Secret/ERPC_DATABASE_URL/value",
     },
-    // Logging options
-    logging: {
-        retention: "3 days",
+    // Tell the service registry to forward requests to the 8080 port
+    serviceRegistry: {
+        port: 8080,
     },
     // Link the service to the target groups we previously build
     transform: {
@@ -98,5 +102,3 @@ new Service("Erpc", {
         },
     },
 });
-
-// Add the target groups to the erpc service
