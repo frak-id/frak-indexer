@@ -1,9 +1,5 @@
 import * as aws from "@pulumi/aws";
-import {
-    type ComponentResourceOptions,
-    Output,
-    all, output,
-} from "@pulumi/pulumi";
+import { type ComponentResourceOptions, Output, all } from "@pulumi/pulumi";
 import { DnsValidatedCertificate } from "../../.sst/platform/src/components/aws/dns-validated-certificate.js";
 import { dns as awsDns } from "../../.sst/platform/src/components/aws/dns.js";
 import { Component } from "../../.sst/platform/src/components/component.js";
@@ -68,7 +64,7 @@ export class ServiceTargets extends Component {
     // Get the master load balancer
     private getMasterLoadBalancer() {
         return aws.lb.getLoadBalancer({
-            name: "master-elb",
+            name: `master-elb-${$app.stage}`,
         });
     }
 
@@ -135,11 +131,16 @@ export class ServiceTargets extends Component {
                 targets[targetId] = target;
 
                 // Try to find an existing listener
-                const existingListener = Output.create(aws.lb.getListener({
-                    loadBalancerArn: lb.arn,
-                    port: listenPort,
-                }).catch(() => null));
+                const existingListener = Output.create(
+                    aws.lb
+                        .getListener({
+                            loadBalancerArn: lb.arn,
+                            port: listenPort,
+                        })
+                        .catch(() => null)
+                );
 
+                // Get or build the listener for this [prt
                 const listenerId = `${listenProtocol}${listenPort}`;
                 const listener =
                     listeners[listenerId] ??

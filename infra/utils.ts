@@ -1,5 +1,4 @@
 import { vpc } from "./common.ts";
-import { erpcService } from "./erpc.ts";
 
 /**
  * Get the ponder entrypoint
@@ -29,8 +28,10 @@ export function getPonderEntrypoint(type: "indexer" | "reader") {
 /**
  * Get the ponder env and ssm variable
  */
-const cloudmapNamespaceId = vpc.nodes.cloudmapNamespace.id;
-const cloudmapErpcUrl = `http://${cloudmapNamespaceId}.${erpcService.nodes.cloudmapService.name}/ponder-dev-rpc/evm`;
+const cloudmapErpcUrl = vpc.nodes.cloudmapNamespace.name.apply(
+    (namespaceName) =>
+        `http://Erpc.production.frak-indexer.${namespaceName}/ponder-dev-rpc/evm`
+);
 const externalErpcUrl = "https://rpc.frak-labs.com/ponder-dev-rpc/evm";
 
 export const ponderEnv = {

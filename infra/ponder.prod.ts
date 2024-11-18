@@ -14,27 +14,34 @@ const image = await aws.ecr.getImage({
 /**
  * Build the ponder indexing service
  */
-export const ponderIndexer = new Service("PonderProdIndexer", {
-    vpc,
-    cluster: {
-        name: cluster.clusterName,
-        arn: cluster.arn,
-    },
-    // hardware config
-    cpu: "0.25 vCPU",
-    memory: "0.5 GB",
-    storage: "20 GB",
-    architecture: "arm64",
-    // Image to be used
-    image: image.imageUri,
-    entrypoint: getPonderEntrypoint("indexer"),
-    // Env
-    ...ponderEnv,
-    // Logging options
-    logging: {
-        retention: "3 days",
-    },
-});
+// export const ponderIndexer = new Service("PonderProdIndexer", {
+//     vpc,
+//     cluster: {
+//         name: cluster.clusterName,
+//         arn: cluster.arn,
+//     },
+//     // hardware config
+//     cpu: "0.25 vCPU",
+//     memory: "0.5 GB",
+//     storage: "20 GB",
+//     architecture: "arm64",
+//     // Image to be used
+//     image: image.imageUri,
+//     entrypoint: getPonderEntrypoint("indexer"),
+//     // Env
+//     ...ponderEnv,
+//     // Logging options
+//     logging: {
+//         retention: "3 days",
+//     },
+//     transform: {
+//         service: {
+//             // Disable rollup update for the indexer
+//             deploymentMinimumHealthyPercent: 0,
+//             deploymentMaximumPercent: 100,
+//         }
+//     }
+// });
 
 // Create the service targets
 const ponderServiceTargets = new ServiceTargets("PonderProdServiceDomain", {
