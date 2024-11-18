@@ -2,16 +2,17 @@
 /* tslint:disable */
 /* eslint-disable */
 /* deno-fmt-ignore-file */
-import "sst";
+import "sst"
+export {}
 declare module "sst" {
-    export interface Resource {
-        MasterVpc: {
-            bastion: string;
-            type: "sst.aws.Vpc";
-        };
-        PonderDevIndexer: {
-            service: string;
-            type: "sst.aws.Service";
-        };
+  export interface Resource {
+    "MasterVpc": {
+      "bastion": string
+      "type": "sst.aws.Vpc"
     }
+    "PonderDevIndexer": {
+      "service": string
+      "type": "sst.aws.Service"
+    }
+  }
 }

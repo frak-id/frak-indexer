@@ -14,46 +14,51 @@ const image = await aws.ecr.getImage({
 /**
  * Build the ponder indexing service
  */
-// export const ponderIndexer = new Service("PonderProdIndexer", {
-//     vpc,
-//     cluster: {
-//         name: cluster.clusterName,
-//         arn: cluster.arn,
-//     },
-//     // hardware config
-//     cpu: "0.25 vCPU",
-//     memory: "0.5 GB",
-//     storage: "20 GB",
-//     architecture: "arm64",
-//     // Image to be used
-//     image: image.imageUri,
-//     entrypoint: getPonderEntrypoint("indexer"),
-//     // Env
-//     ...ponderEnv,
-//     // Logging options
-//     logging: {
-//         retention: "3 days",
-//     },
-//     transform: {
-//         service: {
-//             // Disable rollup update for the indexer
-//             deploymentMinimumHealthyPercent: 0,
-//             deploymentMaximumPercent: 100,
-//         }
-//     }
-// });
+export const ponderIndexer = new Service("PonderProdIndexer", {
+    vpc,
+    cluster: {
+        name: cluster.clusterName,
+        arn: cluster.arn,
+    },
+    // Disable scaling on prod reader
+    scaling: {
+        cpuUtilization: false,
+        memoryUtilization: false,
+    },
+    // hardware config
+    cpu: "0.25 vCPU",
+    memory: "0.5 GB",
+    storage: "20 GB",
+    architecture: "arm64",
+    // Image to be used
+    image: image.imageUri,
+    entrypoint: getPonderEntrypoint("indexer"),
+    // Env
+    ...ponderEnv,
+    // Logging options
+    logging: {
+        retention: "3 days",
+    },
+    transform: {
+        service: {
+            // Disable rollup update for the indexer
+            deploymentMinimumHealthyPercent: 0,
+            deploymentMaximumPercent: 100,
+        },
+    },
+});
 
 // Create the service targets
 const ponderServiceTargets = new ServiceTargets("PonderProdServiceDomain", {
     vpcId: vpc.id,
-    domain: "ponder.frak-labs.com",
+    domain: "indexer.frak.id",
     ports: [
         { listen: "80/http", forward: "42069/http" },
         { listen: "443/https", forward: "42069/http" },
     ],
     health: {
         path: "/health",
-        interval: "30 seconds",
+        interval: "60 seconds",
         timeout: "5 seconds",
         successCodes: "200-299",
         healthyThreshold: 2,

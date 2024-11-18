@@ -18,14 +18,14 @@ const image = await aws.ecr.getImage({
 // Create the service targets
 const erpcServiceTargets = new ServiceTargets("ErpcServiceDomain", {
     vpcId: vpc.id,
-    domain: "rpc.frak-labs.com",
+    domain: "rpc.frak.id",
     ports: [
         { listen: "80/http", forward: "8080/http" },
         { listen: "443/https", forward: "8080/http" },
     ],
     health: {
         path: "/healthcheck",
-        interval: "30 seconds",
+        interval: "60 seconds",
         timeout: "5 seconds",
         successCodes: "200-499",
         healthyThreshold: 2,

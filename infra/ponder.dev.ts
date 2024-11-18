@@ -14,14 +14,14 @@ const image = await aws.ecr.getImage({
 // Create the service targets
 const ponderServiceTargets = new ServiceTargets("PonderDevServiceDomain", {
     vpcId: vpc.id,
-    domain: "ponder-dev.frak-labs.com",
+    domain: "indexer-dev.frak.id",
     ports: [
         { listen: "80/http", forward: "42069/http" },
         { listen: "443/https", forward: "42069/http" },
     ],
     health: {
         path: "/health",
-        interval: "30 seconds",
+        interval: "60 seconds",
         timeout: "5 seconds",
         successCodes: "200-299",
         healthyThreshold: 2,
@@ -37,6 +37,11 @@ export const ponderIndexer = new Service("PonderDevIndexer", {
     cluster: {
         name: cluster.clusterName,
         arn: cluster.arn,
+    },
+    // Disable scaling on dev
+    scaling: {
+        cpuUtilization: false,
+        memoryUtilization: false,
     },
     // hardware config
     cpu: "0.25 vCPU",
