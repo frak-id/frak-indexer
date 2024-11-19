@@ -140,7 +140,11 @@ jobs:
 
       - name: "🚀 SST Deploy"
         run: |
-          echo "Deploying with stage: prod"
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            pnpm run deploy:prod
+          else
+            pnpm run deploy:dev
+          fi
           pnpm sst deploy --stage prod
         env:
           ERPC_IMAGE_TAG: ${{ steps.changes.outputs.erpc == 'true' && github.sha || 'latest' }}
