@@ -168,7 +168,7 @@ const pimlicoUpstream = buildPimlicoUpstream({
 const ponderProject: ProjectConfig = buildProject({
     id: "ponder-rpc",
     networks,
-    upstreams: [alchemyUpstream],
+    upstreams: [alchemyUpstream, envioUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
