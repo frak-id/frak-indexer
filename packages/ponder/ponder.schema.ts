@@ -4,28 +4,31 @@ import { index, onchainEnum, onchainTable } from "@ponder/core";
 /*                            Product related stuff                           */
 /* -------------------------------------------------------------------------- */
 
-export const productTable = onchainTable("Product", (t) => ({
-    id: t.bigint().primaryKey(),
+export const productTable = onchainTable(
+    "Product",
+    (t) => ({
+        id: t.bigint().primaryKey(),
 
-    domain: t.varchar().notNull(),
-    productTypes: t.bigint().notNull(),
-    name: t.varchar().notNull(),
+        domain: t.varchar().notNull(),
+        productTypes: t.bigint().notNull(),
+        name: t.varchar().notNull(),
 
-    createTimestamp: t.bigint().notNull(),
-    lastUpdateTimestamp: t.bigint(),
+        createTimestamp: t.bigint().notNull(),
+        lastUpdateTimestamp: t.bigint(),
 
-    metadataUrl: t.varchar(),
-}));
+        metadataUrl: t.varchar(),
+    }),
+    (table) => ({
+        domainIdx: index().on(table.domain),
+    })
+);
 
 export const productAdministratorTable = onchainTable(
     "ProductAdministrator",
     (t) => ({
         id: t.hex().primaryKey(),
 
-        productId: t
-            .bigint()
-            .notNull()
-            .references(() => productTable.id),
+        productId: t.bigint().notNull(),
 
         isOwner: t.boolean().notNull(),
         roles: t.bigint().notNull(),
@@ -44,10 +47,7 @@ export const productInteractionContractTable = onchainTable(
     (t) => ({
         id: t.hex().primaryKey(),
 
-        productId: t
-            .bigint()
-            .notNull()
-            .references(() => productTable.id),
+        productId: t.bigint().notNull(),
         referralTree: t.hex().notNull(),
 
         createdTimestamp: t.bigint().notNull(),
@@ -82,10 +82,7 @@ export const interactionEventTable = onchainTable(
     (t) => ({
         id: t.varchar().primaryKey(),
 
-        interactionId: t
-            .hex()
-            .notNull()
-            .references(() => productInteractionContractTable.id),
+        interactionId: t.hex().notNull(),
         user: t.hex().notNull(),
         type: interactionEventTypeEnum().notNull(),
         data: t.json(),
@@ -112,20 +109,14 @@ export const campaignTable = onchainTable(
         name: t.varchar().notNull(),
         version: t.varchar().notNull(),
 
-        productId: t
-            .bigint()
-            .notNull()
-            .references(() => productTable.id),
-        interactionContractId: t
-            .hex()
-            .notNull()
-            .references(() => productInteractionContractTable.id),
+        productId: t.bigint().notNull(),
+        interactionContractId: t.hex().notNull(),
         attached: t.boolean().notNull(),
 
         attachTimestamp: t.bigint().notNull(),
         detachTimestamp: t.bigint(),
 
-        bankingContractId: t.hex().references(() => bankingContractTable.id),
+        bankingContractId: t.hex(),
         isAuthorisedOnBanking: t.boolean().notNull(),
     }),
     (table) => ({
@@ -140,10 +131,7 @@ export const referralCampaignStatsTable = onchainTable(
     (t) => ({
         id: t.hex().primaryKey(),
 
-        campaignId: t
-            .hex()
-            .notNull()
-            .references(() => campaignTable.id),
+        campaignId: t.hex().notNull(),
 
         totalInteractions: t.bigint().notNull(),
 
@@ -170,10 +158,7 @@ export const campaignCapResetTable = onchainTable(
     (t) => ({
         id: t.varchar().primaryKey(),
 
-        campaignId: t
-            .hex()
-            .notNull()
-            .references(() => campaignTable.id),
+        campaignId: t.hex().notNull(),
         timestamp: t.bigint().notNull(),
         previousTimestamp: t.bigint().notNull(),
         distributedAmount: t.bigint().notNull(),
@@ -196,14 +181,8 @@ export const bankingContractTable = onchainTable(
     "BankingContract",
     (t) => ({
         id: t.hex().primaryKey(),
-        tokenId: t
-            .hex()
-            .notNull()
-            .references(() => tokenTable.id),
-        productId: t
-            .bigint()
-            .notNull()
-            .references(() => productTable.id),
+        tokenId: t.hex().notNull(),
+        productId: t.bigint().notNull(),
         totalDistributed: t.bigint().notNull(),
         totalClaimed: t.bigint().notNull(),
         isDistributing: t.boolean().notNull(),
@@ -217,10 +196,7 @@ export const rewardTable = onchainTable(
     "Reward",
     (t) => ({
         id: t.varchar().primaryKey(),
-        contractId: t
-            .hex()
-            .notNull()
-            .references(() => bankingContractTable.id),
+        contractId: t.hex().notNull(),
         user: t.hex().notNull(),
         pendingAmount: t.bigint().notNull(),
         totalReceived: t.bigint().notNull(),
@@ -236,10 +212,7 @@ export const rewardAddedEventTable = onchainTable(
     "RewardAddedEvent",
     (t) => ({
         id: t.varchar().primaryKey(),
-        rewardId: t
-            .varchar()
-            .notNull()
-            .references(() => rewardTable.id),
+        rewardId: t.varchar().notNull(),
         emitter: t.hex().notNull(),
         amount: t.bigint().notNull(),
         txHash: t.hex().notNull(),
@@ -254,10 +227,7 @@ export const rewardClaimedEventTable = onchainTable(
     "RewardClaimedEvent",
     (t) => ({
         id: t.varchar().primaryKey(),
-        rewardId: t
-            .varchar()
-            .notNull()
-            .references(() => rewardTable.id),
+        rewardId: t.varchar().notNull(),
         amount: t.bigint().notNull(),
         txHash: t.hex().notNull(),
         timestamp: t.bigint().notNull(),
