@@ -214,7 +214,7 @@ const drpcUpstream: UpstreamConfig = {
 const ponderProject: ProjectConfig = buildProject({
     id: "ponder-rpc",
     networks,
-    upstreams: [alchemyUpstream, llamaFreeRpcUpstreamArb, drpcUpstream],
+    upstreams: [alchemyUpstream, envioUpstream, llamaFreeRpcUpstreamArb, drpcUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
