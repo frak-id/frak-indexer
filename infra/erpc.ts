@@ -73,6 +73,8 @@ export const erpcService = new Service("Erpc", {
             "arn:aws:ssm:eu-west-1:262732185023:parameter/sst/frak-indexer/.fallback/Secret/ALCHEMY_API_KEY/value",
         PIMLICO_API_KEY:
             "arn:aws:ssm:eu-west-1:262732185023:parameter/sst/frak-indexer/.fallback/Secret/PIMLICO_API_KEY/value",
+        DRPC_API_KEY:
+            "arn:aws:ssm:eu-west-1:262732185023:parameter/sst/frak-indexer/.fallback/Secret/DRPC_API_KEY/value",
         // Endpoints secrets,
         PONDER_RPC_SECRET:
             "arn:aws:ssm:eu-west-1:262732185023:parameter/sst/frak-indexer/.fallback/Secret/PONDER_RPC_SECRET/value",

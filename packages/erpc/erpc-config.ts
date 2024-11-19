@@ -1,5 +1,6 @@
 import {
     type ProjectConfig,
+    type UpstreamConfig,
     buildAlchemyUpstream,
     buildEnvioUpstream,
     buildEvmNetworks,
@@ -16,15 +17,7 @@ import {
     buildErpcConfig,
 } from "@konfeature/erpc-config-generator";
 import type { EIP1474Methods } from "viem";
-import {
-    arbitrum,
-    arbitrumSepolia,
-    base,
-    baseSepolia,
-    optimism,
-    optimismSepolia,
-    polygon,
-} from "viem/chains";
+import { arbitrum, arbitrumSepolia } from "viem/chains";
 
 /* -------------------------------------------------------------------------- */
 /*                  Config generator for the Frak eRPC config                 */
@@ -36,7 +29,7 @@ const envioRateLimits = buildRateLimit({
     rules: [
         {
             method: "*",
-            maxCount: 600,
+            maxCount: 400,
             period: "1s",
         },
     ],
@@ -46,7 +39,7 @@ const alchemyRateLimits = buildRateLimit({
     rules: [
         {
             method: "*",
-            maxCount: 400,
+            maxCount: 200,
             period: "1s",
         },
     ],
@@ -71,10 +64,40 @@ const pimlicoRateLimits = buildRateLimit({
         },
     ],
 });
+const drpcRpcRateLimits = buildRateLimit({
+    id: "drpc-rate-limit",
+    rules: [
+        {
+            method: "*",
+            maxCount: 200,
+            period: "1s",
+        },
+    ],
+});
+const llamaFreeRpcRateLimits = buildRateLimit({
+    id: "llama-free-rpc-rate-limit",
+    rules: [
+        {
+            method: "*",
+            maxCount: 50,
+            period: "1s",
+        },
+    ],
+});
+const tenderlyFreeRpcRateLimits = buildRateLimit({
+    id: "tenderly-free-rpc-rate-limit",
+    rules: [
+        {
+            method: "*",
+            maxCount: 50,
+            period: "1s",
+        },
+    ],
+});
 
 // Each networks we will use
 const mainnetNetworks = buildEvmNetworks({
-    chains: [polygon, arbitrum, optimism, base],
+    chains: [arbitrum],
     generic: {
         // Some failsafe config
         failsafe: {
@@ -96,7 +119,7 @@ const mainnetNetworks = buildEvmNetworks({
     },
 });
 const testnetNetworks = buildEvmNetworks({
-    chains: [arbitrumSepolia, optimismSepolia, baseSepolia],
+    chains: [arbitrumSepolia],
     generic: {
         // Some failsafe config
         failsafe: {
@@ -163,12 +186,35 @@ const pimlicoUpstream = buildPimlicoUpstream({
     ignoreMethods: ["*"],
     allowMethods: pimlicoSpecificMethods,
 });
+const llamaFreeRpcUpstreamArb = buildEvmUpstream({
+    id: "llama-arbitrum-free-rpc",
+    endpoint: "https://arbitrum.llamarpc.com",
+    rateLimitBudget: llamaFreeRpcRateLimits.id,
+    ignoreMethods: ["*"],
+    allowMethods: ["eth_getBlockByNumber"],
+});
+const tenderlyFreeRpcUpstreamArbSepolia = buildEvmUpstream({
+    id: "tenderly-arbitrum-sepolia-free-rpc",
+    endpoint: "https://arbitrum-sepolia.gateway.tenderly.co",
+    rateLimitBudget: tenderlyFreeRpcRateLimits.id,
+    ignoreMethods: ["*"],
+    allowMethods: ["eth_getBlockByNumber"],
+});
+const drpcUpstream: UpstreamConfig = {
+    id: "drpc-rpc",
+    type: "evm+drpc",
+    vendorName: "drpc",
+    endpoint: `drpc://${envVariable("DRPC_API_KEY")}`,
+    rateLimitBudget: drpcRpcRateLimits.id,
+    ignoreMethods: ["*"],
+    allowMethods: ["eth_getBlockByNumber", "eth_getLogs"],
+};
 
 // Build the ponder indexing project
 const ponderProject: ProjectConfig = buildProject({
     id: "ponder-rpc",
     networks,
-    upstreams: [alchemyUpstream, envioUpstream],
+    upstreams: [alchemyUpstream, llamaFreeRpcUpstreamArb, drpcUpstream],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
@@ -184,7 +230,12 @@ const ponderProject: ProjectConfig = buildProject({
 const ponderDevProject: ProjectConfig = buildProject({
     id: "ponder-dev-rpc",
     networks,
-    upstreams: [alchemyUpstream, envioUpstream],
+    upstreams: [
+        alchemyUpstream,
+        tenderlyFreeRpcUpstreamArbSepolia,
+        drpcUpstream,
+        envioUpstream,
+    ],
     auth: {
         strategies: [
             buildSecretAuthStrategy({
@@ -250,6 +301,9 @@ export default buildErpcConfig({
                 alchemyRateLimits,
                 pimlicoRateLimits,
                 blockPiRateLimits,
+                drpcRpcRateLimits,
+                llamaFreeRpcRateLimits,
+                tenderlyFreeRpcRateLimits,
             ],
         },
     },
