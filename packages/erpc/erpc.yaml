@@ -53,13 +53,13 @@ projects:
         architecture: evm
         rateLimitBudget: ""
     upstreams:
-      - &var3
+      - &var4
         id: alchemy
         endpoint: evm+alchemy://${ALCHEMY_API_KEY}
         type: evm+alchemy
         rateLimitBudget: alchemy-rate-limit
         vendorName: Alchemy
-        ignoreMethods: &var4
+        ignoreMethods: &var5
           - eth_estimateUserOperationGas
           - eth_getUserOperationByHash
           - eth_getUserOperationReceipt
@@ -92,32 +92,8 @@ projects:
           - eth_chainId
           - eth_getBlockByNumber
           - eth_getLogs
-    auth:
-      strategies:
-        - allowMethods:
-            - "*"
-          ignoreMethods: []
-          rateLimitBudget: ""
-          type: secret
-          secret:
-            value: ${PONDER_RPC_SECRET}
-  - rateLimitBudget: ""
-    id: ponder-dev-rpc
-    networks: *var1
-    upstreams:
-      - id: tenderly-arbitrum-sepolia-free-rpc
-        endpoint: https://arbitrum-sepolia.gateway.tenderly.co
-        rateLimitBudget: tenderly-free-rpc-rate-limit
-        type: evm
-        vendorName: Generic Evm
-        ignoreMethods:
-          - "*"
-        allowMethods:
-          - eth_chainId
-          - eth_getBlockByNumber
-        autoIgnoreUnsupportedMethods: true
-      - *var2
-      - id: envio
+      - &var3
+        id: envio
         endpoint: evm+envio://rpc.hypersync.xyz
         rateLimitBudget: envion-rate-limit
         type: evm+envio
@@ -146,10 +122,36 @@ projects:
           secret:
             value: ${PONDER_RPC_SECRET}
   - rateLimitBudget: ""
+    id: ponder-dev-rpc
+    networks: *var1
+    upstreams:
+      - id: tenderly-arbitrum-sepolia-free-rpc
+        endpoint: https://arbitrum-sepolia.gateway.tenderly.co
+        rateLimitBudget: tenderly-free-rpc-rate-limit
+        type: evm
+        vendorName: Generic Evm
+        ignoreMethods:
+          - "*"
+        allowMethods:
+          - eth_chainId
+          - eth_getBlockByNumber
+        autoIgnoreUnsupportedMethods: true
+      - *var2
+      - *var3
+    auth:
+      strategies:
+        - allowMethods:
+            - "*"
+          ignoreMethods: []
+          rateLimitBudget: ""
+          type: secret
+          secret:
+            value: ${PONDER_RPC_SECRET}
+  - rateLimitBudget: ""
     id: nexus-rpc
     networks: *var1
     upstreams:
-      - *var3
+      - *var4
       - id: pimlico
         endpoint: evm+pimlico://${PIMLICO_API_KEY}
         rateLimitBudget: pimlico-rate-limit
@@ -157,7 +159,7 @@ projects:
         vendorName: Pimlico
         ignoreMethods:
           - "*"
-        allowMethods: *var4
+        allowMethods: *var5
         autoIgnoreUnsupportedMethods: true
     cors:
       allowedOrigins:
