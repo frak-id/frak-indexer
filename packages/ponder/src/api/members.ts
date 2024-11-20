@@ -1,4 +1,4 @@
-import { type ApiContext, ponder } from "@/generated";
+import { ponder } from "@/generated";
 import {
     and,
     asc,
@@ -15,6 +15,13 @@ import {
 } from "@ponder/core";
 import type { SQL } from "drizzle-orm";
 import { type Address, type Hex, isAddress } from "viem";
+import {
+    interactionEventTable,
+    productAdministratorTable,
+    productInteractionContractTable,
+    productTable,
+    rewardTable,
+} from "../../ponder.schema";
 
 /**
  * Params for the members fetching
@@ -68,24 +75,18 @@ ponder.post("/members/:productAdmin", async (ctx) => {
     const { filter, sort, limit, offset, noData, onlyAddress } =
         await ctx.req.json<GetMembersParams>();
 
-    // Get all the product ids for this admin
-    const {
-        Product,
-        ProductAdministrator,
-        InteractionEvent,
-        ProductInteractionContract,
-        Reward,
-    } = ctx.tables;
-
     // Perform the sql query
     const productIds = await ctx.db
         .select({
-            id: ProductAdministrator.productId,
-            name: Product.name,
+            id: productAdministratorTable.productId,
+            name: productTable.name,
         })
-        .from(ProductAdministrator)
-        .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
-        .where(eq(ProductAdministrator.user, wallet));
+        .from(productAdministratorTable)
+        .innerJoin(
+            productTable,
+            eq(productAdministratorTable.productId, productTable.id)
+        )
+        .where(eq(productAdministratorTable.user, wallet));
 
     // If no product found, early exit
     if (!productIds.length) {
@@ -93,14 +94,13 @@ ponder.post("/members/:productAdmin", async (ctx) => {
     }
 
     const { whereClauses, havingClauses } = getFilterClauses({
-        tables: ctx.tables,
         filter,
     });
 
     // Append a clause to filter only the products for this admin
     whereClauses.push(
         inArray(
-            ProductInteractionContract.productId,
+            productInteractionContractTable.productId,
             productIds.map((p) => BigInt(p.id))
         )
     );
@@ -110,20 +110,23 @@ ponder.post("/members/:productAdmin", async (ctx) => {
     // We want to get the total interactions for each user
     const membersQuery = ctx.db
         .select({
-            user: InteractionEvent.user,
-            totalInteractions: count(InteractionEvent.id),
-            rewards: sql<bigint>`coalesce(sum(${Reward.totalReceived}), 0)`,
+            user: interactionEventTable.user,
+            totalInteractions: count(interactionEventTable.id),
+            rewards: sql<bigint>`coalesce(sum(${rewardTable.totalReceived}), 0)`,
             productIds: sql<
                 string[]
-            >`array_agg(distinct ${ProductInteractionContract.productId}::text)`,
-            firstInteractionTimestamp: min(InteractionEvent.timestamp),
+            >`array_agg(distinct ${productInteractionContractTable.productId}::text)`,
+            firstInteractionTimestamp: min(interactionEventTable.timestamp),
         })
-        .from(InteractionEvent)
+        .from(interactionEventTable)
         .innerJoin(
-            ProductInteractionContract,
-            eq(InteractionEvent.interactionId, ProductInteractionContract.id)
+            productInteractionContractTable,
+            eq(
+                interactionEventTable.interactionId,
+                productInteractionContractTable.id
+            )
         )
-        .leftJoin(Reward, eq(Reward.user, InteractionEvent.user))
+        .leftJoin(rewardTable, eq(rewardTable.user, interactionEventTable.user))
         .where(
             whereClauses.length === 1 ? whereClauses[0] : and(...whereClauses)
         )
@@ -134,7 +137,7 @@ ponder.post("/members/:productAdmin", async (ctx) => {
                   ? havingClauses[0]
                   : and(...havingClauses)
         )
-        .groupBy(InteractionEvent.user);
+        .groupBy(interactionEventTable.user);
 
     // Get the total results count
     const membersSubQuery = membersQuery.as("members");
@@ -158,10 +161,10 @@ ponder.post("/members/:productAdmin", async (ctx) => {
     // Apply the order
     if (sort) {
         const sortFieldMap = {
-            user: InteractionEvent.user,
-            totalInteractions: count(InteractionEvent.id),
-            rewards: sql<bigint>`coalesce(sum(${Reward.totalReceived}), 0)`,
-            firstInteractionTimestamp: min(InteractionEvent.timestamp),
+            user: interactionEventTable.user,
+            totalInteractions: count(interactionEventTable.id),
+            rewards: sql<bigint>`coalesce(sum(${rewardTable.totalReceived}), 0)`,
+            firstInteractionTimestamp: min(interactionEventTable.timestamp),
         };
         const orderByField = sortFieldMap[sort.by as keyof typeof sortFieldMap];
         if (!orderByField) {
@@ -202,13 +205,7 @@ ponder.post("/members/:productAdmin", async (ctx) => {
 /**
  * Get all the filter clauses
  */
-function getFilterClauses({
-    tables,
-    filter,
-}: { tables: ApiContext["tables"]; filter: GetMembersParams["filter"] }) {
-    // Get all the product ids for this admin
-    const { InteractionEvent, ProductInteractionContract, Reward } = tables;
-
+function getFilterClauses({ filter }: { filter: GetMembersParams["filter"] }) {
     // Build our where and having clauses depending on the filters
     const whereClauses = [];
     const havingClauses = [];
@@ -216,14 +213,14 @@ function getFilterClauses({
     if (filter?.productIds) {
         whereClauses.push(
             inArray(
-                ProductInteractionContract.productId,
+                productInteractionContractTable.productId,
                 filter.productIds.map((p) => BigInt(p))
             )
         );
     }
     if (filter?.interactions) {
         const clause = buildRangeClause({
-            field: count(InteractionEvent.id),
+            field: count(interactionEventTable.id),
             ...filter.interactions,
         });
         if (clause) {
@@ -236,7 +233,7 @@ function getFilterClauses({
             max: filter.rewards.max ? BigInt(filter.rewards.max) : undefined,
         };
         const clause = buildRangeClause({
-            field: sum(Reward.totalReceived),
+            field: sum(rewardTable.totalReceived),
             ...bigintRewards,
         });
         if (clause) {
@@ -245,7 +242,7 @@ function getFilterClauses({
     }
     if (filter?.firstInteractionTimestamp) {
         const clause = buildRangeClause({
-            field: min(InteractionEvent.timestamp),
+            field: min(interactionEventTable.timestamp),
             ...filter.firstInteractionTimestamp,
         });
         if (clause) {
