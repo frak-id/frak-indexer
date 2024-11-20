@@ -31,6 +31,16 @@ import {
     productRegistryAbi,
 } from "../abis/registryAbis";
 
+type GetLogsRpcType = Extract<
+    PublicRpcSchema[number],
+    { Method: "eth_getLogs" }
+>;
+
+type GetBlockByNumber = Extract<
+    PublicRpcSchema[number],
+    { Method: "eth_getBlockByNumber" }
+>;
+
 /**
  * Custom transport with some failsafe options specific for envio upstream
  * @param initialTransport
@@ -48,34 +58,49 @@ function safeClient(initialTransport: Transport): Transport {
                 if (
                     body.method === "eth_getLogs" &&
                     Array.isArray(body.params) &&
-                    body.params?.[0]?.blockHash
+                    (body.params as GetLogsRpcType["Parameters"])?.[0]
+                        ?.blockHash
                 ) {
-                    const requestedBlockHash = body.params?.[0]?.blockHash;
+                    const requestedBlockHash = (
+                        body.params as GetLogsRpcType["Parameters"]
+                    )?.[0]?.blockHash;
                     if (!requestedBlockHash) {
                         throw new Error("Missing blockHash parameter");
                     }
 
                     // Perform the request
-                    const response = (await transport.request(body)) as Extract<
-                        PublicRpcSchema[number],
-                        { Method: "eth_getLogs" }
-                    >["ReturnType"];
+                    const response = (await transport.request(
+                        body
+                    )) as GetLogsRpcType["ReturnType"];
 
                     // Filter out logs with a different blockHash
                     //  envio can leak parent / child block logs in the response
-                    return response.filter((log) => {
-                        if (log.blockHash !== requestedBlockHash) {
-                            console.log(
-                                "Filtering out log with different blockHash",
-                                {
-                                    requestedBlockHash,
-                                    logBlockHash: log.blockHash,
-                                }
-                            );
-                            return false;
-                        }
-                        return true;
-                    });
+                    const filteredResponse = response.filter(
+                        (log) => log.blockHash === requestedBlockHash
+                    );
+                    if (filteredResponse.length !== response.length) {
+                        console.log(
+                            `Filtered out ${
+                                response.length - filteredResponse.length
+                            } logs cause of mismatching blockHash, requested: ${requestedBlockHash}`
+                        );
+                    }
+                    return filteredResponse;
+                }
+
+                // If that's an eth_getBlockByNumber request, with latest block, do some manual thread lock, to ensure this block is well synchronised across different rpcs
+                if (
+                    body.method === "eth_getBlockByNumber" &&
+                    Array.isArray(body.params) &&
+                    (body.params as GetBlockByNumber["Parameters"])?.[0] ===
+                        "latest"
+                ) {
+                    // Perform the request
+                    const response = await transport.request(body);
+                    // Lock the thread for 3s
+                    await new Promise((resolve) => setTimeout(resolve, 3_000));
+                    // Return the response
+                    return response;
                 }
 
                 // Otherwise, simple request
@@ -150,7 +175,7 @@ export function createEnvConfig<NetworkKey extends string>({
             [networkKey]: {
                 chainId: network.chainId,
                 transport: getTransport(network.chainId),
-                pollingInterval: 5_000,
+                pollingInterval: 30_000,
             },
         },
         // contracts config
