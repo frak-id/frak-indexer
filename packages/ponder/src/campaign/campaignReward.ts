@@ -5,7 +5,7 @@ import {
     rewardClaimedEventTable,
     rewardTable,
 } from "../../ponder.schema";
-import { increaseCampaignsStats } from "../interactions/stats";
+import { safeIncreaseCampaignsStats } from "../interactions/stats";
 
 ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
     // Try to find a rewarding contract for the given event emitter
@@ -55,7 +55,7 @@ ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
     });
 
     // Update the current campaigns stats for the distributed amount
-    await increaseCampaignsStats({
+    await safeIncreaseCampaignsStats({
         productId: bankingContract.productId,
         context,
         blockNumber: event.block.number,

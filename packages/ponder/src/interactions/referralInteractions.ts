@@ -1,6 +1,6 @@
 import { ponder } from "@/generated";
 import { interactionEventTable } from "../../ponder.schema";
-import { increaseCampaignsStats } from "./stats";
+import { safeIncreaseCampaignsStats } from "./stats";
 
 ponder.on(
     "ProductInteraction:ReferralLinkCreation",
@@ -16,7 +16,7 @@ ponder.on(
         });
 
         // Update the current campaigns stats
-        await increaseCampaignsStats({
+        await safeIncreaseCampaignsStats({
             interactionEmitter: event.log.address,
             blockNumber: event.block.number,
             context,
@@ -39,7 +39,7 @@ ponder.on("ProductInteraction:UserReferred", async ({ event, context }) => {
     });
 
     // Update the current campaigns stats
-    await increaseCampaignsStats({
+    await safeIncreaseCampaignsStats({
         interactionEmitter: event.log.address,
         blockNumber: event.block.number,
         context,

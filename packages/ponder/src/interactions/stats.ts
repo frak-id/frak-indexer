@@ -27,25 +27,41 @@ export type StatsIncrementsParams = Partial<
     Omit<typeof referralCampaignStatsTable.$inferSelect, "id" | "campaignId">
 >;
 
+type IncreaseCampaignStatsArgs = {
+    interactionEmitter?: Address;
+    productId?: bigint;
+    context: Context;
+    blockNumber: bigint;
+    increments: StatsIncrementsParams;
+};
+
+/**
+ * Safely increase campaign stats, without crash if it's failing
+ * @param args
+ */
+export async function safeIncreaseCampaignsStats(
+    args: IncreaseCampaignStatsArgs
+) {
+    try {
+        await increaseCampaignsStats(args);
+    } catch (error) {
+        console.error("Error during increaseCampaignsStats", error);
+    }
+}
+
 /**
  * Get the rewarding contract for the given event emitter
  * @param interactionContract
  * @param context
  * @param increments fields to increments
  */
-export async function increaseCampaignsStats({
+async function increaseCampaignsStats({
     interactionEmitter,
     productId,
     context: { client, db },
     increments,
     blockNumber,
-}: {
-    interactionEmitter?: Address;
-    productId?: bigint;
-    context: Context;
-    blockNumber: bigint;
-    increments: StatsIncrementsParams;
-}) {
+}: IncreaseCampaignStatsArgs) {
     // Find the interaction contract
     let interactionContract:
         | typeof productInteractionContractTable.$inferSelect
@@ -116,43 +132,30 @@ export async function increaseCampaignsStats({
         return;
     }
 
-    // Perform the increments
-    // todo: Should use an `updateMany` if we are sure that campaign stats are created
-    for (const [index, campaign] of campaigns.entries()) {
-        if (!campaign.id) {
-            console.error("Campaign id not found", campaign);
-            continue;
-        }
-
-        // Check if the campaign was active during the interaction
+    // Filter to only get active campaigns during this even
+    const activeCampaigns = campaigns.filter((campaign, index) => {
         if (!isActiveDuringInteraction[index]) {
             console.log("Campaign was not active during the interaction", {
                 campaign,
                 interactionEmitter,
             });
-            continue;
+            return false;
         }
+        return true;
+    });
 
-        try {
-            // Create the stats if not found
-            await db
-                .insert(referralCampaignStatsTable)
-                .values({
-                    id: campaign.id,
-                    ...emptyCampaignStats,
-                    ...increments,
-                    campaignId: campaign.id,
-                })
-                .onConflictDoUpdate((current) =>
-                    updateStats(current, increments)
-                );
-        } catch (error) {
-            console.error("Error while incrementing campaign stats", error, {
-                campaign,
-                increments,
-            });
-        }
-    }
+    // Upsert every stats
+    await db
+        .insert(referralCampaignStatsTable)
+        .values(
+            activeCampaigns.map((campaign) => ({
+                id: campaign.id,
+                ...emptyCampaignStats,
+                ...increments,
+                campaignId: campaign.id,
+            }))
+        )
+        .onConflictDoUpdate((current) => updateStats(current, increments));
 }
 
 // Define a function to handle the update logic
