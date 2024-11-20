@@ -8,5 +8,5 @@ export default createEnvConfig({
         chainId: 42161,
         deploymentBlock: 261367992,
     },
-    networkKey: "arbitrum",
+    networkKey: "arbitrumSepolia",
 });

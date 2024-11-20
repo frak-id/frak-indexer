@@ -155,7 +155,13 @@ export function createEnvConfig<NetworkKey extends string>({
     pgDatabase,
     network,
     networkKey,
-}: { pgDatabase?: string; network: EnvNetworkConfig; networkKey: NetworkKey }) {
+    pollingInterval,
+}: {
+    pgDatabase?: string;
+    network: EnvNetworkConfig;
+    networkKey: NetworkKey;
+    pollingInterval?: number;
+}) {
     const contractNetworkConfig = {
         [networkKey]: {
             startBlock: network.deploymentBlock,
@@ -177,7 +183,8 @@ export function createEnvConfig<NetworkKey extends string>({
             [networkKey]: {
                 chainId: network.chainId,
                 transport: getTransport(network.chainId),
-                pollingInterval: 30_000,
+                // Polling interval to 60sec by default
+                pollingInterval: pollingInterval ?? 60_000,
             },
         },
         // contracts config
