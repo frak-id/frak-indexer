@@ -1,5 +1,14 @@
 import { createConfig, mergeAbis } from "@ponder/core";
-import { http, type Address, parseAbiItem } from "viem";
+import {
+    http,
+    type Address,
+    type PublicRpcSchema,
+    type Transport,
+    type TransportConfig,
+    createTransport,
+    fallback,
+    parseAbiItem,
+} from "viem";
 import * as deployedAddresses from "../abis/addresses.json";
 import {
     campaignBankAbi,
@@ -23,18 +32,88 @@ import {
 } from "../abis/registryAbis";
 
 /**
+ * Custom transport with some failsafe options specific for envio upstream
+ * @param initialTransport
+ */
+function safeClient(initialTransport: Transport): Transport {
+    return (args) => {
+        const transport = initialTransport(args);
+
+        return createTransport({
+            key: "safeClient",
+            name: "Safe Indexing Client",
+            type: "safeClient",
+            async request(body) {
+                // If that's an eth_getLogs request, with a blockHash parameter, encore we got no block leak in the response (and if that's the case, filter out the logs with a different blockHash)
+                if (
+                    body.method === "eth_getLogs" &&
+                    Array.isArray(body.params) &&
+                    body.params?.[0]?.blockHash
+                ) {
+                    const requestedBlockHash = body.params?.[0]?.blockHash;
+                    if (!requestedBlockHash) {
+                        throw new Error("Missing blockHash parameter");
+                    }
+
+                    // Perform the request
+                    const response = (await transport.request(body)) as Extract<
+                        PublicRpcSchema[number],
+                        { Method: "eth_getLogs" }
+                    >["ReturnType"];
+
+                    // Filter out logs with a different blockHash
+                    //  envio can leak parent / child block logs in the response
+                    return response.filter((log) => {
+                        if (log.blockHash !== requestedBlockHash) {
+                            console.log(
+                                "Filtering out log with different blockHash",
+                                {
+                                    requestedBlockHash,
+                                    logBlockHash: log.blockHash,
+                                }
+                            );
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+
+                // Otherwise, simple request
+                return transport.request(body);
+            },
+            retryCount: args.retryCount,
+            timeout: args.timeout,
+        } as TransportConfig);
+    };
+}
+
+/**
  * Get an transport for the given chain id
  * @param chainId
  * @returns
  */
 function getTransport(chainId: number) {
     // Get our erpc instance transport
-    const erpcUrl =
-        process.env.ERPC_URL ?? "https://rpc.frak.id/ponder-rpc/evm";
-    if (!erpcUrl) {
-        throw new Error("Missing ERPC_URL environment variable");
+    const erpcInternalUrl = process.env.INTERNAL_RPC_URL;
+    const erpcExternalUrl = process.env.EXTERNAL_RPC_URL;
+    if (!erpcInternalUrl || !erpcExternalUrl) {
+        throw new Error("Missing erpc environment variable");
     }
-    return http(`${erpcUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`);
+
+    // Base client is just a fallback between cloudmap direct service and external service
+    const baseClient = fallback([
+        http(
+            `${erpcInternalUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
+        ),
+        http(
+            `${erpcExternalUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
+        ),
+        // And envio client directly
+        http(`https://${chainId}.rpc.hypersync.xyz`),
+    ]);
+
+    // Return the base client wrapper in a cooldown one, aiming to slow down real time indexing on arbitrum / arbitrum sepolia
+    return safeClient(baseClient);
 }
 
 type EnvNetworkConfig = {
