@@ -105,6 +105,7 @@ export class ServiceTargets extends Component {
                                     timeout: toSeconds(health.timeout),
                                     matcher: health.successCodes,
                                 },
+                                deregistrationDelay: 20,
                             },
                             { parent: this }
                         );
