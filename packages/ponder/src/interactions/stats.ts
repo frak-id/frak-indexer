@@ -1,6 +1,12 @@
-import type { Context, Schema } from "@/generated";
+import type { Context } from "@/generated";
+import { and, desc, eq } from "@ponder/core";
 import type { Address } from "viem";
 import { interactionCampaignAbi } from "../../abis/campaignAbis";
+import {
+    campaignTable,
+    productInteractionContractTable,
+    referralCampaignStatsTable,
+} from "../../ponder.schema";
 
 /**
  * Default campaign stats
@@ -18,7 +24,7 @@ export const emptyCampaignStats = {
 };
 
 export type StatsIncrementsParams = Partial<
-    Omit<Schema["ReferralCampaignStats"], "id" | "campaignId">
+    Omit<typeof referralCampaignStatsTable.$inferSelect, "id" | "campaignId">
 >;
 
 /**
@@ -30,7 +36,7 @@ export type StatsIncrementsParams = Partial<
 export async function increaseCampaignsStats({
     interactionEmitter,
     productId,
-    context,
+    context: { client, db },
     increments,
     blockNumber,
 }: {
@@ -40,20 +46,24 @@ export async function increaseCampaignsStats({
     blockNumber: bigint;
     increments: StatsIncrementsParams;
 }) {
-    const { ProductInteractionContract, Campaign, ReferralCampaignStats } =
-        context.db;
-
     // Find the interaction contract
-    let interactionContract: Schema["ProductInteractionContract"] | null = null;
+    let interactionContract:
+        | typeof productInteractionContractTable.$inferSelect
+        | null = null;
     if (interactionEmitter) {
-        interactionContract = await ProductInteractionContract.findUnique({
+        interactionContract = await db.find(productInteractionContractTable, {
             id: interactionEmitter,
         });
     } else if (productId) {
-        const interactions = await ProductInteractionContract.findMany({
-            where: { productId },
-        });
-        interactionContract = interactions?.items?.[0] ?? null;
+        // Find all the interactions contract, sorted with the one created lastly first
+        const interactions = await db.sql
+            .select()
+            .from(productInteractionContractTable)
+            .where(eq(productInteractionContractTable.productId, productId))
+            .orderBy(desc(productInteractionContractTable.createdTimestamp))
+            .limit(1)
+            .execute();
+        interactionContract = interactions?.[0] ?? null;
     }
 
     if (!interactionContract) {
@@ -72,23 +82,26 @@ export async function increaseCampaignsStats({
     }
 
     // Find all the associated campaigns, of referral type, that are attached
-    const campaigns = await Campaign.findMany({
-        where: {
-            productId: interactionContract.productId,
-            type: "frak.campaign.referral",
-            attached: true,
-        },
-    });
-    if (!campaigns.items.length) {
+    const campaigns = await db.sql
+        .select()
+        .from(campaignTable)
+        .where(
+            and(
+                eq(campaignTable.productId, interactionContract.productId),
+                eq(campaignTable.type, "frak.campaign.referral"),
+                eq(campaignTable.attached, true)
+            )
+        );
+    if (!campaigns.length) {
         return;
     }
 
     // Ensure the given campaign was active at this block
     let isActiveDuringInteraction: boolean[] = [];
     try {
-        isActiveDuringInteraction = await context.client.multicall({
+        isActiveDuringInteraction = await client.multicall({
             allowFailure: false,
-            contracts: campaigns.items.map(
+            contracts: campaigns.map(
                 (campaign) =>
                     ({
                         address: campaign.id,
@@ -105,7 +118,7 @@ export async function increaseCampaignsStats({
 
     // Perform the increments
     // todo: Should use an `updateMany` if we are sure that campaign stats are created
-    for (const [index, campaign] of campaigns.items.entries()) {
+    for (const [index, campaign] of campaigns.entries()) {
         if (!campaign.id) {
             console.error("Campaign id not found", campaign);
             continue;
@@ -122,16 +135,17 @@ export async function increaseCampaignsStats({
 
         try {
             // Create the stats if not found
-            await ReferralCampaignStats.upsert({
-                id: campaign.id,
-                create: {
+            await db
+                .insert(referralCampaignStatsTable)
+                .values({
+                    id: campaign.id,
                     ...emptyCampaignStats,
                     ...increments,
                     campaignId: campaign.id,
-                },
-                // Update the given field by incrementing them
-                update: ({ current }) => updateStats(current, increments),
-            });
+                })
+                .onConflictDoUpdate((current) =>
+                    updateStats(current, increments)
+                );
         } catch (error) {
             console.error("Error while incrementing campaign stats", error, {
                 campaign,
@@ -143,7 +157,7 @@ export async function increaseCampaignsStats({
 
 // Define a function to handle the update logic
 function updateStats(
-    current: Schema["ReferralCampaignStats"],
+    current: typeof referralCampaignStatsTable.$inferSelect,
     increments: StatsIncrementsParams
 ) {
     const updatedStats = {

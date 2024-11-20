@@ -118,6 +118,8 @@ function safeClient(initialTransport: Transport): Transport {
  * @returns
  */
 function getTransport(chainId: number) {
+    // todo: Intercept getBlockByNumber and replace finalized with latest (plus small delay, like 0.5ms)
+    // todo: rpc url = internal or external, use both env variables
     // Get our erpc instance transport
     const erpcInternalUrl = process.env.INTERNAL_RPC_URL;
     const erpcExternalUrl = process.env.EXTERNAL_RPC_URL;
@@ -168,7 +170,7 @@ export function createEnvConfig<NetworkKey extends string>({
                   connectionString: `${process.env.PONDER_DATABASE_URL}/${pgDatabase}`,
               }
             : {
-                  kind: "sqlite",
+                  kind: "pglite",
               },
         // networks config
         networks: {

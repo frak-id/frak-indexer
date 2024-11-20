@@ -1,18 +1,15 @@
 import { ponder } from "@/generated";
+import { interactionEventTable } from "../../ponder.schema";
 import { increaseCampaignsStats } from "./stats";
 
 ponder.on("ProductInteraction:WebShopOpenned", async ({ event, context }) => {
-    const { InteractionEvent } = context.db;
-
     // Insert the press event
-    await InteractionEvent.create({
+    await context.db.insert(interactionEventTable).values({
         id: event.log.id,
-        data: {
-            interactionId: event.log.address,
-            user: event.args.user,
-            type: "WEBSHOP_OPENNED",
-            timestamp: event.block.timestamp,
-        },
+        interactionId: event.log.address,
+        user: event.args.user,
+        type: "WEBSHOP_OPENNED",
+        timestamp: event.block.timestamp,
     });
 
     // Update the current campaigns stats

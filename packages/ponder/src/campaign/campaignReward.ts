@@ -1,11 +1,15 @@
 import { ponder } from "@/generated";
+import {
+    bankingContractTable,
+    rewardAddedEventTable,
+    rewardClaimedEventTable,
+    rewardTable,
+} from "../../ponder.schema";
 import { increaseCampaignsStats } from "../interactions/stats";
 
 ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
-    const { BankingContract, Reward, RewardAddedEvent } = context.db;
-
     // Try to find a rewarding contract for the given event emitter
-    const bankingContract = await BankingContract.findUnique({
+    const bankingContract = await context.db.find(bankingContractTable, {
         id: event.log.address,
     });
     if (!bankingContract) {
@@ -14,40 +18,40 @@ ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
     }
 
     // Update rewarding contract
-    await BankingContract.update({
-        id: bankingContract.id,
-        data: ({ current }) => ({
-            totalDistributed: current.totalDistributed + event.args.amount,
-        }),
-    });
+    await context.db
+        .update(bankingContractTable, {
+            id: event.log.address,
+        })
+        .set({
+            totalDistributed:
+                bankingContract.totalDistributed + event.args.amount,
+        });
 
     // Update the current user reward (insert it if not found)
     const rewardId = `${event.log.address}-${event.args.user}`;
-    await Reward.upsert({
-        id: rewardId,
-        create: {
+    await context.db
+        .insert(rewardTable)
+        .values({
+            id: rewardId,
             contractId: bankingContract.id,
             user: event.args.user,
             pendingAmount: event.args.amount,
             totalReceived: event.args.amount,
             totalClaimed: 0n,
-        },
-        update: ({ current }) => ({
+        })
+        .onConflictDoUpdate((current) => ({
             pendingAmount: current.pendingAmount + event.args.amount,
             totalReceived: current.totalReceived + event.args.amount,
-        }),
-    });
+        }));
 
     // Insert the reward event
-    await RewardAddedEvent.create({
+    await context.db.insert(rewardAddedEventTable).values({
         id: event.log.id,
-        data: {
-            rewardId,
-            emitter: event.args.emitter,
-            amount: event.args.amount,
-            txHash: event.log.transactionHash,
-            timestamp: event.block.timestamp,
-        },
+        rewardId,
+        emitter: event.args.emitter,
+        amount: event.args.amount,
+        txHash: event.log.transactionHash,
+        timestamp: event.block.timestamp,
     });
 
     // Update the current campaigns stats for the distributed amount
@@ -61,11 +65,9 @@ ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
     });
 });
 
-ponder.on("CampaignBanks:RewardClaimed", async ({ event, context }) => {
-    const { BankingContract, Reward, RewardClaimedEvent } = context.db;
-
+ponder.on("CampaignBanks:RewardClaimed", async ({ event, context: { db } }) => {
     // Try to find a rewarding contract for the given event emitter
-    const bankingContract = await BankingContract.findUnique({
+    const bankingContract = await db.find(bankingContractTable, {
         id: event.log.address,
     });
     if (!bankingContract) {
@@ -74,38 +76,37 @@ ponder.on("CampaignBanks:RewardClaimed", async ({ event, context }) => {
     }
 
     // Update rewarding contract
-    await BankingContract.update({
-        id: bankingContract.id,
-        data: {
+    await db
+        .update(bankingContractTable, {
+            id: event.log.address,
+        })
+        .set({
             totalClaimed: bankingContract.totalClaimed + event.args.amount,
-        },
-    });
+        });
 
     // Update the current user reward (insert it if not found)
     const rewardId = `${event.log.address}-${event.args.user}`;
-    await Reward.upsert({
-        id: rewardId,
-        create: {
+    await db
+        .insert(rewardTable)
+        .values({
+            id: rewardId,
             contractId: bankingContract.id,
             user: event.args.user,
             totalClaimed: event.args.amount,
             totalReceived: 0n,
             pendingAmount: 0n,
-        },
-        update: ({ current }) => ({
+        })
+        .onConflictDoUpdate((current) => ({
             pendingAmount: current.pendingAmount - event.args.amount,
             totalClaimed: current.totalClaimed + event.args.amount,
-        }),
-    });
+        }));
 
     // Insert the reward event
-    await RewardClaimedEvent.create({
+    await db.insert(rewardClaimedEventTable).values({
         id: event.log.id,
-        data: {
-            rewardId,
-            amount: event.args.amount,
-            txHash: event.log.transactionHash,
-            timestamp: event.block.timestamp,
-        },
+        rewardId,
+        amount: event.args.amount,
+        txHash: event.log.transactionHash,
+        timestamp: event.block.timestamp,
     });
 });

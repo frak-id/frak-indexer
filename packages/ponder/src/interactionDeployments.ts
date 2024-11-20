@@ -1,13 +1,12 @@
 import { ponder } from "@/generated";
 import { productInteractionDiamondAbi } from "../abis/interactionAbis";
+import { productInteractionContractTable } from "../ponder.schema";
 
 ponder.on(
     "ProductInteractionManager:InteractionContractDeployed",
-    async ({ event, context }) => {
-        const { ProductInteractionContract } = context.db;
-
+    async ({ event, context: { client, db } }) => {
         // Get the referral tree of this interaction contract
-        const referralTree = await context.client.readContract({
+        const referralTree = await client.readContract({
             abi: productInteractionDiamondAbi,
             address: event.args.interactionContract,
             functionName: "getReferralTree",
@@ -15,36 +14,31 @@ ponder.on(
         });
 
         // Create the interaction contract
-        await ProductInteractionContract.create({
+        await db.insert(productInteractionContractTable).values({
             id: event.args.interactionContract,
-            data: {
-                productId: event.args.productId,
-                createdTimestamp: event.block.timestamp,
-                referralTree,
-            },
+            productId: event.args.productId,
+            createdTimestamp: event.block.timestamp,
+            referralTree,
         });
     }
 );
 ponder.on(
     "ProductInteractionManager:InteractionContractUpdated",
-    async ({ event, context }) => {
-        const { ProductInteractionContract } = context.db;
-
-        await ProductInteractionContract.update({
-            id: event.args.interactionContract,
-            data: {
+    async ({ event, context: { db } }) => {
+        await db
+            .update(productInteractionContractTable, {
+                id: event.args.interactionContract,
+            })
+            .set({
                 productId: event.args.productId,
                 lastUpdateTimestamp: event.block.timestamp,
-            },
-        });
+            });
     }
 );
 ponder.on(
     "ProductInteractionManager:InteractionContractDeleted",
-    async ({ event, context }) => {
-        const { ProductInteractionContract } = context.db;
-
-        await ProductInteractionContract.delete({
+    async ({ event, context: { db } }) => {
+        await db.delete(productInteractionContractTable, {
             id: event.args.interactionContract,
         });
     }

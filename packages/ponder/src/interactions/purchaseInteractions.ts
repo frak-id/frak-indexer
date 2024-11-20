@@ -1,19 +1,16 @@
 import { ponder } from "@/generated";
+import { interactionEventTable } from "../../ponder.schema";
 import { increaseCampaignsStats } from "./stats";
 
 ponder.on("ProductInteraction:PurchaseStarted", async ({ event, context }) => {
-    const { InteractionEvent } = context.db;
-
     // Insert the press event
-    await InteractionEvent.create({
+    await context.db.insert(interactionEventTable).values({
         id: event.log.id,
-        data: {
-            interactionId: event.log.address,
-            user: event.args.user,
-            type: "PURCHASE_STARTED",
-            timestamp: event.block.timestamp,
-            data: { purchaseId: event.args.purchaseId },
-        },
+        interactionId: event.log.address,
+        user: event.args.user,
+        type: "PURCHASE_STARTED",
+        timestamp: event.block.timestamp,
+        data: { purchaseId: event.args.purchaseId },
     });
 
     // Update the current campaigns stats
@@ -29,18 +26,14 @@ ponder.on("ProductInteraction:PurchaseStarted", async ({ event, context }) => {
 ponder.on(
     "ProductInteraction:PurchaseCompleted",
     async ({ event, context }) => {
-        const { InteractionEvent } = context.db;
-
         // Insert the press event
-        await InteractionEvent.create({
+        await context.db.insert(interactionEventTable).values({
             id: event.log.id,
-            data: {
-                interactionId: event.log.address,
-                user: event.args.user,
-                type: "PURCHASE_COMPLETED",
-                timestamp: event.block.timestamp,
-                data: { purchaseId: event.args.purchaseId },
-            },
+            interactionId: event.log.address,
+            user: event.args.user,
+            type: "PURCHASE_COMPLETED",
+            timestamp: event.block.timestamp,
+            data: { purchaseId: event.args.purchaseId },
         });
 
         // Update the current campaigns stats

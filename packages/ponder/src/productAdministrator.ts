@@ -7,47 +7,42 @@ import {
     toHex,
     zeroAddress,
 } from "viem";
+import { productAdministratorTable } from "../ponder.schema";
 
 /*
  * Handle transfer stuff
  */
 ponder.on("ProductRegistry:Transfer", async ({ event, context }) => {
-    const { ProductAdministrator } = context.db;
-
     const productId = event.args.id;
 
     // Remove the previous administrator
     if (!isAddressEqual(event.args.from, zeroAddress)) {
-        await ProductAdministrator.upsert({
-            id: productAdministratorId(event.args.id, event.args.from),
-            create: {
-                isOwner: false,
+        await context.db
+            .insert(productAdministratorTable)
+            .values({
+                id: productAdministratorId(event.args.id, event.args.from),
                 productId,
-                roles: 0n,
                 user: event.args.from,
-                createdTimestamp: event.block.timestamp,
-            },
-            update: {
+                roles: 0n,
                 isOwner: false,
-            },
-        });
+                createdTimestamp: event.block.timestamp,
+            })
+            .onConflictDoUpdate({ isOwner: false });
     }
 
     // Create the new administrator
     if (!isAddressEqual(event.args.to, zeroAddress)) {
-        await ProductAdministrator.upsert({
-            id: productAdministratorId(event.args.id, event.args.to),
-            create: {
+        await context.db
+            .insert(productAdministratorTable)
+            .values({
+                id: productAdministratorId(event.args.id, event.args.to),
                 isOwner: true,
                 productId,
                 roles: 0n,
                 user: event.args.to,
                 createdTimestamp: event.block.timestamp,
-            },
-            update: {
-                isOwner: true,
-            },
-        });
+            })
+            .onConflictDoUpdate({ isOwner: true });
     }
 
     // Cleanup the administrators
@@ -57,21 +52,19 @@ ponder.on("ProductRegistry:Transfer", async ({ event, context }) => {
 ponder.on(
     "ProductAdministratorRegistry:ProductRolesUpdated",
     async ({ event, context }) => {
-        const { ProductAdministrator } = context.db;
-
-        await ProductAdministrator.upsert({
-            id: productAdministratorId(event.args.product, event.args.user),
-            create: {
+        await context.db
+            .insert(productAdministratorTable)
+            .values({
+                id: productAdministratorId(event.args.product, event.args.user),
                 isOwner: false,
                 productId: event.args.product,
                 roles: event.args.roles,
                 user: event.args.user,
                 createdTimestamp: event.block.timestamp,
-            },
-            update: {
+            })
+            .onConflictDoUpdate({
                 roles: event.args.roles,
-            },
-        });
+            });
 
         // Cleanup the administrators
         await administratorCleanup(context);
