@@ -1,11 +1,33 @@
 import * as aws from "@pulumi/aws";
 import { type ComponentResourceOptions, Output, all } from "@pulumi/pulumi";
-import { dns as awsDns } from "../../.sst/platform/src/components/aws/dns.js";
-import { Component } from "../../.sst/platform/src/components/component.js";
-import {
-    type DurationMinutes,
-    toSeconds,
-} from "../../.sst/platform/src/components/duration.js";
+import type { Component } from "../../.sst/platform/src/components/component.js";
+import type * as sstDuration from "../../.sst/platform/src/components/duration";
+
+// Some re-export from sst platform
+const SstComponent: typeof Component = await import(
+    "../../.sst/platform/src/components/component.js"
+)
+    .then((m) => m.Component)
+    .catch(() => {
+        console.debug(
+            "SST Component not found, using a placeholder constructor"
+        );
+        // @ts-ignore: Not exported in the SST platform
+        return sst.aws.Component;
+    });
+
+// Some re-export from sst platform
+const duration: typeof sstDuration = await import(
+    "../../.sst/platform/src/components/duration"
+)
+    .then((m) => m)
+    .catch(() => {
+        console.debug(
+            "SST Component duration not found, using a placeholder constructor"
+        );
+        // @ts-ignore: Not exported in the SST platform
+        return sst.aws.Component;
+    });
 
 type Port = `${number}/${"http" | "https" | "tcp" | "udp" | "tcp_udp" | "tls"}`;
 
@@ -21,16 +43,16 @@ type ServiceTargetArgs = {
     // Healthcheck config
     health: {
         path: string;
-        interval: DurationMinutes;
-        timeout: DurationMinutes;
+        interval: sstDuration.DurationMinutes;
+        timeout: sstDuration.DurationMinutes;
         healthyThreshold?: number;
         unhealthyThreshold?: number;
         successCodes?: string;
     };
 };
 
-export class ServiceTargets extends Component {
-    private readonly dns = awsDns();
+export class ServiceTargets extends SstComponent {
+    private readonly dns = sst.aws.dns();
 
     private readonly lb: Promise<aws.lb.GetLoadBalancerResult>;
 
@@ -101,8 +123,10 @@ export class ServiceTargets extends Component {
                                     healthyThreshold: health.healthyThreshold,
                                     unhealthyThreshold:
                                         health.unhealthyThreshold,
-                                    interval: toSeconds(health.interval),
-                                    timeout: toSeconds(health.timeout),
+                                    interval: duration.toSeconds(
+                                        health.interval
+                                    ),
+                                    timeout: duration.toSeconds(health.timeout),
                                     matcher: health.successCodes,
                                 },
                                 deregistrationDelay: 20,

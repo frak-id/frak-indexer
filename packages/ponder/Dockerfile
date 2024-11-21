@@ -1,5 +1,5 @@
 # Base stage
-FROM --platform=$BUILDPLATFORM oven/bun:1 AS base
+FROM --platform=$BUILDPLATFORM oven/bun AS base
 WORKDIR /usr/src/app
 
 # Bun package installation
