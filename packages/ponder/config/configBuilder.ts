@@ -134,9 +134,7 @@ function getTransport(chainId: number) {
         ),
         http(
             `${erpcExternalUrl}/${chainId}?token=${process.env.PONDER_RPC_SECRET}`
-        ),
-        // And envio client directly
-        http(`https://${chainId}.rpc.hypersync.xyz`),
+        )
     ]);
 
     // Return the base client wrapper in a cooldown one, aiming to slow down real time indexing on arbitrum / arbitrum sepolia

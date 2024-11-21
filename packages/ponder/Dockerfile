@@ -1,5 +1,9 @@
 # Base stage
-FROM --platform=$BUILDPLATFORM oven/bun AS base
+FROM --platform=$BUILDPLATFORM node:lts-slim AS base
+
+# Setup bun (since we are on a node image)
+RUN npm i -g bun
+
 WORKDIR /usr/src/app
 
 # Bun package installation

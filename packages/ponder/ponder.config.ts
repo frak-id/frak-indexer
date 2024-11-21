@@ -5,7 +5,6 @@ import { createEnvConfig } from "./config/configBuilder";
  *   - waiting for this to be merged: https://github.com/ponder-sh/ponder/pull/1116
  */
 export default createEnvConfig({
-    pgDatabase: "ponder_dev",
     network: {
         chainId: 421614,
         deploymentBlock: 86607902,
