@@ -1,42 +1,46 @@
 import { ponder } from "@/generated";
 import { count, countDistinct, eq, gte } from "@ponder/core";
+import {
+    interactionEventTable,
+    productInteractionContractTable,
+    productTable,
+} from "../../ponder.schema";
 
 /**
  * Get the overall system stats
  */
 ponder.get("/stats/overall", async (ctx) => {
-    // Get all the product ids for this admin
-    const { InteractionEvent, ProductInteractionContract, Product } =
-        ctx.tables;
-
     // Get the total nbr of user who performed an interaction
     const totalInteractions = await ctx.db
         .select({
-            count: countDistinct(InteractionEvent.user),
+            count: countDistinct(interactionEventTable.user),
         })
-        .from(InteractionEvent);
+        .from(interactionEventTable);
     const totalPerType = await ctx.db
         .select({
-            name: InteractionEvent.type,
-            count: countDistinct(InteractionEvent.user),
+            name: interactionEventTable.type,
+            count: countDistinct(interactionEventTable.user),
         })
-        .from(InteractionEvent)
-        .groupBy(InteractionEvent.type);
+        .from(interactionEventTable)
+        .groupBy(interactionEventTable.type);
     const totalPerProduct = await ctx.db
         .select({
-            name: Product.name,
-            count: countDistinct(InteractionEvent.user),
+            name: productTable.name,
+            count: countDistinct(interactionEventTable.user),
         })
-        .from(InteractionEvent)
+        .from(interactionEventTable)
         .innerJoin(
-            ProductInteractionContract,
-            eq(InteractionEvent.interactionId, ProductInteractionContract.id)
+            productInteractionContractTable,
+            eq(
+                interactionEventTable.interactionId,
+                productInteractionContractTable.id
+            )
         )
         .innerJoin(
-            Product,
-            eq(ProductInteractionContract.productId, Product.id)
+            productTable,
+            eq(productInteractionContractTable.productId, productTable.id)
         )
-        .groupBy(Product.id);
+        .groupBy(productTable.id);
 
     // Get the min time for the WAU and DAU
     const wauMinTime = BigInt(Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000n;
@@ -45,19 +49,21 @@ ponder.get("/stats/overall", async (ctx) => {
     // Get the WAU and DAU
     const wauInteractions = await ctx.db
         .select({
-            count: countDistinct(InteractionEvent.user),
+            count: countDistinct(interactionEventTable.user),
         })
-        .from(InteractionEvent)
-        .where(gte(InteractionEvent.timestamp, wauMinTime));
+        .from(interactionEventTable)
+        .where(gte(interactionEventTable.timestamp, wauMinTime));
     const dauInteractions = await ctx.db
         .select({
-            count: countDistinct(InteractionEvent.user),
+            count: countDistinct(interactionEventTable.user),
         })
-        .from(InteractionEvent)
-        .where(gte(InteractionEvent.timestamp, dauMinTime));
+        .from(interactionEventTable)
+        .where(gte(interactionEventTable.timestamp, dauMinTime));
 
     // Total number of product registered
-    const totalProducts = await ctx.db.select({ count: count() }).from(Product);
+    const totalProducts = await ctx.db
+        .select({ count: count() })
+        .from(productTable);
 
     return ctx.json({
         interactions: {

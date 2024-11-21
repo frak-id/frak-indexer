@@ -118,6 +118,8 @@ function safeClient(initialTransport: Transport): Transport {
  * @returns
  */
 function getTransport(chainId: number) {
+    // todo: Intercept getBlockByNumber and replace finalized with latest (plus small delay, like 0.5ms)
+    // todo: rpc url = internal or external, use both env variables
     // Get our erpc instance transport
     const erpcInternalUrl = process.env.INTERNAL_RPC_URL;
     const erpcExternalUrl = process.env.EXTERNAL_RPC_URL;
@@ -153,7 +155,13 @@ export function createEnvConfig<NetworkKey extends string>({
     pgDatabase,
     network,
     networkKey,
-}: { pgDatabase?: string; network: EnvNetworkConfig; networkKey: NetworkKey }) {
+    pollingInterval,
+}: {
+    pgDatabase?: string;
+    network: EnvNetworkConfig;
+    networkKey: NetworkKey;
+    pollingInterval?: number;
+}) {
     const contractNetworkConfig = {
         [networkKey]: {
             startBlock: network.deploymentBlock,
@@ -168,14 +176,15 @@ export function createEnvConfig<NetworkKey extends string>({
                   connectionString: `${process.env.PONDER_DATABASE_URL}/${pgDatabase}`,
               }
             : {
-                  kind: "sqlite",
+                  kind: "pglite",
               },
         // networks config
         networks: {
             [networkKey]: {
                 chainId: network.chainId,
                 transport: getTransport(network.chainId),
-                pollingInterval: 30_000,
+                // Polling interval to 60sec by default
+                pollingInterval: pollingInterval ?? 60_000,
             },
         },
         // contracts config

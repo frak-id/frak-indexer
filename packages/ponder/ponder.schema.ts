@@ -1,293 +1,244 @@
-import { createSchema } from "@ponder/core";
+import { index, onchainEnum, onchainTable, primaryKey } from "@ponder/core";
 
-export default createSchema((p) => ({
-    /* -------------------------------------------------------------------------- */
-    /*                            Product related stuff                           */
-    /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*                            Product related stuff                           */
+/* -------------------------------------------------------------------------- */
 
-    Product: p.createTable({
-        id: p.bigint(),
+export const productTable = onchainTable(
+    "Product",
+    (t) => ({
+        id: t.bigint().primaryKey(),
 
-        domain: p.string(),
-        productTypes: p.bigint(),
-        name: p.string(),
+        domain: t.varchar().notNull(),
+        productTypes: t.bigint().notNull(),
+        name: t.varchar().notNull(),
 
-        createTimestamp: p.bigint(),
-        lastUpdateTimestamp: p.bigint().optional(),
+        createTimestamp: t.bigint().notNull(),
+        lastUpdateTimestamp: t.bigint(),
 
-        metadataUrl: p.string().optional(),
-
-        interactionContracts: p.many("ProductInteractionContract.productId"),
-
-        campaigns: p.many("Campaign.productId"),
-        administrators: p.many("ProductAdministrator.productId"),
-        banks: p.many("BankingContract.productId"),
+        metadataUrl: t.varchar(),
     }),
+    (table) => ({
+        domainIdx: index().on(table.domain),
+    })
+);
 
-    // Product related stuff
-    ProductAdministrator: p.createTable(
-        {
-            id: p.hex(),
+export const productAdministratorTable = onchainTable(
+    "ProductAdministrator",
+    (t) => ({
+        productId: t.bigint().notNull(),
 
-            productId: p.bigint().references("Product.id"),
-            product: p.one("productId"),
+        isOwner: t.boolean().notNull(),
+        roles: t.bigint().notNull(),
+        user: t.hex().notNull(),
 
-            isOwner: p.boolean(),
-            roles: p.bigint(),
-            user: p.hex(),
-
-            createdTimestamp: p.bigint(),
-        },
-        {
-            productIndex: p.index("productId"),
-            userIndex: p.index("user"),
-        }
-    ),
-
-    /* -------------------------------------------------------------------------- */
-    /*                          Interaction related stuff                         */
-    /* -------------------------------------------------------------------------- */
-
-    ProductInteractionContract: p.createTable(
-        {
-            id: p.hex(), // address
-
-            productId: p.bigint().references("Product.id"),
-            product: p.one("productId"),
-
-            referralTree: p.hex(),
-
-            createdTimestamp: p.bigint(),
-            lastUpdateTimestamp: p.bigint().optional(),
-            removedTimestamp: p.bigint().optional(),
-        },
-        {
-            productIndex: p.index("productId"),
-        }
-    ),
-
-    InteractionEvent: p.createTable(
-        {
-            id: p.string(),
-
-            interactionId: p.hex().references("ProductInteractionContract.id"),
-            interaction: p.one("interactionId"),
-
-            user: p.hex(),
-            type: p.enum("InteractionEventType"),
-            data: p.json().optional(),
-
-            timestamp: p.bigint(),
-        },
-        {
-            interactionIndex: p.index("interactionId"),
-            userIndex: p.index("user"),
-
-            userInteractionIndex: p.index(["user", "interactionId"]),
-        }
-    ),
-
-    InteractionEventType: p.createEnum([
-        // Referral type
-        "REFERRED",
-        "CREATE_REFERRAL_LINK",
-        // Press type
-        "OPEN_ARTICLE",
-        "READ_ARTICLE",
-        // Purchase type
-        "PURCHASE_STARTED",
-        "PURCHASE_COMPLETED",
-        // Webshop type
-        "WEBSHOP_OPENNED",
-    ]),
-
-    /* -------------------------------------------------------------------------- */
-    /*                           Campaign related stuff                           */
-    /* -------------------------------------------------------------------------- */
-
-    Campaign: p.createTable(
-        {
-            id: p.hex(),
-
-            type: p.string(),
-            name: p.string(),
-            version: p.string(),
-
-            productId: p.bigint().references("Product.id"),
-            product: p.one("productId"),
-
-            interactionContractId: p
-                .hex()
-                .references("ProductInteractionContract.id"),
-            interactionContract: p.one("interactionContractId"),
-
-            attached: p.boolean(),
-
-            attachTimestamp: p.bigint(),
-            detachTimestamp: p.bigint().optional(),
-
-            bankingContractId: p
-                .hex()
-                .references("BankingContract.id")
-                .optional(),
-            bankingContract: p.one("bankingContractId"),
-            isAuthorisedOnBanking: p.boolean(),
-
-            capResets: p.many("CampaignCapReset.campaignId"),
-            stats: p.many("ReferralCampaignStats.campaignId"),
-        },
-        {
-            productIndex: p.index("productId"),
-            interactionContractIndex: p.index("interactionContractId"),
-            bankingContractIndex: p.index("bankingContractId"),
-        }
-    ),
-    ReferralCampaignStats: p.createTable(
-        {
-            id: p.hex(),
-
-            campaignId: p.hex().references("Campaign.id"),
-            campaign: p.one("campaignId"),
-
-            totalInteractions: p.bigint(),
-
-            // Press related interactions
-            openInteractions: p.bigint(),
-            readInteractions: p.bigint(),
-
-            // Referral related interactions
-            referredInteractions: p.bigint(),
-            createReferredLinkInteractions: p.bigint(),
-
-            // purchase related interactions
-            purchaseStartedInteractions: p.bigint(),
-            purchaseCompletedInteractions: p.bigint(),
-
-            // webshop related interactions
-            webshopOpenned: p.bigint(),
-
-            totalRewards: p.bigint(),
-        },
-        {
-            campaignIndex: p.index("campaignId"),
-        }
-    ),
-    CampaignCapReset: p.createTable(
-        {
-            id: p.string(), // campaign address + timestamp
-
-            campaignId: p.hex().references("Campaign.id"),
-            campaign: p.one("campaignId"),
-
-            timestamp: p.bigint(),
-            previousTimestamp: p.bigint(),
-            distributedAmount: p.bigint(),
-        },
-        {
-            campaignIndex: p.index("campaignId"),
-        }
-    ),
-
-    /* -------------------------------------------------------------------------- */
-    /*                            Rewards related stuff                           */
-    /* -------------------------------------------------------------------------- */
-    Token: p.createTable({
-        // Address of the token contract
-        id: p.hex(),
-
-        // Token information
-        decimals: p.int(),
-        name: p.string(),
-        symbol: p.string(),
+        createdTimestamp: t.bigint().notNull(),
     }),
-    BankingContract: p.createTable(
-        {
-            // Address of the rewarding contract
-            id: p.hex(),
+    (table) => ({
+        pk: primaryKey({ columns: [table.productId, table.user] }),
+        productIdIdx: index().on(table.productId),
+        userIdx: index().on(table.user),
+    })
+);
 
-            // Address of the token that will be distributed
-            tokenId: p.hex().references("Token.id"),
-            token: p.one("tokenId"),
+export const productInteractionContractTable = onchainTable(
+    "ProductInteractionContract",
+    (t) => ({
+        // todo: id become address
+        id: t.hex().primaryKey(),
 
-            // Address of the product linked to this contract
-            productId: p.bigint().references("Product.id"),
-            product: p.one("productId"),
+        productId: t.bigint().notNull(),
+        referralTree: t.hex().notNull(),
 
-            // The total amount distributed and claimed
-            totalDistributed: p.bigint(),
-            totalClaimed: p.bigint(),
+        createdTimestamp: t.bigint().notNull(),
+        lastUpdateTimestamp: t.bigint(),
+        removedTimestamp: t.bigint(),
+    }),
+    (table) => ({
+        productIdIdx: index().on(table.productId),
+    })
+);
 
-            // Is the bank still distributing?
-            isDistributing: p.boolean(),
+/* -------------------------------------------------------------------------- */
+/*                          Interaction related stuff                         */
+/* -------------------------------------------------------------------------- */
 
-            // All the rewards
-            rewards: p.many("Reward.contractId"),
+export const interactionEventTypeEnum = onchainEnum("InteractionEventType", [
+    // Referral type
+    "REFERRED",
+    "CREATE_REFERRAL_LINK",
+    // Press type
+    "OPEN_ARTICLE",
+    "READ_ARTICLE",
+    // Purchase type
+    "PURCHASE_STARTED",
+    "PURCHASE_COMPLETED",
+    // Webshop type
+    "WEBSHOP_OPENNED",
+]);
 
-            // All the attached cmapaigns
-            campaigns: p.many("Campaign.bankingContractId"),
-        },
-        {
-            tokenIndex: p.index("tokenId"),
-            productIndex: p.index("productId"),
-        }
-    ),
-    Reward: p.createTable(
-        {
-            id: p.string(), // reward contract + user
+export const interactionEventTable = onchainTable(
+    "InteractionEvent",
+    (t) => ({
+        id: t.varchar().primaryKey(),
 
-            contractId: p.hex().references("BankingContract.id"),
-            contract: p.one("contractId"),
+        interactionId: t.hex().notNull(),
+        user: t.hex().notNull(),
+        type: interactionEventTypeEnum().notNull(),
+        data: t.json(),
 
-            user: p.hex(),
+        timestamp: t.bigint().notNull(),
+    }),
+    (table) => ({
+        interactionIdx: index().on(table.interactionId),
+        userIdx: index().on(table.user),
+        userInteractionIdx: index().on(table.user, table.interactionId),
+    })
+);
 
-            pendingAmount: p.bigint(),
-            totalReceived: p.bigint(),
-            totalClaimed: p.bigint(),
+/* -------------------------------------------------------------------------- */
+/*                           Campaign related stuff                           */
+/* -------------------------------------------------------------------------- */
 
-            rewardAddedEvents: p.many("RewardAddedEvent.rewardId"),
-            rewardClaimedEvents: p.many("RewardClaimedEvent.rewardId"),
-        },
-        {
-            userIndex: p.index("user"),
-            contractIndex: p.index("contractId"),
+export const campaignTable = onchainTable(
+    "Campaign",
+    (t) => ({
+        // todo: id become address
+        id: t.hex().primaryKey(),
 
-            userContractIndex: p.index(["user", "contractId"]),
-        }
-    ),
-    RewardAddedEvent: p.createTable(
-        {
-            id: p.string(),
+        type: t.varchar().notNull(),
+        name: t.varchar().notNull(),
+        version: t.varchar().notNull(),
 
-            rewardId: p.string().references("Reward.id"),
-            reward: p.one("rewardId"),
+        productId: t.bigint().notNull(),
+        interactionContractId: t.hex().notNull(),
+        attached: t.boolean().notNull(),
 
-            // Emitter of the reward (campaign sending it)
-            emitter: p.hex(),
+        attachTimestamp: t.bigint().notNull(),
+        detachTimestamp: t.bigint(),
 
-            amount: p.bigint(),
+        bankingContractId: t.hex(),
+        isAuthorisedOnBanking: t.boolean().notNull(),
+    }),
+    (table) => ({
+        productIdIdx: index().on(table.productId),
+        interactionContractIdx: index().on(table.interactionContractId),
+        bankingContractIdx: index().on(table.bankingContractId),
+    })
+);
 
-            txHash: p.hex(),
-            timestamp: p.bigint(),
-        },
-        {
-            rewardIndex: p.index("rewardId"),
-            emitterIndex: p.index("emitter"),
-        }
-    ),
-    RewardClaimedEvent: p.createTable(
-        {
-            id: p.string(),
+export const referralCampaignStatsTable = onchainTable(
+    "ReferralCampaignStats",
+    (t) => ({
+        campaignId: t.hex().primaryKey().notNull(),
 
-            rewardId: p.string().references("Reward.id"),
-            reward: p.one("rewardId"),
+        totalInteractions: t.bigint().notNull(),
 
-            amount: p.bigint(),
+        openInteractions: t.bigint().notNull(),
+        readInteractions: t.bigint().notNull(),
 
-            txHash: p.hex(),
-            timestamp: p.bigint(),
-        },
-        {
-            rewardIndex: p.index("rewardId"),
-        }
-    ),
+        referredInteractions: t.bigint().notNull(),
+        createReferredLinkInteractions: t.bigint().notNull(),
+
+        purchaseStartedInteractions: t.bigint().notNull(),
+        purchaseCompletedInteractions: t.bigint().notNull(),
+
+        webshopOpenned: t.bigint().notNull(),
+
+        totalRewards: t.bigint().notNull(),
+    }),
+    (table) => ({
+        campaignIdx: index().on(table.campaignId),
+    })
+);
+
+export const campaignCapResetTable = onchainTable(
+    "CampaignCapReset",
+    (t) => ({
+        campaignId: t.hex().notNull(),
+        timestamp: t.bigint().notNull(),
+        previousTimestamp: t.bigint().notNull(),
+        distributedAmount: t.bigint().notNull(),
+    }),
+    (table) => ({
+        pk: primaryKey({
+            columns: [table.campaignId, table.previousTimestamp],
+        }),
+        campaignIdx: index().on(table.campaignId),
+    })
+);
+/* -------------------------------------------------------------------------- */
+/*                            Rewards related stuff                           */
+/* -------------------------------------------------------------------------- */
+
+export const tokenTable = onchainTable("Token", (t) => ({
+    // todo: id become address
+    id: t.hex().primaryKey(),
+    decimals: t.integer().notNull(),
+    name: t.varchar().notNull(),
+    symbol: t.varchar().notNull(),
 }));
+export const bankingContractTable = onchainTable(
+    "BankingContract",
+    (t) => ({
+        // todo: id become address
+        id: t.hex().primaryKey(),
+        tokenId: t.hex().notNull(),
+        productId: t.bigint().notNull(),
+        totalDistributed: t.bigint().notNull(),
+        totalClaimed: t.bigint().notNull(),
+        isDistributing: t.boolean().notNull(),
+    }),
+    (table) => ({
+        tokenIdIdx: index().on(table.tokenId),
+        productIdIdx: index().on(table.productId),
+    })
+);
+export const rewardTable = onchainTable(
+    "Reward",
+    (t) => ({
+        contractId: t.hex().notNull(),
+        user: t.hex().notNull(),
+        pendingAmount: t.bigint().notNull(),
+        totalReceived: t.bigint().notNull(),
+        totalClaimed: t.bigint().notNull(),
+    }),
+    (table) => ({
+        pk: primaryKey({ columns: [table.contractId, table.user] }),
+        userIdx: index().on(table.user),
+        contractIdx: index().on(table.contractId),
+        userContractIdx: index().on(table.user, table.contractId),
+    })
+);
+export const rewardAddedEventTable = onchainTable(
+    "RewardAddedEvent",
+    (t) => ({
+        id: t.varchar().primaryKey(),
+        contractId: t.hex().notNull(),
+        user: t.hex().notNull(),
+        emitter: t.hex().notNull(),
+        amount: t.bigint().notNull(),
+        txHash: t.hex().notNull(),
+        timestamp: t.bigint().notNull(),
+    }),
+    (table) => ({
+        userIdx: index().on(table.user),
+        contractIdx: index().on(table.contractId),
+        emitterIdx: index().on(table.emitter),
+    })
+);
+export const rewardClaimedEventTable = onchainTable(
+    "RewardClaimedEvent",
+    (t) => ({
+        id: t.varchar().primaryKey(),
+        contractId: t.hex().notNull(),
+        user: t.hex().notNull(),
+        amount: t.bigint().notNull(),
+        txHash: t.hex().notNull(),
+        timestamp: t.bigint().notNull(),
+    }),
+    (table) => ({
+        userIdx: index().on(table.user),
+        contractIdx: index().on(table.contractId),
+    })
+);

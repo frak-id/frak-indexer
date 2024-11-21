@@ -13,7 +13,7 @@ export function getPonderEntrypoint(type: "indexer" | "reader") {
     const command = type === "indexer" ? "start" : "serve";
 
     return [
-        "pnpm",
+        "bun",
         "ponder",
         "--log-format",
         "json",
@@ -34,7 +34,7 @@ const cloudmapErpcUrl = vpc.nodes.cloudmapNamespace.name.apply(
     (namespaceName) =>
         `http://Erpc.production.frak-indexer.${namespaceName}:8080/${erpcProject}/evm`
 );
-const externalErpcUrl = "https://rpc.frak-labs.com/ponder-dev-rpc/evm";
+const externalErpcUrl = `https://rpc.frak-labs.com/${erpcProject}/evm`;
 
 export const ponderEnv = {
     environment: {

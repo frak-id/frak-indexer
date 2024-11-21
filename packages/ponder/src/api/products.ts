@@ -1,6 +1,15 @@
 import { ponder } from "@/generated";
 import { eq, inArray } from "@ponder/core";
 import { type Hex, isHex, keccak256, toHex } from "viem";
+import {
+    bankingContractTable,
+    campaignTable,
+    productAdministratorTable,
+    productInteractionContractTable,
+    productTable,
+    referralCampaignStatsTable,
+    tokenTable,
+} from "../../ponder.schema";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error
@@ -18,20 +27,16 @@ ponder.get("/products/:id/administrators", async (ctx) => {
         return ctx.text("Invalid product id", 400);
     }
 
-    // Get the tables we will query
-    const { Product, ProductAdministrator } = ctx.tables;
-
     // Perform the sql query
     const administrators = await ctx.db
         .select({
-            wallet: ProductAdministrator.user,
-            isOwner: ProductAdministrator.isOwner,
-            roles: ProductAdministrator.roles,
-            addedTimestamp: ProductAdministrator.createdTimestamp,
+            wallet: productAdministratorTable.user,
+            isOwner: productAdministratorTable.isOwner,
+            roles: productAdministratorTable.roles,
+            addedTimestamp: productAdministratorTable.createdTimestamp,
         })
-        .from(ProductAdministrator)
-        .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
-        .where(eq(Product.id, BigInt(id)));
+        .from(productAdministratorTable)
+        .where(eq(productAdministratorTable.productId, BigInt(id)));
 
     // Return the result as json
     return ctx.json(administrators);
@@ -47,26 +52,23 @@ ponder.get("/products/:id/banks", async (ctx) => {
         return ctx.text("Invalid product id", 400);
     }
 
-    // Get the tables we will query
-    const { BankingContract, Token } = ctx.tables;
-
     // Perform the sql query
     const administrators = await ctx.db
         .select({
-            address: BankingContract.id,
-            totalDistributed: BankingContract.totalDistributed,
-            totalClaimed: BankingContract.totalClaimed,
-            isDistributing: BankingContract.isDistributing,
+            address: bankingContractTable.id,
+            totalDistributed: bankingContractTable.totalDistributed,
+            totalClaimed: bankingContractTable.totalClaimed,
+            isDistributing: bankingContractTable.isDistributing,
             token: {
-                address: Token.id,
-                name: Token.name,
-                symbol: Token.symbol,
-                decimals: Token.decimals,
+                address: tokenTable.id,
+                name: tokenTable.name,
+                symbol: tokenTable.symbol,
+                decimals: tokenTable.decimals,
             },
         })
-        .from(BankingContract)
-        .innerJoin(Token, eq(BankingContract.tokenId, Token.id))
-        .where(eq(BankingContract.productId, BigInt(id)));
+        .from(bankingContractTable)
+        .innerJoin(tokenTable, eq(bankingContractTable.tokenId, tokenTable.id))
+        .where(eq(bankingContractTable.productId, BigInt(id)));
 
     // Return the result as json
     return ctx.json(administrators);
@@ -75,7 +77,7 @@ ponder.get("/products/:id/banks", async (ctx) => {
 /**
  * Get the overall product info
  */
-ponder.get("/products/info", async ({ req, db, tables, json }) => {
+ponder.get("/products/info", async ({ req, db, json }) => {
     // Extract the product id
     const domain = req.query("domain");
     let productId = req.query("id") as Hex | undefined;
@@ -92,8 +94,8 @@ ponder.get("/products/info", async ({ req, db, tables, json }) => {
     // Get the product from the db
     const products = await db
         .select()
-        .from(tables.Product)
-        .where(eq(tables.Product.id, BigInt(productId)));
+        .from(productTable)
+        .where(eq(productTable.id, BigInt(productId)));
     const product = products?.[0];
 
     // If not found, early exit
@@ -104,37 +106,37 @@ ponder.get("/products/info", async ({ req, db, tables, json }) => {
     // Get all the admninistrators
     const administrators = await db
         .select()
-        .from(tables.ProductAdministrator)
-        .where(eq(tables.ProductAdministrator.productId, BigInt(productId)));
+        .from(productAdministratorTable)
+        .where(eq(productAdministratorTable.productId, BigInt(productId)));
 
     // Get all the banks
     const banks = await db
         .select()
-        .from(tables.BankingContract)
-        .where(eq(tables.BankingContract.productId, BigInt(productId)));
+        .from(bankingContractTable)
+        .where(eq(bankingContractTable.productId, BigInt(productId)));
 
     // Get the interaction contracts
     const interactionContracts = await db
         .select()
-        .from(tables.ProductInteractionContract)
+        .from(productInteractionContractTable)
         .where(
-            eq(tables.ProductInteractionContract.productId, BigInt(productId))
+            eq(productInteractionContractTable.productId, BigInt(productId))
         );
 
     // Get the campaigns
     const campaigns = await db
         .select()
-        .from(tables.Campaign)
-        .where(eq(tables.Campaign.productId, BigInt(productId)));
+        .from(campaignTable)
+        .where(eq(campaignTable.productId, BigInt(productId)));
 
     // Get the campaigns tats
     const campaignStats = campaigns.length
         ? await db
               .select()
-              .from(tables.ReferralCampaignStats)
+              .from(referralCampaignStatsTable)
               .where(
                   inArray(
-                      tables.ReferralCampaignStats.campaignId,
+                      referralCampaignStatsTable.campaignId,
                       campaigns.map((c) => c.id)
                   )
               )

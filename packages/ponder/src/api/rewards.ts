@@ -1,6 +1,13 @@
 import { ponder } from "@/generated";
-import { and, desc, eq, like, not } from "@ponder/core";
+import { and, desc, eq, not } from "@ponder/core";
 import { type Address, isAddress } from "viem";
+import {
+    bankingContractTable,
+    productTable,
+    rewardAddedEventTable,
+    rewardClaimedEventTable,
+    rewardTable,
+} from "../../ponder.schema";
 import { getTokens } from "./tokens";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -19,20 +26,25 @@ ponder.get("/rewards/:wallet", async (ctx) => {
         return ctx.text("Invalid wallet address", 400);
     }
 
-    // Get the tables we will query
-    const { Reward, BankingContract } = ctx.tables;
-
     // Perform the sql query
     const rewards = await ctx.db
         .select({
-            amount: Reward.pendingAmount,
-            address: Reward.contractId,
-            token: BankingContract.tokenId,
+            amount: rewardTable.pendingAmount,
+            address: rewardTable.contractId,
+            token: bankingContractTable.tokenId,
         })
-        .from(Reward)
-        .innerJoin(BankingContract, eq(BankingContract.id, Reward.contractId))
-        .where(and(eq(Reward.user, wallet), not(eq(Reward.pendingAmount, 0n))))
-        .orderBy(desc(Reward.pendingAmount));
+        .from(rewardTable)
+        .innerJoin(
+            bankingContractTable,
+            eq(bankingContractTable.id, rewardTable.contractId)
+        )
+        .where(
+            and(
+                eq(rewardTable.user, wallet),
+                not(eq(rewardTable.pendingAmount, 0n))
+            )
+        )
+        .orderBy(desc(rewardTable.pendingAmount));
 
     // Get all the tokens for the rewards
     const tokens = await getTokens({
@@ -57,52 +69,51 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
         return ctx.text("Invalid wallet address", 400);
     }
 
-    const walletfilter = `%${wallet}`;
-
-    // Get the tables we will query
-    const {
-        RewardAddedEvent,
-        RewardClaimedEvent,
-        BankingContract,
-        Reward,
-        Product,
-    } = ctx.tables;
-
     // Perform the sql query
     const rewardAddedPromise = ctx.db
         .select({
-            amount: RewardAddedEvent.amount,
-            txHash: RewardAddedEvent.txHash,
-            timestamp: RewardAddedEvent.timestamp,
-            token: BankingContract.tokenId,
-            productId: BankingContract.productId,
-            productName: Product.name,
+            amount: rewardAddedEventTable.amount,
+            txHash: rewardAddedEventTable.txHash,
+            timestamp: rewardAddedEventTable.timestamp,
+            token: bankingContractTable.tokenId,
+            productId: bankingContractTable.productId,
+            productName: productTable.name,
         })
-        .from(RewardAddedEvent)
-        .innerJoin(Reward, eq(Reward.id, RewardAddedEvent.rewardId))
-        .innerJoin(BankingContract, eq(BankingContract.id, Reward.contractId))
-        .innerJoin(Product, eq(Product.id, BankingContract.productId))
-        .where(like(RewardAddedEvent.rewardId, walletfilter))
+        .from(rewardAddedEventTable)
+        .innerJoin(
+            bankingContractTable,
+            eq(bankingContractTable.id, rewardAddedEventTable.contractId)
+        )
+        .innerJoin(
+            productTable,
+            eq(productTable.id, bankingContractTable.productId)
+        )
+        .where(eq(rewardAddedEventTable.user, wallet))
         .limit(100)
-        .orderBy(desc(RewardAddedEvent.timestamp));
+        .orderBy(desc(rewardAddedEventTable.timestamp));
 
     // Perform the sql query
     const rewardClaimedPromise = ctx.db
         .select({
-            amount: RewardClaimedEvent.amount,
-            txHash: RewardClaimedEvent.txHash,
-            timestamp: RewardClaimedEvent.timestamp,
-            token: BankingContract.tokenId,
-            productId: BankingContract.productId,
-            productName: Product.name,
+            amount: rewardClaimedEventTable.amount,
+            txHash: rewardClaimedEventTable.txHash,
+            timestamp: rewardClaimedEventTable.timestamp,
+            token: bankingContractTable.tokenId,
+            productId: bankingContractTable.productId,
+            productName: productTable.name,
         })
-        .from(RewardClaimedEvent)
-        .innerJoin(Reward, eq(Reward.id, RewardClaimedEvent.rewardId))
-        .innerJoin(BankingContract, eq(BankingContract.id, Reward.contractId))
-        .innerJoin(Product, eq(Product.id, BankingContract.productId))
-        .where(like(RewardClaimedEvent.rewardId, walletfilter))
+        .from(rewardClaimedEventTable)
+        .innerJoin(
+            bankingContractTable,
+            eq(bankingContractTable.id, rewardClaimedEventTable.contractId)
+        )
+        .innerJoin(
+            productTable,
+            eq(productTable.id, bankingContractTable.productId)
+        )
+        .where(eq(rewardClaimedEventTable.user, wallet))
         .limit(100)
-        .orderBy(desc(RewardClaimedEvent.timestamp));
+        .orderBy(desc(rewardClaimedEventTable.timestamp));
 
     const [rewardAdded, rewardClaimed] = await Promise.all([
         rewardAddedPromise,

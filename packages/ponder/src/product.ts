@@ -1,10 +1,9 @@
 import { ponder } from "@/generated";
 import { productRegistryAbi } from "../abis/registryAbis";
+import { productTable } from "../ponder.schema";
 import { bytesToString } from "./utils/format";
 
 ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
-    const { Product } = context.db;
-
     // Get the metadata url
     const metadataUrl = await context.client.readContract({
         abi: productRegistryAbi,
@@ -15,22 +14,18 @@ ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
     });
 
     // Create the product
-    await Product.create({
+    await context.db.insert(productTable).values({
         id: event.args.productId,
-        data: {
-            name: bytesToString(event.args.name),
-            domain: event.args.domain,
-            productTypes: event.args.productTypes,
-            createTimestamp: event.block.timestamp,
-            metadataUrl,
-        },
+        domain: event.args.domain,
+        productTypes: event.args.productTypes,
+        name: bytesToString(event.args.name),
+        createTimestamp: event.block.timestamp,
+        metadataUrl,
     });
 });
 
 ponder.on("ProductRegistry:ProductUpdated", async ({ event, context }) => {
-    const { Product } = context.db;
-
-    let metadataUrl = undefined;
+    let metadataUrl: string | undefined = undefined;
 
     // Update the metadata url if needed
     if (event.args.customMetadataUrl.length > 0) {
@@ -38,13 +33,12 @@ ponder.on("ProductRegistry:ProductUpdated", async ({ event, context }) => {
     }
 
     // Update the product
-    await Product.update({
-        id: event.args.productId,
-        data: ({ current }) => ({
+    await context.db
+        .update(productTable, { id: event.args.productId })
+        .set((current) => ({
             name: bytesToString(event.args.name),
             productTypes: event.args.productTypes,
             lastUpdateTimestamp: event.block.timestamp,
             metadataUrl: metadataUrl ?? current.metadataUrl,
-        }),
-    });
+        }));
 });

@@ -1,25 +1,22 @@
 import { ponder } from "@/generated";
-import { increaseCampaignsStats } from "./stats";
+import { interactionEventTable } from "../../ponder.schema";
+import { safeIncreaseCampaignsStats } from "./stats";
 
 ponder.on(
     "ProductInteraction:ReferralLinkCreation",
     async ({ event, context }) => {
-        const { InteractionEvent } = context.db;
-
         // Insert the press event
-        await InteractionEvent.create({
+        await context.db.insert(interactionEventTable).values({
             id: event.log.id,
-            data: {
-                interactionId: event.log.address,
-                user: event.args.user,
-                type: "CREATE_REFERRAL_LINK",
-                timestamp: event.block.timestamp,
-                data: undefined,
-            },
+            interactionId: event.log.address,
+            user: event.args.user,
+            type: "CREATE_REFERRAL_LINK",
+            timestamp: event.block.timestamp,
+            data: undefined,
         });
 
         // Update the current campaigns stats
-        await increaseCampaignsStats({
+        await safeIncreaseCampaignsStats({
             interactionEmitter: event.log.address,
             blockNumber: event.block.number,
             context,
@@ -31,22 +28,18 @@ ponder.on(
 );
 
 ponder.on("ProductInteraction:UserReferred", async ({ event, context }) => {
-    const { InteractionEvent } = context.db;
-
     // Insert the press event
-    await InteractionEvent.create({
+    await context.db.insert(interactionEventTable).values({
         id: event.log.id,
-        data: {
-            interactionId: event.log.address,
-            user: event.args.user,
-            type: "REFERRED",
-            timestamp: event.block.timestamp,
-            data: { referrer: event.args.referrer },
-        },
+        interactionId: event.log.address,
+        user: event.args.user,
+        type: "REFERRED",
+        timestamp: event.block.timestamp,
+        data: { referrer: event.args.referrer },
     });
 
     // Update the current campaigns stats
-    await increaseCampaignsStats({
+    await safeIncreaseCampaignsStats({
         interactionEmitter: event.log.address,
         blockNumber: event.block.number,
         context,
