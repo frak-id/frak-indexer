@@ -13,7 +13,7 @@ export function getPonderEntrypoint(type: "indexer" | "reader") {
     const command = type === "indexer" ? "start" : "serve";
 
     return [
-        "pnpm",
+        "bun",
         "ponder",
         "--log-format",
         "json",

@@ -1,6 +1,6 @@
 # Frak Indexer
 
-Frak Indexer is an open-source project designed to index events from Frak smart contracts on the Arbitrum Sepolia network. It combines the power of Ponder for building robust crypto apps with eRPC for efficient RPC caching and load balancing, all deployed using SST (Serverless Stack) on AWS infrastructure.
+Frak Indexer is an open-source project designed to index events from Frak smart contracts on the Arbitrum network. It combines the power of Ponder for building robust crypto apps with eRPC for efficient RPC caching and load balancing, all deployed using SST (Serverless Stack) on AWS infrastructure.
 
 ## Architecture Overview
 
@@ -32,15 +32,6 @@ Both services are deployed as containerized applications on AWS ECS (Elastic Con
 - **Secure**: Uses AWS security groups and VPC for network isolation.
 - **Observable**: Includes CloudWatch logs and metrics for monitoring.
 - **Maintainable**: Infrastructure as Code (IaC) using SST for easy updates and version control.
-
-## Deployment
-
-This project uses SST for infrastructure deployment. To deploy:
-
-1. Ensure you have AWS credentials configured.
-2. Setup the secrets required to run the project (check the `iac/Config.ts` file for the required secrets).
-3. Install dependencies: `pnpm install`
-4. Deploy the stack: `npx run deploy`
 
 ## Contributing
 
