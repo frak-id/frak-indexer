@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "deploy:prod": "sst deploy --stage production",
-    "deploy:dev": "sst deploy --stage dev --print-logs",
+    "deploy:dev": "sst deploy --stage dev",
     "format": "biome check --write .",
     "format:check": "biome check .",
     "lint": "biome lint .",

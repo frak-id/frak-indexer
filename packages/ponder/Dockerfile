@@ -1,5 +1,5 @@
 # Base stage
-FROM --platform=$BUILDPLATFORM node:lts-slim AS base
+FROM node:22-slim AS base
 
 # Setup bun (since we are on a node image)
 RUN npm i -g bun
@@ -8,8 +8,6 @@ WORKDIR /usr/src/app
 
 # Bun package installation
 FROM base AS install
-
-ENV NODE_ENV=production
 
 # Install prod dependencies
 RUN mkdir -p /temp/prod
