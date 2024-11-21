@@ -28,11 +28,9 @@ ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
         });
 
     // Update the current user reward (insert it if not found)
-    const rewardId = `${event.log.address}-${event.args.user}`;
     await context.db
         .insert(rewardTable)
         .values({
-            id: rewardId,
             contractId: bankingContract.id,
             user: event.args.user,
             pendingAmount: event.args.amount,
@@ -47,7 +45,8 @@ ponder.on("CampaignBanks:RewardAdded", async ({ event, context }) => {
     // Insert the reward event
     await context.db.insert(rewardAddedEventTable).values({
         id: event.log.id,
-        rewardId,
+        contractId: bankingContract.id,
+        user: event.args.user,
         emitter: event.args.emitter,
         amount: event.args.amount,
         txHash: event.log.transactionHash,
@@ -85,11 +84,9 @@ ponder.on("CampaignBanks:RewardClaimed", async ({ event, context: { db } }) => {
         });
 
     // Update the current user reward (insert it if not found)
-    const rewardId = `${event.log.address}-${event.args.user}`;
     await db
         .insert(rewardTable)
         .values({
-            id: rewardId,
             contractId: bankingContract.id,
             user: event.args.user,
             totalClaimed: event.args.amount,
@@ -104,7 +101,8 @@ ponder.on("CampaignBanks:RewardClaimed", async ({ event, context: { db } }) => {
     // Insert the reward event
     await db.insert(rewardClaimedEventTable).values({
         id: event.log.id,
-        rewardId,
+        contractId: bankingContract.id,
+        user: event.args.user,
         amount: event.args.amount,
         txHash: event.log.transactionHash,
         timestamp: event.block.timestamp,

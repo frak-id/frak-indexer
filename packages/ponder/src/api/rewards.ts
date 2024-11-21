@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import { and, desc, eq, like, not } from "@ponder/core";
+import { and, desc, eq, not } from "@ponder/core";
 import { type Address, isAddress } from "viem";
 import {
     bankingContractTable,
@@ -69,8 +69,6 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
         return ctx.text("Invalid wallet address", 400);
     }
 
-    const walletfilter = `%${wallet}`;
-
     // Perform the sql query
     const rewardAddedPromise = ctx.db
         .select({
@@ -83,18 +81,14 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
         })
         .from(rewardAddedEventTable)
         .innerJoin(
-            rewardTable,
-            eq(rewardTable.id, rewardAddedEventTable.rewardId)
-        )
-        .innerJoin(
             bankingContractTable,
-            eq(bankingContractTable.id, rewardTable.contractId)
+            eq(bankingContractTable.id, rewardAddedEventTable.contractId)
         )
         .innerJoin(
             productTable,
             eq(productTable.id, bankingContractTable.productId)
         )
-        .where(like(rewardAddedEventTable.rewardId, walletfilter))
+        .where(eq(rewardAddedEventTable.user, wallet))
         .limit(100)
         .orderBy(desc(rewardAddedEventTable.timestamp));
 
@@ -110,18 +104,14 @@ ponder.get("/rewards/:wallet/history", async (ctx) => {
         })
         .from(rewardClaimedEventTable)
         .innerJoin(
-            rewardTable,
-            eq(rewardTable.id, rewardClaimedEventTable.rewardId)
-        )
-        .innerJoin(
             bankingContractTable,
-            eq(bankingContractTable.id, rewardTable.contractId)
+            eq(bankingContractTable.id, rewardClaimedEventTable.contractId)
         )
         .innerJoin(
             productTable,
             eq(productTable.id, bankingContractTable.productId)
         )
-        .where(like(rewardClaimedEventTable.rewardId, walletfilter))
+        .where(eq(rewardClaimedEventTable.user, wallet))
         .limit(100)
         .orderBy(desc(rewardClaimedEventTable.timestamp));
 

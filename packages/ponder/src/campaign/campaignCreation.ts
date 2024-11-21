@@ -74,7 +74,6 @@ ponder.on(
             await db
                 .insert(referralCampaignStatsTable)
                 .values({
-                    id: event.args.campaign,
                     campaignId: event.args.campaign,
                     ...emptyCampaignStats,
                 })

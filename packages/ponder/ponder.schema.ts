@@ -1,4 +1,4 @@
-import { index, onchainEnum, onchainTable } from "@ponder/core";
+import { index, onchainEnum, onchainTable, primaryKey } from "@ponder/core";
 
 /* -------------------------------------------------------------------------- */
 /*                            Product related stuff                           */
@@ -26,8 +26,6 @@ export const productTable = onchainTable(
 export const productAdministratorTable = onchainTable(
     "ProductAdministrator",
     (t) => ({
-        id: t.hex().primaryKey(),
-
         productId: t.bigint().notNull(),
 
         isOwner: t.boolean().notNull(),
@@ -37,6 +35,7 @@ export const productAdministratorTable = onchainTable(
         createdTimestamp: t.bigint().notNull(),
     }),
     (table) => ({
+        pk: primaryKey({ columns: [table.productId, table.user] }),
         productIdIdx: index().on(table.productId),
         userIdx: index().on(table.user),
     })
@@ -45,6 +44,7 @@ export const productAdministratorTable = onchainTable(
 export const productInteractionContractTable = onchainTable(
     "ProductInteractionContract",
     (t) => ({
+        // todo: id become address
         id: t.hex().primaryKey(),
 
         productId: t.bigint().notNull(),
@@ -103,6 +103,7 @@ export const interactionEventTable = onchainTable(
 export const campaignTable = onchainTable(
     "Campaign",
     (t) => ({
+        // todo: id become address
         id: t.hex().primaryKey(),
 
         type: t.varchar().notNull(),
@@ -129,9 +130,7 @@ export const campaignTable = onchainTable(
 export const referralCampaignStatsTable = onchainTable(
     "ReferralCampaignStats",
     (t) => ({
-        id: t.hex().primaryKey(),
-
-        campaignId: t.hex().notNull(),
+        campaignId: t.hex().primaryKey().notNull(),
 
         totalInteractions: t.bigint().notNull(),
 
@@ -156,14 +155,15 @@ export const referralCampaignStatsTable = onchainTable(
 export const campaignCapResetTable = onchainTable(
     "CampaignCapReset",
     (t) => ({
-        id: t.varchar().primaryKey(),
-
         campaignId: t.hex().notNull(),
         timestamp: t.bigint().notNull(),
         previousTimestamp: t.bigint().notNull(),
         distributedAmount: t.bigint().notNull(),
     }),
     (table) => ({
+        pk: primaryKey({
+            columns: [table.campaignId, table.previousTimestamp],
+        }),
         campaignIdx: index().on(table.campaignId),
     })
 );
@@ -172,6 +172,7 @@ export const campaignCapResetTable = onchainTable(
 /* -------------------------------------------------------------------------- */
 
 export const tokenTable = onchainTable("Token", (t) => ({
+    // todo: id become address
     id: t.hex().primaryKey(),
     decimals: t.integer().notNull(),
     name: t.varchar().notNull(),
@@ -180,6 +181,7 @@ export const tokenTable = onchainTable("Token", (t) => ({
 export const bankingContractTable = onchainTable(
     "BankingContract",
     (t) => ({
+        // todo: id become address
         id: t.hex().primaryKey(),
         tokenId: t.hex().notNull(),
         productId: t.bigint().notNull(),
@@ -195,7 +197,6 @@ export const bankingContractTable = onchainTable(
 export const rewardTable = onchainTable(
     "Reward",
     (t) => ({
-        id: t.varchar().primaryKey(),
         contractId: t.hex().notNull(),
         user: t.hex().notNull(),
         pendingAmount: t.bigint().notNull(),
@@ -203,6 +204,7 @@ export const rewardTable = onchainTable(
         totalClaimed: t.bigint().notNull(),
     }),
     (table) => ({
+        pk: primaryKey({ columns: [table.contractId, table.user] }),
         userIdx: index().on(table.user),
         contractIdx: index().on(table.contractId),
         userContractIdx: index().on(table.user, table.contractId),
@@ -212,14 +214,16 @@ export const rewardAddedEventTable = onchainTable(
     "RewardAddedEvent",
     (t) => ({
         id: t.varchar().primaryKey(),
-        rewardId: t.varchar().notNull(),
+        contractId: t.hex().notNull(),
+        user: t.hex().notNull(),
         emitter: t.hex().notNull(),
         amount: t.bigint().notNull(),
         txHash: t.hex().notNull(),
         timestamp: t.bigint().notNull(),
     }),
     (table) => ({
-        rewardIdx: index().on(table.rewardId),
+        userIdx: index().on(table.user),
+        contractIdx: index().on(table.contractId),
         emitterIdx: index().on(table.emitter),
     })
 );
@@ -227,12 +231,14 @@ export const rewardClaimedEventTable = onchainTable(
     "RewardClaimedEvent",
     (t) => ({
         id: t.varchar().primaryKey(),
-        rewardId: t.varchar().notNull(),
+        contractId: t.hex().notNull(),
+        user: t.hex().notNull(),
         amount: t.bigint().notNull(),
         txHash: t.hex().notNull(),
         timestamp: t.bigint().notNull(),
     }),
     (table) => ({
-        rewardIdx: index().on(table.rewardId),
+        userIdx: index().on(table.user),
+        contractIdx: index().on(table.contractId),
     })
 );

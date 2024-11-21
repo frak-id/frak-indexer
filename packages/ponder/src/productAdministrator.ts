@@ -1,12 +1,5 @@
 import { type Context, ponder } from "@/generated";
-import {
-    type Address,
-    type Hex,
-    isAddressEqual,
-    keccak256,
-    toHex,
-    zeroAddress,
-} from "viem";
+import { isAddressEqual, zeroAddress } from "viem";
 import { productAdministratorTable } from "../ponder.schema";
 
 /*
@@ -20,7 +13,6 @@ ponder.on("ProductRegistry:Transfer", async ({ event, context }) => {
         await context.db
             .insert(productAdministratorTable)
             .values({
-                id: productAdministratorId(event.args.id, event.args.from),
                 productId,
                 user: event.args.from,
                 roles: 0n,
@@ -35,7 +27,6 @@ ponder.on("ProductRegistry:Transfer", async ({ event, context }) => {
         await context.db
             .insert(productAdministratorTable)
             .values({
-                id: productAdministratorId(event.args.id, event.args.to),
                 isOwner: true,
                 productId,
                 roles: 0n,
@@ -55,7 +46,6 @@ ponder.on(
         await context.db
             .insert(productAdministratorTable)
             .values({
-                id: productAdministratorId(event.args.product, event.args.user),
                 isOwner: false,
                 productId: event.args.product,
                 roles: event.args.roles,
@@ -70,10 +60,6 @@ ponder.on(
         await administratorCleanup(context);
     }
 );
-
-function productAdministratorId(productId: bigint, user: Address): Hex {
-    return keccak256(`${toHex(productId)}-${user}`);
-}
 
 /**
  * Find every administrator where isOwner = false and roles = 0 and delete them

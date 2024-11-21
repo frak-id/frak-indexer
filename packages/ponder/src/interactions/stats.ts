@@ -24,7 +24,7 @@ export const emptyCampaignStats = {
 };
 
 export type StatsIncrementsParams = Partial<
-    Omit<typeof referralCampaignStatsTable.$inferSelect, "id" | "campaignId">
+    Omit<typeof referralCampaignStatsTable.$inferSelect, "campaignId">
 >;
 
 type IncreaseCampaignStatsArgs = {
@@ -148,7 +148,6 @@ async function increaseCampaignsStats({
         .insert(referralCampaignStatsTable)
         .values(
             activeCampaigns.map((campaign) => ({
-                id: campaign.id,
                 ...emptyCampaignStats,
                 ...increments,
                 campaignId: campaign.id,
