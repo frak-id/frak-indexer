@@ -79,6 +79,7 @@ projects:
         allowMethods:
           - eth_chainId
           - eth_getBlockByNumber
+          - eth_call
         autoIgnoreUnsupportedMethods: true
       - &var2
         id: drpc-rpc
@@ -92,6 +93,7 @@ projects:
           - eth_chainId
           - eth_getBlockByNumber
           - eth_getLogs
+          - eth_call
       - &var3
         id: envio
         endpoint: evm+envio://rpc.hypersync.xyz
@@ -135,6 +137,7 @@ projects:
         allowMethods:
           - eth_chainId
           - eth_getBlockByNumber
+          - eth_call
         autoIgnoreUnsupportedMethods: true
       - *var2
       - *var3

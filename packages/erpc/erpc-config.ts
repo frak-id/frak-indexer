@@ -191,14 +191,14 @@ const llamaFreeRpcUpstreamArb = buildEvmUpstream({
     endpoint: "https://arbitrum.llamarpc.com",
     rateLimitBudget: llamaFreeRpcRateLimits.id,
     ignoreMethods: ["*"],
-    allowMethods: ["eth_chainId", "eth_getBlockByNumber"],
+    allowMethods: ["eth_chainId", "eth_getBlockByNumber", "eth_call"],
 });
 const tenderlyFreeRpcUpstreamArbSepolia = buildEvmUpstream({
     id: "tenderly-arbitrum-sepolia-free-rpc",
     endpoint: "https://arbitrum-sepolia.gateway.tenderly.co",
     rateLimitBudget: tenderlyFreeRpcRateLimits.id,
     ignoreMethods: ["*"],
-    allowMethods: ["eth_chainId", "eth_getBlockByNumber"],
+    allowMethods: ["eth_chainId", "eth_getBlockByNumber", "eth_call"],
 });
 const drpcUpstream: UpstreamConfig = {
     id: "drpc-rpc",
@@ -207,7 +207,12 @@ const drpcUpstream: UpstreamConfig = {
     endpoint: `drpc://${envVariable("DRPC_API_KEY")}`,
     rateLimitBudget: drpcRpcRateLimits.id,
     ignoreMethods: ["*"],
-    allowMethods: ["eth_chainId", "eth_getBlockByNumber", "eth_getLogs"],
+    allowMethods: [
+        "eth_chainId",
+        "eth_getBlockByNumber",
+        "eth_getLogs",
+        "eth_call",
+    ],
 };
 
 // Build the ponder indexing project
