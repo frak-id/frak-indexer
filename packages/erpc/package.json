@@ -8,16 +8,18 @@
     "build": "erpc-config",
     "build:check": "erpc-config validate",
     "lint": "biome lint .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "docker:dev": "docker build --tag frak-erpc . && docker run --env-file ./.env.local frak-erpc"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@konfeature/erpc-config-generator": "0.0.13",
-    "@types/aws-lambda": "8.10.146",
-    "@types/node": "^22.10.1",
-    "sst": "3.3.44",
-    "typescript": "^5.7.2",
     "viem": "^2.21.54"
+    "sst": "3.3.29",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@erpc-cloud/config": "^0.0.7"
   },
   "engines": {
     "node": ">=18.14"
