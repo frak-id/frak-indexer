@@ -39,6 +39,7 @@ ponder.get("/campaign", async (ctx) => {
             productId: campaignTable.productId,
             attached: campaignTable.attached,
             banking: campaignTable.bankingContractId,
+            lastUpdateBlock: campaignTable.lastUpdateBlock,
             token: bankingContractTable.tokenId,
         })
         .from(campaignTable)

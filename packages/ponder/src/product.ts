@@ -21,6 +21,7 @@ ponder.on("ProductRegistry:ProductMinted", async ({ event, context }) => {
         name: bytesToString(event.args.name),
         createTimestamp: event.block.timestamp,
         metadataUrl,
+        lastUpdateBlock: event.block.number,
     });
 });
 
@@ -40,5 +41,6 @@ ponder.on("ProductRegistry:ProductUpdated", async ({ event, context }) => {
             productTypes: event.args.productTypes,
             lastUpdateTimestamp: event.block.timestamp,
             metadataUrl: metadataUrl ?? current.metadataUrl,
+            lastUpdateBlock: event.block.number,
         }));
 });

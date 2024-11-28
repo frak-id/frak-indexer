@@ -67,6 +67,7 @@ ponder.on(
                     ? configResult.result[2]
                     : undefined,
             isAuthorisedOnBanking: false,
+            lastUpdateBlock: event.block.number,
         });
 
         // Upsert press campaign stats if it's the right type

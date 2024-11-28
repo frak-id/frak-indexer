@@ -16,6 +16,8 @@ export const productTable = onchainTable(
         createTimestamp: t.bigint().notNull(),
         lastUpdateTimestamp: t.bigint(),
 
+        lastUpdateBlock: t.bigint().notNull(),
+
         metadataUrl: t.varchar(),
     }),
     (table) => ({
@@ -113,6 +115,8 @@ export const campaignTable = onchainTable(
         productId: t.bigint().notNull(),
         interactionContractId: t.hex().notNull(),
         attached: t.boolean().notNull(),
+
+        lastUpdateBlock: t.bigint().notNull(),
 
         attachTimestamp: t.bigint().notNull(),
         detachTimestamp: t.bigint(),

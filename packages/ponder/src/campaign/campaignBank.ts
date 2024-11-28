@@ -107,6 +107,7 @@ ponder.on(
             })
             .set({
                 isAuthorisedOnBanking: event.args.isAllowed,
+                lastUpdateBlock: event.block.number,
             });
     }
 );

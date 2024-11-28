@@ -50,6 +50,7 @@ ponder.on(
                 version,
                 attached: true,
                 attachTimestamp: event.block.timestamp,
+                lastUpdateBlock: event.block.number,
             });
 
         // Upsert press campaign stats if it's the right type
@@ -76,6 +77,7 @@ ponder.on(
             .set({
                 attached: false,
                 detachTimestamp: event.block.timestamp,
+                lastUpdateBlock: event.block.number,
             });
     }
 );
