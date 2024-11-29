@@ -1,70 +1,45 @@
-import * as console from "node:console";
 import { ponder } from "@/generated";
-import { interactionCampaignAbi } from "../../abis/campaignAbis";
 import {
     campaignTable,
     productInteractionContractTable,
-    referralCampaignStatsTable,
 } from "../../ponder.schema";
-import { emptyCampaignStats } from "../interactions/stats";
-import { bytesToString } from "../utils/format";
+import { upsertNewCampaign } from "./campaignCreation";
 
-ponder.on(
-    "ProductInteraction:CampaignAttached",
-    async ({ event, context: { db, client } }) => {
-        // Find the interaction contract
-        const interactionContract = await db.find(
-            productInteractionContractTable,
-            {
-                id: event.log.address,
-            }
-        );
-        if (!interactionContract) {
-            console.error(
-                `Interaction contract not found: ${event.log.address}`
-            );
-            return;
+ponder.on("ProductInteraction:CampaignAttached", async ({ event, context }) => {
+    // Find the interaction contract
+    const interactionContract = await context.db.find(
+        productInteractionContractTable,
+        {
+            id: event.log.address,
         }
-
-        // Get the metadata and create it
-        const [type, version, name] = await client.readContract({
-            abi: interactionCampaignAbi,
-            address: event.args.campaign,
-            functionName: "getMetadata",
-            blockNumber: event.block.number,
-        });
-        const currentCampaign = db.find(campaignTable, {
-            id: event.args.campaign,
-        });
-        if (!currentCampaign) {
-            console.error(`Campaign not found: ${event.args.campaign}`);
-            return;
-        }
-        // Update the campaign
-        await db
-            .update(campaignTable, {
-                id: event.args.campaign,
-            })
-            .set({
-                name: bytesToString(name),
-                version,
-                attached: true,
-                attachTimestamp: event.block.timestamp,
-                lastUpdateBlock: event.block.number,
-            });
-
-        // Upsert press campaign stats if it's the right type
-        if (type === "frak.campaign.press") {
-            await db
-                .insert(referralCampaignStatsTable)
-                .values({
-                    campaignId: event.args.campaign,
-                    ...emptyCampaignStats,
-                })
-                .onConflictDoNothing();
-        }
+    );
+    if (!interactionContract) {
+        console.error(`Interaction contract not found: ${event.log.address}`);
+        return;
     }
-);
+
+    // Get the metadata and create it
+    await upsertNewCampaign({
+        address: event.args.campaign,
+        blockNumber: event.block.number,
+        context,
+        onConflictUpdate: {
+            attached: true,
+            attachTimestamp: event.block.timestamp,
+            lastUpdateBlock: event.block.number,
+        },
+    });
+
+    // Update the interaction contract
+    await context.db
+        .update(productInteractionContractTable, {
+            id: event.log.address,
+        })
+        .set({
+            lastUpdateTimestamp: event.block.timestamp,
+            lastUpdateBlock: event.block.number,
+        });
+});
 
 ponder.on(
     "ProductInteraction:CampaignDetached",
@@ -77,6 +52,16 @@ ponder.on(
             .set({
                 attached: false,
                 detachTimestamp: event.block.timestamp,
+                lastUpdateBlock: event.block.number,
+            });
+
+        // Update the interaction contract
+        await db
+            .update(productInteractionContractTable, {
+                id: event.log.address,
+            })
+            .set({
+                lastUpdateTimestamp: event.block.timestamp,
                 lastUpdateBlock: event.block.number,
             });
     }

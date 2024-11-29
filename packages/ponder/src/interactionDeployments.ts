@@ -18,7 +18,9 @@ ponder.on(
             id: event.args.interactionContract,
             productId: event.args.productId,
             createdTimestamp: event.block.timestamp,
+            lastUpdateTimestamp: event.block.timestamp,
             referralTree,
+            lastUpdateBlock: event.block.number,
         });
     }
 );
@@ -30,16 +32,21 @@ ponder.on(
                 id: event.args.interactionContract,
             })
             .set({
-                productId: event.args.productId,
                 lastUpdateTimestamp: event.block.timestamp,
+                lastUpdateBlock: event.block.number,
             });
     }
 );
 ponder.on(
     "ProductInteractionManager:InteractionContractDeleted",
     async ({ event, context: { db } }) => {
-        await db.delete(productInteractionContractTable, {
-            id: event.args.interactionContract,
-        });
+        await db
+            .update(productInteractionContractTable, {
+                id: event.args.interactionContract,
+            })
+            .set({
+                removedTimestamp: event.block.timestamp,
+                lastUpdateBlock: event.block.number,
+            });
     }
 );

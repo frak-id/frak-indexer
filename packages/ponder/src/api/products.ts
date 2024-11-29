@@ -53,7 +53,7 @@ ponder.get("/products/:id/banks", async (ctx) => {
     }
 
     // Perform the sql query
-    const administrators = await ctx.db
+    const banks = await ctx.db
         .select({
             address: bankingContractTable.id,
             totalDistributed: bankingContractTable.totalDistributed,
@@ -71,7 +71,7 @@ ponder.get("/products/:id/banks", async (ctx) => {
         .where(eq(bankingContractTable.productId, BigInt(id)));
 
     // Return the result as json
-    return ctx.json(administrators);
+    return ctx.json(banks);
 });
 
 /**

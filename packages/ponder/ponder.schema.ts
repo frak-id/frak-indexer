@@ -52,8 +52,10 @@ export const productInteractionContractTable = onchainTable(
         productId: t.bigint().notNull(),
         referralTree: t.hex().notNull(),
 
+        lastUpdateBlock: t.bigint().notNull(),
+
         createdTimestamp: t.bigint().notNull(),
-        lastUpdateTimestamp: t.bigint(),
+        lastUpdateTimestamp: t.bigint().notNull(),
         removedTimestamp: t.bigint(),
     }),
     (table) => ({
