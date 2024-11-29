@@ -64,7 +64,7 @@ type GetMembersParams = {
 /**
  * Get all the members for a product admin
  */
-ponder.post("/members/:productAdmin", async (ctx) => {
+ponder.get("/members/:productAdmin", async (ctx) => {
     // Extract wallet
     const wallet = ctx.req.param("productAdmin") as Address;
     if (!isAddress(wallet)) {
