@@ -73,7 +73,7 @@ ponder.get("/members/:productAdmin", async (ctx) => {
 
     // Get the request params
     const { filter, sort, limit, offset, noData, onlyAddress } =
-        await ctx.req.json<GetMembersParams>();
+        (await ctx.req.parseBody()) as GetMembersParams;
 
     // Perform the sql query
     const productIds = await ctx.db
