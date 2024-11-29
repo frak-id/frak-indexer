@@ -63,8 +63,9 @@ type GetMembersParams = {
 
 /**
  * Get all the members for a product admin
+ *  todo: The POST request here is mapped to a PUT hono handler --'
  */
-ponder.get("/members/:productAdmin", async (ctx) => {
+ponder.post("/members/:productAdmin", async (ctx) => {
     // Extract wallet
     const wallet = ctx.req.param("productAdmin") as Address;
     if (!isAddress(wallet)) {
@@ -73,7 +74,7 @@ ponder.get("/members/:productAdmin", async (ctx) => {
 
     // Get the request params
     const { filter, sort, limit, offset, noData, onlyAddress } =
-        (await ctx.req.parseBody()) as GetMembersParams;
+        await ctx.req.json<GetMembersParams>();
 
     // Perform the sql query
     const productIds = await ctx.db
