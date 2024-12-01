@@ -13,7 +13,9 @@ function genericRateLimitsRules(count: number): RateLimitRuleConfig {
     };
 }
 
-export const envioRateRules: RateLimitRuleConfig[] = [
+type RuleExport = [RateLimitRuleConfig, ...RateLimitRuleConfig[]];
+
+export const envioRateRules: RuleExport = [
     genericRateLimitsRules(400),
     {
         method: "eth_getLogs",
@@ -23,7 +25,7 @@ export const envioRateRules: RateLimitRuleConfig[] = [
     },
 ];
 
-export const alchemyRateRules: RateLimitRuleConfig[] = [
+export const alchemyRateRules: RuleExport = [
     genericRateLimitsRules(200),
     {
         method: "eth_getLogs",
@@ -33,21 +35,11 @@ export const alchemyRateRules: RateLimitRuleConfig[] = [
     },
 ];
 
-export const pimlicoRateRules: RateLimitRuleConfig[] = [
-    genericRateLimitsRules(400),
-];
+export const pimlicoRateRules: RuleExport = [genericRateLimitsRules(400)];
 
-export const blockPiRateRules: RateLimitRuleConfig[] = [
-    genericRateLimitsRules(100),
-];
+export const blockPiRateRules: RuleExport = [genericRateLimitsRules(100)];
 
-export const drpcRateRules: RateLimitRuleConfig[] = [
-    genericRateLimitsRules(100),
-];
+export const drpcRateRules: RuleExport = [genericRateLimitsRules(100)];
 
-export const llamaFreeRateRules: RateLimitRuleConfig[] = [
-    genericRateLimitsRules(30),
-];
-export const tenderlyFreeRateRules: RateLimitRuleConfig[] = [
-    genericRateLimitsRules(10),
-];
+export const llamaFreeRateRules: RuleExport = [genericRateLimitsRules(30)];
+export const tenderlyFreeRateRules: RuleExport = [genericRateLimitsRules(10)];

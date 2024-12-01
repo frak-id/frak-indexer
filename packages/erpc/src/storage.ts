@@ -86,4 +86,5 @@ const cachePolicies = [
 export const cacheConfig = {
     connectors,
     policies: cachePolicies,
+    methods: {},
 } as const satisfies CacheConfig;
