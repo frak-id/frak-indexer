@@ -40,11 +40,11 @@ const connectors = [
  *  todo: Also find a way to cache 4337 related et_getCode method for longer period in memory? Only if non empty maybe?
  */
 const cachePolicies = [
-    // Cache credits intensive calls on the pg when data are finalised
+    // Cache all finalized data in the pg database
     {
         connector: "pg-main",
         network: "*",
-        method: "eth_getLogs | eth_getBlock* | eth_getTransactionBy* | eth_getStorageAt",
+        method: "*",
         finality: DataFinalityStateFinalized,
         empty: CacheEmptyBehaviorAllow,
     },
@@ -55,18 +55,18 @@ const cachePolicies = [
         method: "*",
         finality: DataFinalityStateUnfinalized,
         empty: CacheEmptyBehaviorIgnore,
-        // 5sec in nanoseconds
+        // 2sec in nanoseconds
         ttl: 2_000_000_000,
     },
-    // Cache realtime data for 5sec on the memory on arbitrum
+    // Cache realtime data for 2sec on the memory on arbitrum
     {
         connector: "memory-main",
         network: "evm:42161",
         method: "*",
         finality: DataFinalityStateRealtime,
         empty: CacheEmptyBehaviorIgnore,
-        // 5sec in nanoseconds
-        ttl: 5_000_000_000,
+        // 2sec in nanoseconds
+        ttl: 2_000_000_000,
     },
     // Cache realtime data for 30sec on arbitrum sepolia
     {
@@ -75,7 +75,7 @@ const cachePolicies = [
         method: "*",
         finality: DataFinalityStateRealtime,
         empty: CacheEmptyBehaviorIgnore,
-        // 5sec in nanoseconds
+        // 30sec in nanoseconds
         ttl: 30_000_000_000,
     },
 ] as const satisfies CachePolicyConfig[];

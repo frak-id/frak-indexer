@@ -20,7 +20,7 @@ import {
 } from "./upstreams";
 
 /**
- * Build our top erpc config
+ * Build our top level erpc config
  */
 export default initErpcConfig({
     logLevel: (process.env.ERPC_LOG_LEVEL ?? "info") as LogLevel,
@@ -47,24 +47,18 @@ export default initErpcConfig({
         tenderlyFree: tenderlyFreeRateRules,
     })
     // Add networks to the config
-    .decorate({
-        scope: "networks",
-        value: {
-            arbitrum: arbNetwork,
-            arbitrumSepolia: arbSepoliaNetwork,
-        },
+    .decorate("networks", {
+        arbitrum: arbNetwork,
+        arbitrumSepolia: arbSepoliaNetwork,
     })
     // Add upstreams to the config
-    .decorate({
-        scope: "upstreams",
-        value: {
-            envio: envioUpstream,
-            alchemy: alchemyUpstream,
-            pimlico: pimlicoUpstream,
-            drpc: drpcUpstream,
-            llamaFree: llamaFreeUpstreamArb,
-            tenderlyFree: tenderlyFreeUpstreamArbSepolia,
-        },
+    .decorate("upstreams", {
+        envio: envioUpstream,
+        alchemy: alchemyUpstream,
+        pimlico: pimlicoUpstream,
+        drpc: drpcUpstream,
+        llamaFree: llamaFreeUpstreamArb,
+        tenderlyFree: tenderlyFreeUpstreamArbSepolia,
     })
     // Add our ponder prod project
     .addProject(({ store: { upstreams, networks } }) => ({
