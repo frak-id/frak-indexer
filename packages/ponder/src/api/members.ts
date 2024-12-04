@@ -254,12 +254,12 @@ function getFilterClauses({ filter }: { filter: GetMembersParams["filter"] }) {
     return { whereClauses, havingClauses };
 }
 
-function buildRangeClause({
+function buildRangeClause<TInnerField extends bigint | string | number | null>({
     field,
     min,
     max,
 }: {
-    field: SQL<bigint | string | number | null>;
+    field: SQL<TInnerField>;
     min?: number | bigint;
     max?: number | bigint;
 }) {

@@ -14,13 +14,13 @@
     "@biomejs/biome": "1.9.4",
     "@konfeature/erpc-config-generator": "0.0.13",
     "@types/aws-lambda": "8.10.146",
-    "@types/node": "^22.10.0",
-    "sst": "3.3.29",
+    "@types/node": "^22.10.1",
+    "sst": "3.3.44",
     "typescript": "^5.7.2",
     "viem": "^2.21.51"
   },
   "engines": {
     "node": ">=18.14"
   },
-  "packageManager": "bun@1.1.37"
+  "packageManager": "bun@1.1.38"
 }
