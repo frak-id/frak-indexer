@@ -1,6 +1,11 @@
 import { ponder } from "@/generated";
 import { desc, eq } from "@ponder/core";
 import { type Address, isAddress } from "viem";
+import {
+    interactionEventTable,
+    productInteractionContractTable,
+    productTable,
+} from "../../ponder.schema";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error
@@ -18,31 +23,30 @@ ponder.get("/interactions/:wallet", async (ctx) => {
         return ctx.text("Invalid wallet address", 400);
     }
 
-    // Get the tables we will query
-    const { InteractionEvent, ProductInteractionContract, Product } =
-        ctx.tables;
-
     // Perform the sql query
     const interactions = await ctx.db
         .select({
-            data: InteractionEvent.data,
-            type: InteractionEvent.type,
-            timestamp: InteractionEvent.timestamp,
-            productId: ProductInteractionContract.productId,
-            productName: Product.name,
+            data: interactionEventTable.data,
+            type: interactionEventTable.type,
+            timestamp: interactionEventTable.timestamp,
+            productId: productInteractionContractTable.productId,
+            productName: productTable.name,
         })
-        .from(InteractionEvent)
+        .from(interactionEventTable)
         .innerJoin(
-            ProductInteractionContract,
-            eq(ProductInteractionContract.id, InteractionEvent.interactionId)
+            productInteractionContractTable,
+            eq(
+                productInteractionContractTable.id,
+                interactionEventTable.interactionId
+            )
         )
         .innerJoin(
-            Product,
-            eq(Product.id, ProductInteractionContract.productId)
+            productTable,
+            eq(productTable.id, productInteractionContractTable.productId)
         )
-        .where(eq(InteractionEvent.user, wallet))
+        .where(eq(interactionEventTable.user, wallet))
         .limit(100)
-        .orderBy(desc(InteractionEvent.timestamp));
+        .orderBy(desc(interactionEventTable.timestamp));
 
     // Return the result as json
     return ctx.json(interactions);

@@ -1,13 +1,12 @@
 import { ponder } from "@/generated";
 import { productInteractionDiamondAbi } from "../abis/interactionAbis";
+import { productInteractionContractTable } from "../ponder.schema";
 
 ponder.on(
     "ProductInteractionManager:InteractionContractDeployed",
-    async ({ event, context }) => {
-        const { ProductInteractionContract } = context.db;
-
+    async ({ event, context: { client, db } }) => {
         // Get the referral tree of this interaction contract
-        const referralTree = await context.client.readContract({
+        const referralTree = await client.readContract({
             abi: productInteractionDiamondAbi,
             address: event.args.interactionContract,
             functionName: "getReferralTree",
@@ -15,37 +14,39 @@ ponder.on(
         });
 
         // Create the interaction contract
-        await ProductInteractionContract.create({
+        await db.insert(productInteractionContractTable).values({
             id: event.args.interactionContract,
-            data: {
-                productId: event.args.productId,
-                createdTimestamp: event.block.timestamp,
-                referralTree,
-            },
+            productId: event.args.productId,
+            createdTimestamp: event.block.timestamp,
+            lastUpdateTimestamp: event.block.timestamp,
+            referralTree,
+            lastUpdateBlock: event.block.number,
         });
     }
 );
 ponder.on(
     "ProductInteractionManager:InteractionContractUpdated",
-    async ({ event, context }) => {
-        const { ProductInteractionContract } = context.db;
-
-        await ProductInteractionContract.update({
-            id: event.args.interactionContract,
-            data: {
-                productId: event.args.productId,
+    async ({ event, context: { db } }) => {
+        await db
+            .update(productInteractionContractTable, {
+                id: event.args.interactionContract,
+            })
+            .set({
                 lastUpdateTimestamp: event.block.timestamp,
-            },
-        });
+                lastUpdateBlock: event.block.number,
+            });
     }
 );
 ponder.on(
     "ProductInteractionManager:InteractionContractDeleted",
-    async ({ event, context }) => {
-        const { ProductInteractionContract } = context.db;
-
-        await ProductInteractionContract.delete({
-            id: event.args.interactionContract,
-        });
+    async ({ event, context: { db } }) => {
+        await db
+            .update(productInteractionContractTable, {
+                id: event.args.interactionContract,
+            })
+            .set({
+                removedTimestamp: event.block.timestamp,
+                lastUpdateBlock: event.block.number,
+            });
     }
 );

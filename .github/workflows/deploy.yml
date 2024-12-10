@@ -26,9 +26,9 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - uses: dorny/paths-filter@v3
         id: changes
@@ -41,7 +41,7 @@ jobs:
               - 'packages/erpc/Dockerfile'
             ponder:
               - 'packages/ponder/**'
-            dockerRelated:
+            dockerImage:
               - 'packages/erpc/erpc.yaml'
               - 'packages/erpc/Dockerfile'
               - 'packages/ponder/**'
@@ -49,32 +49,17 @@ jobs:
       - name: "🔧 Set up environment variables"
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "STAGE=production" >> $GITHUB_ENV
             echo "PONDER_PROD_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
-            echo "PONDER_DEV_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+            echo "PONDER_DEV_IMAGE_TAG=latest" >> $GITHUB_ENV
           else
+            echo "STAGE=dev" >> $GITHUB_ENV
             echo "PONDER_PROD_IMAGE_TAG=latest" >> $GITHUB_ENV
             echo "PONDER_DEV_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
           fi
 
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
       - name: "🔨 Install dependencies"
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: "👥 Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
@@ -88,15 +73,19 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Set up QEMU
-        if: steps.changes.outputs.dockerRelated == 'true'
+        if: steps.changes.outputs.dockerImage == 'true'
         uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
 
       - name: Set up Docker Buildx
-        if: steps.changes.outputs.dockerRelated == 'true'
+        if: steps.changes.outputs.dockerImage == 'true'
         uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/arm64
 
       - name: "🔨 Build Ponder dev docker dependencies"
-        if: steps.changes.outputs.ponder == 'true'
+        if: steps.changes.outputs.ponder == 'true' && env.STAGE == 'dev'
         uses: docker/build-push-action@v6
         with:
           context: ./packages/ponder
@@ -110,7 +99,7 @@ jobs:
           cache-to: type=gha,mode=min
 
       - name: "🔨 Build Ponder prod docker dependencies"
-        if: steps.changes.outputs.ponder == 'true' && env.PONDER_PROD_IMAGE_TAG != 'latest'
+        if: steps.changes.outputs.ponder == 'true' && env.STAGE == 'production'
         uses: docker/build-push-action@v6
         with:
           context: ./packages/ponder
@@ -124,7 +113,7 @@ jobs:
           cache-to: type=gha,mode=min
 
       - name: "🔨 Build ERPC docker dependencies"
-        if: steps.changes.outputs.erpc == 'true'
+        if: steps.changes.outputs.erpc == 'true' && env.STAGE == 'production'
         uses: docker/build-push-action@v6
         with:
           context: ./packages/erpc
@@ -140,12 +129,12 @@ jobs:
 
       - name: "🚀 SST Deploy"
         run: |
+          bun sst install
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            pnpm run deploy:prod
+            bun run deploy:prod
           else
-            pnpm run deploy:dev
+            bun run deploy:dev
           fi
-          pnpm sst deploy --stage prod
         env:
           ERPC_IMAGE_TAG: ${{ steps.changes.outputs.erpc == 'true' && github.sha || 'latest' }}
           PONDER_DEV_IMAGE_TAG: ${{ steps.changes.outputs.ponder == 'true' && env.PONDER_DEV_IMAGE_TAG || 'latest' }}

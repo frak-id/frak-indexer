@@ -1,94 +1,26 @@
 import * as console from "node:console";
-import { ponder } from "@/generated";
-import { erc20Abi, isAddressEqual } from "viem";
+import { type Context, ponder } from "@/generated";
+import { type Address, isAddressEqual } from "viem";
 import { campaignBankAbi } from "../../abis/campaignAbis";
+import { bankingContractTable, campaignTable } from "../../ponder.schema";
+import { upsertTokenIfNeeded } from "../token";
 
 ponder.on(
     "CampaignBanksFactory:CampaignBankCreated",
     async ({ event, context }) => {
-        const { BankingContract, Token } = context.db;
-        const address = event.args.campaignBank;
-
-        // If not found, find the token of this campaign
-        const [[productId, token], isDistributing] =
-            await context.client.multicall({
-                contracts: [
-                    {
-                        abi: campaignBankAbi,
-                        address,
-                        functionName: "getConfig",
-                    } as const,
-                    {
-                        abi: campaignBankAbi,
-                        address,
-                        functionName: "isDistributionEnabled",
-                    } as const,
-                ],
-                allowFailure: false,
-                blockNumber: event.block.number,
-            });
-
-        await BankingContract.create({
-            id: address,
-            data: {
-                tokenId: token,
-                totalDistributed: 0n,
-                totalClaimed: 0n,
-                productId,
-                isDistributing,
-            },
+        await upsertCampaignBank({
+            address: event.args.campaignBank,
+            blockNumber: event.block.number,
+            context,
         });
-        // Create the token if needed
-        const tokenDb = await Token.findUnique({ id: token });
-        if (!tokenDb) {
-            try {
-                // Fetch a few onchain data
-                const [name, symbol, decimals] = await context.client.multicall(
-                    {
-                        contracts: [
-                            {
-                                abi: erc20Abi,
-                                functionName: "name",
-                                address: token,
-                            },
-                            {
-                                abi: erc20Abi,
-                                functionName: "symbol",
-                                address: token,
-                            },
-                            {
-                                abi: erc20Abi,
-                                functionName: "decimals",
-                                address: token,
-                            },
-                        ] as const,
-                        allowFailure: false,
-                    }
-                );
-
-                // Create the token
-                await Token.create({
-                    id: token,
-                    data: {
-                        name,
-                        symbol,
-                        decimals,
-                    },
-                });
-            } catch (e) {
-                console.error(e, "Unable to fetch token data");
-            }
-        }
     }
 );
 
 ponder.on(
     "CampaignBanks:CampaignAuthorisationUpdated",
-    async ({ event, context }) => {
-        const { Campaign } = context.db;
-
+    async ({ event, context: { db } }) => {
         // Find the interaction contract
-        const campaign = await Campaign.findUnique({
+        const campaign = await db.find(campaignTable, {
             id: event.args.campaign,
         });
         if (!campaign?.bankingContractId) {
@@ -106,35 +38,95 @@ ponder.on(
         }
 
         // Update the campaign
-        await Campaign.update({
-            id: event.args.campaign,
-            data: {
+        await db
+            .update(campaignTable, {
+                id: event.args.campaign,
+            })
+            .set({
                 isAuthorisedOnBanking: event.args.isAllowed,
-            },
-        });
+                lastUpdateBlock: event.block.number,
+            });
     }
 );
 
 ponder.on(
     "CampaignBanks:DistributionStateUpdated",
     async ({ event, context }) => {
-        const { BankingContract } = context.db;
-
-        // Find the interaction contract
-        const banking = await BankingContract.findUnique({
-            id: event.log.address,
-        });
-        if (!banking) {
-            console.error(`Banking contract not found: ${event.log.address}`);
-            return;
-        }
-
-        // Update the campaign
-        await BankingContract.update({
-            id: event.log.address,
-            data: {
+        // Upsert the campaign and set the distributing status
+        await upsertCampaignBank({
+            address: event.log.address,
+            blockNumber: event.block.number,
+            context,
+            onConflictUpdate: {
                 isDistributing: event.args.isDistributing,
             },
         });
     }
 );
+
+async function upsertCampaignBank({
+    address,
+    blockNumber,
+    context,
+    onConflictUpdate = {},
+}: {
+    address: Address;
+    blockNumber: bigint;
+    context: Context;
+    onConflictUpdate?: Partial<typeof bankingContractTable.$inferInsert>;
+}) {
+    // Check if the campaign bank already exist, if yes just update it if we got stuff to update
+    const campaignBank = await context.db.find(bankingContractTable, {
+        id: address,
+    });
+    if (campaignBank) {
+        if (Object.keys(onConflictUpdate).length === 0) return;
+
+        await context.db
+            .update(bankingContractTable, {
+                id: address,
+            })
+            .set(onConflictUpdate);
+        return;
+    }
+
+    // If not found, find the token of this campaign
+    const [[productId, token], isDistributing] = await context.client.multicall(
+        {
+            contracts: [
+                {
+                    abi: campaignBankAbi,
+                    address,
+                    functionName: "getConfig",
+                } as const,
+                {
+                    abi: campaignBankAbi,
+                    address,
+                    functionName: "isDistributionEnabled",
+                } as const,
+            ],
+            allowFailure: false,
+            blockNumber: blockNumber,
+        }
+    );
+
+    // And upsert it
+    await context.db
+        .insert(bankingContractTable)
+        .values({
+            id: address,
+            tokenId: token,
+            totalDistributed: 0n,
+            totalClaimed: 0n,
+            productId,
+            isDistributing,
+            ...onConflictUpdate,
+        })
+        .onConflictDoUpdate(onConflictUpdate);
+
+    // Upsert the token if needed
+    await upsertTokenIfNeeded({
+        address: token,
+        context,
+    });
+}

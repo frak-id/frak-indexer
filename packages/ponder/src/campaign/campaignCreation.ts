@@ -1,9 +1,10 @@
-import * as console from "node:console";
-import { ponder } from "@/generated";
+import { type Context, ponder } from "@/generated";
+import type { Address } from "viem";
 import {
     interactionCampaignAbi,
     referralCampaignAbi,
 } from "../../abis/campaignAbis";
+import { campaignTable, referralCampaignStatsTable } from "../../ponder.schema";
 import { emptyCampaignStats } from "../interactions/stats";
 import { bytesToString } from "../utils/format";
 
@@ -11,39 +12,73 @@ import { bytesToString } from "../utils/format";
  * On new campaign creation
  */
 ponder.on("CampaignsFactory:CampaignCreated", async ({ event, context }) => {
-    const { Campaign, ReferralCampaignStats } = context.db;
+    // Upsert the campaign
+    await upsertNewCampaign({
+        address: event.args.campaign,
+        blockNumber: event.block.number,
+        context,
+    });
+});
+
+/**
+ * Upsert a fresh campaign in the db
+ * @param address
+ * @param block
+ */
+export async function upsertNewCampaign({
+    address,
+    blockNumber,
+    context: { client, db },
+    onConflictUpdate = {},
+}: {
+    address: Address;
+    blockNumber: bigint;
+    context: Context;
+    onConflictUpdate?: Partial<typeof campaignTable.$inferInsert>;
+}) {
+    // If the campaign already exist, just update it
+    const campaign = await db.find(campaignTable, { id: address });
+    if (campaign) {
+        if (Object.keys(onConflictUpdate).length === 0) return;
+
+        await db
+            .update(campaignTable, {
+                id: address,
+            })
+            .set(onConflictUpdate);
+        return;
+    }
 
     // Get the metadata and config of the campaign
-    const [metadataResult, linkResult, configResult] =
-        await context.client.multicall({
-            contracts: [
-                {
-                    abi: interactionCampaignAbi,
-                    address: event.args.campaign,
-                    functionName: "getMetadata",
-                } as const,
-                {
-                    abi: interactionCampaignAbi,
-                    address: event.args.campaign,
-                    functionName: "getLink",
-                } as const,
-                {
-                    abi: referralCampaignAbi,
-                    address: event.args.campaign,
-                    functionName: "getConfig",
-                } as const,
-            ],
-            allowFailure: true,
-            blockNumber: event.block.number,
-        });
+    const [metadataResult, linkResult, configResult] = await client.multicall({
+        contracts: [
+            {
+                abi: interactionCampaignAbi,
+                address,
+                functionName: "getMetadata",
+            } as const,
+            {
+                abi: interactionCampaignAbi,
+                address,
+                functionName: "getLink",
+            } as const,
+            {
+                abi: referralCampaignAbi,
+                address,
+                functionName: "getConfig",
+            } as const,
+        ],
+        allowFailure: true,
+        blockNumber,
+    });
 
     if (
         metadataResult.status !== "success" ||
         linkResult.status !== "success"
     ) {
         console.error(
-            `Failed to get metadata/linkResult for campaign ${event.args.campaign}`,
-            { event }
+            `Failed to get metadata/linkResult for campaign ${address}`,
+            { blockNumber }
         );
         return;
     }
@@ -52,9 +87,10 @@ ponder.on("CampaignsFactory:CampaignCreated", async ({ event, context }) => {
     const formattedName = bytesToString(name);
 
     // Create the campaign
-    await Campaign.create({
-        id: event.args.campaign,
-        data: {
+    await db
+        .insert(campaignTable)
+        .values({
+            id: address,
             type,
             name: formattedName,
             version,
@@ -67,18 +103,19 @@ ponder.on("CampaignsFactory:CampaignCreated", async ({ event, context }) => {
                     ? configResult.result[2]
                     : undefined,
             isAuthorisedOnBanking: false,
-        },
-    });
+            lastUpdateBlock: blockNumber,
+            ...onConflictUpdate,
+        })
+        .onConflictDoUpdate(onConflictUpdate);
 
     // Upsert press campaign stats if it's the right type
     if (type === "frak.campaign.referral") {
-        await ReferralCampaignStats.upsert({
-            id: event.args.campaign,
-            create: {
-                campaignId: event.args.campaign,
+        await db
+            .insert(referralCampaignStatsTable)
+            .values({
+                campaignId: address,
                 ...emptyCampaignStats,
-            },
-            update: {},
-        });
+            })
+            .onConflictDoNothing();
     }
-});
+}

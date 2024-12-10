@@ -1,6 +1,14 @@
 import { ponder } from "@/generated";
 import { countDistinct, eq, inArray } from "@ponder/core";
 import { type Address, isAddress } from "viem";
+import {
+    campaignTable,
+    interactionEventTable,
+    productAdministratorTable,
+    productInteractionContractTable,
+    productTable,
+    referralCampaignStatsTable,
+} from "../../ponder.schema";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error
@@ -18,22 +26,22 @@ ponder.get("/admin/:wallet/products", async (ctx) => {
         return ctx.text("Invalid wallet address", 400);
     }
 
-    // Get the tables we will query
-    const { Product, ProductAdministrator } = ctx.tables;
-
     // Perform the sql query
     const products = await ctx.db
         .select({
-            id: ProductAdministrator.productId,
-            isOwner: ProductAdministrator.isOwner,
-            roles: ProductAdministrator.roles,
-            domain: Product.domain,
-            name: Product.name,
-            productTypes: Product.productTypes,
+            id: productAdministratorTable.productId,
+            isOwner: productAdministratorTable.isOwner,
+            roles: productAdministratorTable.roles,
+            domain: productTable.domain,
+            name: productTable.name,
+            productTypes: productTable.productTypes,
         })
-        .from(ProductAdministrator)
-        .innerJoin(Product, eq(ProductAdministrator.productId, Product.id))
-        .where(eq(ProductAdministrator.user, wallet));
+        .from(productAdministratorTable)
+        .innerJoin(
+            productTable,
+            eq(productAdministratorTable.productId, productTable.id)
+        )
+        .where(eq(productAdministratorTable.user, wallet));
 
     // Return the result as json
     return ctx.json(products);
@@ -49,29 +57,26 @@ ponder.get("/admin/:wallet/campaigns", async (ctx) => {
         return ctx.text("Invalid wallet address", 400);
     }
 
-    // Get the tables we will query
-    const { ProductAdministrator, Campaign } = ctx.tables;
-
     // Perform the sql query
     const campaigns = await ctx.db
         .select({
-            productId: ProductAdministrator.productId,
-            isOwner: ProductAdministrator.isOwner,
-            roles: ProductAdministrator.roles,
-            id: Campaign.id,
-            type: Campaign.type,
-            name: Campaign.name,
-            version: Campaign.version,
-            attached: Campaign.attached,
-            attachTimestamp: Campaign.attachTimestamp,
-            detachTimestamp: Campaign.detachTimestamp,
+            productId: productAdministratorTable.productId,
+            isOwner: productAdministratorTable.isOwner,
+            roles: productAdministratorTable.roles,
+            id: campaignTable.id,
+            type: campaignTable.type,
+            name: campaignTable.name,
+            version: campaignTable.version,
+            attached: campaignTable.attached,
+            attachTimestamp: campaignTable.attachTimestamp,
+            detachTimestamp: campaignTable.detachTimestamp,
         })
-        .from(ProductAdministrator)
+        .from(productAdministratorTable)
         .innerJoin(
-            Campaign,
-            eq(ProductAdministrator.productId, Campaign.productId)
+            campaignTable,
+            eq(productAdministratorTable.productId, campaignTable.productId)
         )
-        .where(eq(ProductAdministrator.user, wallet));
+        .where(eq(productAdministratorTable.user, wallet));
 
     // Return the result as json
     return ctx.json(campaigns);
@@ -85,46 +90,38 @@ ponder.get("/admin/:wallet/campaignsStats", async (ctx) => {
         return ctx.text("Invalid wallet address", 400);
     }
 
-    // Get the tables we will query
-    const {
-        ProductAdministrator,
-        Campaign,
-        ReferralCampaignStats,
-        InteractionEvent,
-        ProductInteractionContract,
-    } = ctx.tables;
-
     // Perform the sql query
     const campaignsStats = await ctx.db
         .select({
-            productId: ProductAdministrator.productId,
-            isOwner: ProductAdministrator.isOwner,
-            roles: ProductAdministrator.roles,
-            id: Campaign.id,
-            name: Campaign.name,
-            bank: Campaign.bankingContractId,
-            totalInteractions: ReferralCampaignStats.totalInteractions,
-            openInteractions: ReferralCampaignStats.openInteractions,
-            readInteractions: ReferralCampaignStats.readInteractions,
-            referredInteractions: ReferralCampaignStats.referredInteractions,
+            productId: productAdministratorTable.productId,
+            isOwner: productAdministratorTable.isOwner,
+            roles: productAdministratorTable.roles,
+            id: campaignTable.id,
+            name: campaignTable.name,
+            bank: campaignTable.bankingContractId,
+            totalInteractions: referralCampaignStatsTable.totalInteractions,
+            openInteractions: referralCampaignStatsTable.openInteractions,
+            readInteractions: referralCampaignStatsTable.readInteractions,
+            referredInteractions:
+                referralCampaignStatsTable.referredInteractions,
             createReferredLinkInteractions:
-                ReferralCampaignStats.createReferredLinkInteractions,
+                referralCampaignStatsTable.createReferredLinkInteractions,
             purchaseStartedInteractions:
-                ReferralCampaignStats.purchaseStartedInteractions,
+                referralCampaignStatsTable.purchaseStartedInteractions,
             purchaseCompletedInteractions:
-                ReferralCampaignStats.purchaseCompletedInteractions,
-            totalRewards: ReferralCampaignStats.totalRewards,
+                referralCampaignStatsTable.purchaseCompletedInteractions,
+            totalRewards: referralCampaignStatsTable.totalRewards,
         })
-        .from(ProductAdministrator)
+        .from(productAdministratorTable)
         .innerJoin(
-            Campaign,
-            eq(ProductAdministrator.productId, Campaign.productId)
+            campaignTable,
+            eq(productAdministratorTable.productId, campaignTable.productId)
         )
         .innerJoin(
-            ReferralCampaignStats,
-            eq(Campaign.id, ReferralCampaignStats.campaignId)
+            referralCampaignStatsTable,
+            eq(campaignTable.id, referralCampaignStatsTable.campaignId)
         )
-        .where(eq(ProductAdministrator.user, wallet));
+        .where(eq(productAdministratorTable.user, wallet));
 
     // Get the unique wallet on this product
     if (campaignsStats.length === 0) {
@@ -138,68 +135,25 @@ ponder.get("/admin/:wallet/campaignsStats", async (ctx) => {
     // Get the total number of unique users per product
     const totalPerProducts = await ctx.db
         .select({
-            productId: ProductInteractionContract.productId,
-            wallets: countDistinct(InteractionEvent.user),
+            productId: productInteractionContractTable.productId,
+            wallets: countDistinct(interactionEventTable.user),
         })
-        .from(InteractionEvent)
+        .from(interactionEventTable)
         .innerJoin(
-            ProductInteractionContract,
-            eq(InteractionEvent.interactionId, ProductInteractionContract.id)
+            productInteractionContractTable,
+            eq(
+                interactionEventTable.interactionId,
+                productInteractionContractTable.id
+            )
         )
-        .where(inArray(ProductInteractionContract.productId, uniqueProductIds))
-        .groupBy(ProductInteractionContract.productId);
+        .where(
+            inArray(productInteractionContractTable.productId, uniqueProductIds)
+        )
+        .groupBy(productInteractionContractTable.productId);
 
     // Return the result as json
     return ctx.json({
         stats: campaignsStats,
         users: totalPerProducts,
     });
-});
-
-// Get all the campaign stats for a wallet
-// todo: For legacy purpose only, to be removed once prod is updated
-ponder.get("/admin/:wallet/campaigns/stats", async (ctx) => {
-    // Extract wallet
-    const wallet = ctx.req.param("wallet") as Address;
-    if (!isAddress(wallet)) {
-        return ctx.text("Invalid wallet address", 400);
-    }
-
-    // Get the tables we will query
-    const { ProductAdministrator, Campaign, ReferralCampaignStats } =
-        ctx.tables;
-
-    // Perform the sql query
-    const campaignsStats = await ctx.db
-        .select({
-            productId: ProductAdministrator.productId,
-            isOwner: ProductAdministrator.isOwner,
-            roles: ProductAdministrator.roles,
-            id: Campaign.id,
-            bank: Campaign.bankingContractId,
-            totalInteractions: ReferralCampaignStats.totalInteractions,
-            openInteractions: ReferralCampaignStats.openInteractions,
-            readInteractions: ReferralCampaignStats.readInteractions,
-            referredInteractions: ReferralCampaignStats.referredInteractions,
-            createReferredLinkInteractions:
-                ReferralCampaignStats.createReferredLinkInteractions,
-            purchaseStartedInteractions:
-                ReferralCampaignStats.purchaseStartedInteractions,
-            purchaseCompletedInteractions:
-                ReferralCampaignStats.purchaseCompletedInteractions,
-            totalRewards: ReferralCampaignStats.totalRewards,
-        })
-        .from(ProductAdministrator)
-        .innerJoin(
-            Campaign,
-            eq(ProductAdministrator.productId, Campaign.productId)
-        )
-        .innerJoin(
-            ReferralCampaignStats,
-            eq(Campaign.id, ReferralCampaignStats.campaignId)
-        )
-        .where(eq(ProductAdministrator.user, wallet));
-
-    // Return the result as json
-    return ctx.json(campaignsStats);
 });
