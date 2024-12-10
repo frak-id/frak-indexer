@@ -21,10 +21,10 @@
     "docker:run": "docker run -P ponder-dev"
   },
   "dependencies": {
-    "@ponder/core": "0.7.14",
+    "@ponder/core": "0.7.17",
     "drizzle-orm": "0.36.4",
-    "hono": "4.6.12",
-    "viem": "^2.21.53"
+    "hono": "4.6.13",
+    "viem": "^2.21.54"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
