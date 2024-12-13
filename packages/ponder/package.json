@@ -21,9 +21,9 @@
     "docker:run": "docker run -P ponder-dev"
   },
   "dependencies": {
-    "@ponder/core": "0.7.17",
     "drizzle-orm": "0.36.4",
     "hono": "4.6.13",
+    "ponder": "^0.8.2",
     "viem": "^2.21.54"
   },
   "devDependencies": {
