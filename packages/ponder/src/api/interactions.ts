@@ -1,11 +1,11 @@
-import { ponder } from "ponder:registry";
+import { ponder } from "@/generated";
+import { desc, eq } from "@ponder/core";
+import { type Address, isAddress } from "viem";
 import {
     interactionEventTable,
     productInteractionContractTable,
     productTable,
-} from "ponder:schema";
-import { desc, eq } from "ponder";
-import { type Address, isAddress } from "viem";
+} from "../../ponder.schema";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error

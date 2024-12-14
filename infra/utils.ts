@@ -36,8 +36,6 @@ export function getPonderEntrypoint(type: "indexer" | "reader") {
         "--config",
         configPath,
         command,
-        "--schema",
-        "public",
     ];
 }
 
