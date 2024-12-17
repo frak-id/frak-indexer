@@ -1,6 +1,6 @@
 import * as aws from "@pulumi/aws";
 import { all } from "@pulumi/pulumi";
-import { cluster, vpc } from "./common.ts";
+import { cluster, database, vpc } from "./common.ts";
 import { ServiceTargets } from "./components/ServiceTargets.ts";
 import { SstService } from "./utils.ts";
 
@@ -32,6 +32,19 @@ const erpcServiceTargets = new ServiceTargets("ErpcServiceDomain", {
     },
 });
 
+/**
+ * Build the erpc database URL
+ */
+const dbUrl = all([
+    database.host,
+    database.port,
+    database.username,
+    database.password,
+    database.database,
+]).apply(([host, port, username, password, database]) => {
+    return `postgres://${username}:${password}@${host}:${port}/${database}`;
+});
+
 // Create the erpc service (only on prod stage)
 export const erpcService = new SstService("Erpc", {
     vpc,
@@ -60,6 +73,7 @@ export const erpcService = new SstService("Erpc", {
     // Env
     environment: {
         ERPC_LOG_LEVEL: "warn",
+        ERPC_DATABASE_URL: dbUrl,
     },
     // SSM secrets
     ssm: {
@@ -79,9 +93,6 @@ export const erpcService = new SstService("Erpc", {
             "arn:aws:ssm:eu-west-1:262732185023:parameter/sst/frak-indexer/.fallback/Secret/PONDER_RPC_SECRET/value",
         NEXUS_RPC_SECRET:
             "arn:aws:ssm:eu-west-1:262732185023:parameter/sst/frak-indexer/.fallback/Secret/NEXUS_RPC_SECRET/value",
-        // Postgres db
-        ERPC_DATABASE_URL:
-            "arn:aws:ssm:eu-west-1:262732185023:parameter/indexer/sst/Secret/ERPC_DATABASE_URL/value",
     },
     // Tell the service registry to forward requests to the 8080 port
     serviceRegistry: {
