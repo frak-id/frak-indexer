@@ -16,9 +16,10 @@ export default $config({
     async run() {
         await import("./infra/common.ts");
 
+        await import("./infra/erpc.ts");
+
         if ($app.stage === "production") {
-            // ERPC + ponder deployment on prod
-            await import("./infra/erpc.ts");
+            // Ponder deployment on prod
             await import("./infra/ponder.prod.ts");
         } else {
             // Only ponder on dev
