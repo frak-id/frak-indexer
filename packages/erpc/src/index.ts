@@ -1,4 +1,5 @@
-import { type LogLevel, initErpcConfig } from "@erpc-cloud/config";
+import type { LogLevel } from "@erpc-cloud/config";
+import { initErpcConfig } from "@konfeature/erpc-config-generator";
 import { arbNetwork, arbSepoliaNetwork } from "./networks";
 import {
     alchemyRateRules,
@@ -36,6 +37,7 @@ export default initErpcConfig({
         enabled: true,
         listenV6: false,
     },
+    blablou: "test",
 })
     .addRateLimiters({
         alchemy: alchemyRateRules,
