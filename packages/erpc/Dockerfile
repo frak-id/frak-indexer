@@ -1,11 +1,17 @@
-# Base image is erpc
-FROM ghcr.io/erpc/erpc:0.0.24
+# Config bundler step
+FROM oven/bun:latest AS bundler
+RUN mkdir -p /temp/dev
 
-# Copy the config
-COPY erpc.yaml /root/erpc.yaml
+# Bundle everything in a single erpc.js file
+COPY . /temp/dev
+RUN cd /temp/dev && bun install --production
+RUN cd /temp/dev && bun build --outfile ./erpc.js --minify --target node --external "@erpc-cloud/*" src/index.ts
 
-EXPOSE 8080/tcp
-EXPOSE 4001/tcp
+# Final image
+FROM ghcr.io/erpc/erpc:main AS FINAL
+
+# Copy the bundled config
+COPY --from=bundler ./temp/dev/erpc.js /root/erpc.js
 
 # Run the server
 CMD ["./erpc-server"]
