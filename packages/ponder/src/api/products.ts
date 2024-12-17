@@ -1,4 +1,6 @@
-import { ponder } from "ponder:registry";
+import { ponder } from "@/generated";
+import { eq, inArray } from "@ponder/core";
+import { type Hex, isHex, keccak256, toHex } from "viem";
 import {
     bankingContractTable,
     campaignTable,
@@ -7,9 +9,7 @@ import {
     productTable,
     referralCampaignStatsTable,
     tokenTable,
-} from "ponder:schema";
-import { eq, inArray } from "ponder";
-import { type Hex, isHex, keccak256, toHex } from "viem";
+} from "../../ponder.schema";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error

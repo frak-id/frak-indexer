@@ -1,13 +1,13 @@
-import { ponder } from "ponder:registry";
+import { ponder } from "@/generated";
+import { and, desc, eq, not } from "@ponder/core";
+import { type Address, isAddress } from "viem";
 import {
     bankingContractTable,
     productTable,
     rewardAddedEventTable,
     rewardClaimedEventTable,
     rewardTable,
-} from "ponder:schema";
-import { and, desc, eq, not } from "ponder";
-import { type Address, isAddress } from "viem";
+} from "../../ponder.schema";
 import { getTokens } from "./tokens";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

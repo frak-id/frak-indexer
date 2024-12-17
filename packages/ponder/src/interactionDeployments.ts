@@ -1,6 +1,6 @@
-import { ponder } from "ponder:registry";
-import { productInteractionContractTable } from "ponder:schema";
+import { ponder } from "@/generated";
 import { productInteractionDiamondAbi } from "../abis/interactionAbis";
+import { productInteractionContractTable } from "../ponder.schema";
 
 ponder.on(
     "ProductInteractionManager:InteractionContractDeployed",

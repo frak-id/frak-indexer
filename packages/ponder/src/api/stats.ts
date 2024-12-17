@@ -1,10 +1,10 @@
-import { ponder } from "ponder:registry";
+import { ponder } from "@/generated";
+import { count, countDistinct, eq, gte } from "@ponder/core";
 import {
     interactionEventTable,
     productInteractionContractTable,
     productTable,
-} from "ponder:schema";
-import { count, countDistinct, eq, gte } from "ponder";
+} from "../../ponder.schema";
 
 /**
  * Get the overall system stats
