@@ -4,6 +4,10 @@ import { cluster, vpc } from "./common.ts";
 import { ServiceTargets } from "./components/ServiceTargets.ts";
 import { SstService } from "./utils.ts";
 
+if ($app.stage !== "production") {
+    throw new Error("eRPC is reserved for production usage");
+}
+
 // Get the image we will deploy
 const image = await aws.ecr.getImage({
     repositoryName: "erpc",
@@ -13,7 +17,7 @@ const image = await aws.ecr.getImage({
 // Create the service targets
 const erpcServiceTargets = new ServiceTargets("ErpcServiceDomain", {
     vpcId: vpc.id,
-    domain: $app.stage === "production" ? "rpc.frak.id" : "rpc-dev.frak.id",
+    domain: "rpc.frak.id",
     ports: [
         { listen: "80/http", forward: "8080/http" },
         { listen: "443/https", forward: "8080/http" },
