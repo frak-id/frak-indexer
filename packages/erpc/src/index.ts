@@ -106,8 +106,8 @@ export default initErpcConfig({
         upstreams: [
             upstreams.alchemy,
             upstreams.drpc,
-            upstreams.llamaFree,
             upstreams.pimlico,
+            upstreams.llamaFree,
         ],
         auth: {
             strategies: [

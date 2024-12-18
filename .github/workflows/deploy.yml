@@ -122,10 +122,6 @@ jobs:
           tags: |
             262732185023.dkr.ecr.eu-west-1.amazonaws.com/erpc:latest
             262732185023.dkr.ecr.eu-west-1.amazonaws.com/erpc:${{ github.sha }}
-          # Github actions cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=min
-          no-cache: true
 
       - name: "🚀 SST Deploy"
         run: |
