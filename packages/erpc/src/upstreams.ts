@@ -74,7 +74,7 @@ export const pimlicoUpstream = {
     rateLimitBudget: "pimlico",
     // Only allow the 4337 methods
     ignoreMethods: ["*"],
-    allowMethods: erc4337Methods,
+    allowMethods: ["eth_chainId", ...erc4337Methods],
 } as const satisfies UpstreamConfig;
 
 export const drpcUpstream = {
