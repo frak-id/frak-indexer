@@ -37,7 +37,7 @@ jobs:
           list-files: 'shell'
           filters: |
             erpc:
-              - 'packages/erpc/erpc.yaml'
+              - 'packages/erpc/src/**'
               - 'packages/erpc/Dockerfile'
             ponder:
               - 'packages/ponder/**'

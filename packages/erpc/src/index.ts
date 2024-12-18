@@ -105,9 +105,9 @@ export default initErpcConfig({
         networks: [networks.arbitrum, networks.arbitrumSepolia],
         upstreams: [
             upstreams.alchemy,
-            upstreams.pimlico,
             upstreams.drpc,
             upstreams.llamaFree,
+            upstreams.pimlico,
         ],
         auth: {
             strategies: [
