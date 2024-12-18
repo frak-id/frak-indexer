@@ -61,10 +61,16 @@ export const erpcService = new SstService("Erpc", {
     image: image.imageUri,
     // Scaling options
     scaling: {
-        min: 1,
+        // todo: Min two instance since current version keep failing idk why
+        min: 2,
         max: 4,
         cpuUtilization: 80,
         memoryUtilization: 80,
+    },
+    // Container health check
+    health: {
+        command: ["CMD-SHELL", "curl -f http://localhost:8080/healthcheck || exit 1"],
+        startPeriod: "15 seconds"
     },
     // Logging options
     logging: {
