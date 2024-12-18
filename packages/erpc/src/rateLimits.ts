@@ -29,7 +29,13 @@ export const alchemyRateRules: RuleExport = [
     genericRateLimitsRules(200),
     {
         method: "eth_getLogs",
-        maxCount: 30,
+        maxCount: 20,
+        period: "1s",
+        waitTime: "10s",
+    },
+    {
+        method: "eth_getBlockByNumber",
+        maxCount: 40,
         period: "1s",
         waitTime: "10s",
     },

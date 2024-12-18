@@ -17,6 +17,7 @@ import {
     envioUpstream,
     llamaFreeUpstreamArb,
     pimlicoUpstream,
+    tenderlyFreeUpstreamArbSepolia,
 } from "./upstreams";
 
 /**
@@ -32,10 +33,7 @@ export default initErpcConfig({
         maxTimeout: "60s",
         listenV6: false,
     },
-    metrics: {
-        enabled: true,
-        listenV6: false,
-    },
+    metrics: { enabled: false },
 })
     .addRateLimiters({
         alchemy: alchemyRateRules,
@@ -58,6 +56,7 @@ export default initErpcConfig({
         pimlico: pimlicoUpstream,
         drpc: drpcUpstream,
         llamaFree: llamaFreeUpstreamArb,
+        tenderlyFreeArbSepolia: tenderlyFreeUpstreamArbSepolia,
     })
     // Add our ponder prod project
     .addProject(({ store: { upstreams, networks } }) => ({
@@ -84,7 +83,11 @@ export default initErpcConfig({
     .addProject(({ store: { upstreams, networks } }) => ({
         id: "ponder-dev-rpc",
         networks: [networks.arbitrumSepolia],
-        upstreams: [upstreams.alchemy, upstreams.envio, upstreams.drpc],
+        upstreams: [
+            upstreams.envio,
+            upstreams.drpc,
+            upstreams.tenderlyFreeArbSepolia,
+        ],
         auth: {
             strategies: [
                 {
