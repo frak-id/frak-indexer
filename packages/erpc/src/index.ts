@@ -103,7 +103,12 @@ export default initErpcConfig({
     .addProject(({ store: { upstreams, networks } }) => ({
         id: "nexus-rpc",
         networks: [networks.arbitrum, networks.arbitrumSepolia],
-        upstreams: [upstreams.alchemy, upstreams.drpc, upstreams.llamaFree],
+        upstreams: [
+            upstreams.alchemy,
+            upstreams.drpc,
+            upstreams.llamaFree,
+            upstreams.pimlico,
+        ],
         auth: {
             strategies: [
                 {
