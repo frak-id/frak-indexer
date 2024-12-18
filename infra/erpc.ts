@@ -75,6 +75,8 @@ export const erpcService = new SstService("Erpc", {
         ERPC_LOG_LEVEL: "warn",
         ERPC_DATABASE_URL: dbUrl,
     },
+    // Link the service to the deployed database
+    link: [database],
     // SSM secrets
     ssm: {
         // RPCs

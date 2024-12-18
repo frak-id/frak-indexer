@@ -17,7 +17,6 @@ import {
     envioUpstream,
     llamaFreeUpstreamArb,
     pimlicoUpstream,
-    tenderlyFreeUpstreamArbSepolia,
 } from "./upstreams";
 
 /**
@@ -37,7 +36,6 @@ export default initErpcConfig({
         enabled: true,
         listenV6: false,
     },
-    blablou: "test",
 })
     .addRateLimiters({
         alchemy: alchemyRateRules,
@@ -60,7 +58,6 @@ export default initErpcConfig({
         pimlico: pimlicoUpstream,
         drpc: drpcUpstream,
         llamaFree: llamaFreeUpstreamArb,
-        tenderlyFree: tenderlyFreeUpstreamArbSepolia,
     })
     // Add our ponder prod project
     .addProject(({ store: { upstreams, networks } }) => ({
@@ -87,12 +84,7 @@ export default initErpcConfig({
     .addProject(({ store: { upstreams, networks } }) => ({
         id: "ponder-dev-rpc",
         networks: [networks.arbitrumSepolia],
-        upstreams: [
-            upstreams.alchemy,
-            upstreams.envio,
-            upstreams.drpc,
-            upstreams.tenderlyFree,
-        ],
+        upstreams: [upstreams.alchemy, upstreams.envio, upstreams.drpc],
         auth: {
             strategies: [
                 {
@@ -108,12 +100,7 @@ export default initErpcConfig({
     .addProject(({ store: { upstreams, networks } }) => ({
         id: "nexus-rpc",
         networks: [networks.arbitrum, networks.arbitrumSepolia],
-        upstreams: [
-            upstreams.alchemy,
-            upstreams.drpc,
-            upstreams.llamaFree,
-            upstreams.tenderlyFree,
-        ],
+        upstreams: [upstreams.alchemy, upstreams.drpc, upstreams.llamaFree],
         auth: {
             strategies: [
                 {

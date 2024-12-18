@@ -15,8 +15,7 @@ if (!process.env.DRPC_API_KEY) {
  */
 const erc4337Methods = [
     "eth_estimateUserOperationGas",
-    "eth_getUserOperationByHash",
-    "eth_getUserOperationReceipt",
+    "eth_getUserOperation*",
     "eth_sendUserOperation",
     "eth_supportedEntryPoints",
     "pm_*",

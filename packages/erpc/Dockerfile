@@ -8,7 +8,7 @@ RUN cd /temp/dev && bun install --production
 RUN cd /temp/dev && bun build --outfile ./erpc.js --minify --target node --external "@erpc-cloud/*" src/index.ts
 
 # Final image
-FROM ghcr.io/erpc/erpc:main AS FINAL
+FROM ghcr.io/erpc/erpc:main AS final
 
 # Copy the bundled config
 COPY --from=bundler ./temp/dev/erpc.js /root/erpc.js
