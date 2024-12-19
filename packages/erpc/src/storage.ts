@@ -26,10 +26,19 @@ const connectors = [
         },
     },
     {
-        id: "memory-main",
+        id: "memory-unfinalized",
         driver: "memory",
         memory: {
-            maxItems: 65_536,
+            // max 4k items for unfinalized cache
+            maxItems: 4_096,
+        },
+    },
+    {
+        id: "memory-realtime",
+        driver: "memory",
+        memory: {
+            // Max 4k items for realtime cache
+            maxItems: 4_096,
         },
     },
 ] as const satisfies ConnectorConfig[];
@@ -50,17 +59,18 @@ const cachePolicies = [
     },
     // Cache not finalized data for 2sec in the memory
     {
-        connector: "memory-main",
+        connector: "memory-unfinalized",
         network: "*",
         method: "*",
         finality: DataFinalityStateUnfinalized,
         empty: CacheEmptyBehaviorIgnore,
         // 2sec in nanoseconds
         ttl: 2_000_000_000,
+        maxItemSize: "20kb",
     },
     // Cache realtime data for 2sec on the memory on arbitrum
     {
-        connector: "memory-main",
+        connector: "memory-realtime",
         network: "evm:42161",
         method: "*",
         finality: DataFinalityStateRealtime,
@@ -70,7 +80,7 @@ const cachePolicies = [
     },
     // Cache realtime data for 30sec on arbitrum sepolia
     {
-        connector: "memory-main",
+        connector: "memory-realtime",
         network: "evm:421614",
         method: "*",
         finality: DataFinalityStateRealtime,
