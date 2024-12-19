@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - erpc-experiment
       - staging
 
 concurrency:
@@ -48,7 +49,7 @@ jobs:
 
       - name: "🔧 Set up environment variables"
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.ref }}" == "refs/heads/erpc-experiment" ]; then
             echo "STAGE=production" >> $GITHUB_ENV
             echo "PONDER_PROD_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
             echo "PONDER_DEV_IMAGE_TAG=latest" >> $GITHUB_ENV
@@ -126,7 +127,7 @@ jobs:
       - name: "🚀 SST Deploy"
         run: |
           bun sst install
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.ref }}" == "refs/heads/erpc-experiment" ]; then
             bun run deploy:prod
           else
             bun run deploy:dev
